@@ -2,14 +2,16 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::{Active, Event};
+use bluez_zbus::adapter1::Adapter1Proxy;
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
 use std::time::Duration;
-use bluez_zbus::adapter1::Adapter1Proxy;
 use zbus::proxy::CacheProperties;
 use zbus::zvariant::OwnedObjectPath;
+
+const ATTEMPTS: u64 = 5;
 
 #[derive(Default, Debug, Clone)]
 pub struct Adapter {
@@ -148,17 +150,17 @@ async fn proxy(
 }
 
 pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
-    let result: zbus::Result<()> = Ok(());
-
     let adapter = match proxy(&connection, adapter_path).await {
+        Ok(adapter) => adapter,
         Err(why) => {
             tracing::error!("Unable to get the adapter: {why}");
             return Event::DBusError(why);
         }
-        Ok(adapter) => adapter,
     };
 
-    for attempt in 1..5 {
+    let mut attempt = 1;
+    loop {
+        tracing::debug!("Starting discovery");
         let result = async {
             tracing::debug!("Starting discovery");
             // We don't seem to be able to use join here as it seem to lead to some kind of race condition and not start scanning occasionally
@@ -171,31 +173,33 @@ pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedOb
         }
         .await;
 
-        if let Err(why) = result {
-            tracing::warn!("Unable to start bluetooth scanning: {why}");
-            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-        } else {
-            tracing::debug!("Discovery started");
-            return Event::Ok;
+        match result {
+            Ok(()) => {
+                tracing::debug!("Discovery started");
+                return Event::Ok;
+            }
+            Err(why) if attempt == ATTEMPTS => {
+                tracing::warn!("Unable to start bluetooth scanning: {why}");
+                return Event::DBusError(why);
+            }
+            Err(why) => {
+                tracing::warn!("Unable to start bluetooth scanning: {why}");
+                tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                attempt += 1;
+            }
         }
-    }
-
-    if let Err(why) = result {
-        Event::DBusError(why)
-    } else {
-        Event::Ok
     }
 }
 
 pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
-    let result: zbus::Result<()> = Ok(());
-
     let adapter = match proxy(&connection, adapter_path).await {
-        Err(why) => return Event::DBusError(why),
         Ok(adapter) => adapter,
+        Err(why) => return Event::DBusError(why),
     };
 
-    for attempt in 1..5 {
+    let mut attempt = 1;
+    loop {
+        tracing::debug!("Stopping discovery");
         let result = async {
             tracing::debug!("Stopping discovery");
 
@@ -210,24 +214,22 @@ pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObj
         }
         .await;
 
-        if let Err(why) = result {
-            tracing::warn!("Unable to stop bluetooth scanning: {why}");
-            if why.to_string().contains("No discovery started") {
+        match result {
+            Ok(()) => {
+                tracing::debug!("Discovery stopped");
+                return Event::Ok;
+            }
+            Err(why) if attempt == ATTEMPTS || why.to_string().contains("No discovery started") => {
+                tracing::warn!("Unable to stop bluetooth scanning: {why}");
                 return Event::DBusError(why);
             }
-
-            tracing::warn!("Unable to stop bluetooth scanning: {why}");
-            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-        } else {
-            tracing::debug!("Discovery stopped");
-            return Event::Ok;
+            Err(why) => {
+                tracing::warn!("Unable to stop bluetooth scanning: {why}");
+                tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                attempt += 1;
+            }
         }
     }
-
-    if let Err(why) = result {
-        return Event::DBusError(why);
-    }
-    Event::Ok
 }
 
 // In some distros, rfkill is only in sbin, which isn't normally in PATH
