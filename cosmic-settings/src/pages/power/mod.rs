@@ -462,7 +462,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                             format!(
                                 "{}% - {}",
                                 connected_device.battery.percent,
-                                &connected_device.battery.remaining_time()
+                                connected_device.battery.remaining_time()
                             )
                         } else {
                             format!("{}%", connected_device.battery.percent)

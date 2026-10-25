@@ -102,13 +102,11 @@ impl Page {
                 tasks.push(cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
-                tasks.push(
-                    self.drawer.on_open(
-                        &context_view,
-                        &self.theme_manager,
-                        crate::pages::Message::AppearanceTheme,
-                    ),
-                );
+                tasks.push(self.drawer.on_open(
+                    &context_view,
+                    &self.theme_manager,
+                    crate::pages::Message::AppearanceTheme,
+                ));
             }
 
             Message::DrawerColor(u) => {
