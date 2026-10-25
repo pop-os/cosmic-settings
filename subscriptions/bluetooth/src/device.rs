@@ -12,6 +12,14 @@ use zbus::zvariant::OwnedObjectPath;
 
 const DEFAILT_DEVICE_ICON: &str = "bluetooth-symbolic";
 const ATTEMPTS: u64 = 5;
+const FINAL_ERRORS: &[&str] = &[
+    "org.bluez.Error.AuthenticationCanceled",
+    "org.bluez.Error.AuthenticationFailed",
+    "org.bluez.Error.AuthenticationRejected",
+    "org.bluez.Error.AuthenticationTimeout",
+    "org.bluez.Error.DoesNotExist",
+    "org.freedesktop.DBus.Error.UnknownObject",
+];
 
 // Copied from https://github.com/bluez/bluez/blob/39467578207889fd015775cbe81a3db9dd26abea/src/dbus-common.c#L53
 fn device_type_to_icon(device_type: &str) -> &'static str {
@@ -252,6 +260,10 @@ pub async fn disconnect_device(
     Event::DeviceFailed(device_path)
 }
 
+fn is_final(why: &zbus::Error) -> bool {
+    matches!(why, zbus::Error::MethodError(name, ..) if FINAL_ERRORS.contains(&name.as_str()))
+}
+
 pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Event {
     let device = match proxy(&connection, device_path.clone()).await {
         Err(why) => {
@@ -277,6 +289,9 @@ pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObje
             Ok(()) => return Event::Ok,
             Err(why) => {
                 tracing::warn!("Unable to connect to device: {why}");
+                if is_final(&why) {
+                    break;
+                }
                 if attempt < ATTEMPTS {
                     tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
                 }
