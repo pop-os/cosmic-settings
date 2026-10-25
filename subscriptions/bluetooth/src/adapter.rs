@@ -4,9 +4,8 @@
 use crate::{Active, Event};
 use bluez_zbus::adapter1::Adapter1Proxy;
 use std::collections::HashMap;
-use std::convert::Infallible;
 use std::hash::{Hash, Hasher};
-use std::path::PathBuf;
+use std::path::Path;
 use std::time::Duration;
 use zbus::proxy::CacheProperties;
 use zbus::zvariant::OwnedObjectPath;
@@ -245,67 +244,90 @@ pub async fn change_adapter_status(
     adapter_path: OwnedObjectPath,
     active: bool,
 ) -> Event {
-    // rfkill will be persisted after reboot
-    let adapter = bluez_zbus::get_adapter(&connection, adapter_path.clone())
-        .await
-        .map_err(|err| Ok::<_, Infallible>(Event::DBusError(err)))
-        .unwrap();
-
-    let path = PathBuf::from(adapter_path.to_string());
-    let name = path.file_name().unwrap();
-
-    let mut cmd = tokio::process::Command::new("rfkill");
-    cmd.env("PATH", rfkill_path_var())
-        .arg("--noheadings")
-        .arg("--output")
-        .arg("ID,DEVICE");
-
-    let rfkill_list = cmd.output().await.ok();
-
-    if let Some(id) = rfkill_list.and_then(|o| {
-        let lines = String::from_utf8(o.stdout).ok()?;
-        lines.split('\n').into_iter().find_map(|row| {
-            let (id, cname) = row.trim().split_once(' ')?;
-            (name == cname).then_some(id.to_string())
-        })
-    }) {
-        if let Err(err) = tokio::process::Command::new("rfkill")
-            .env("PATH", rfkill_path_var())
-            .arg(if active { "unblock" } else { "block" })
-            .arg(id)
-            .output()
-            .await
-        {
-            tracing::error!("Failed to set bluetooth state using rfkill. {err:?}");
+    let adapter = match proxy(&connection, adapter_path.clone()).await {
+        Ok(adapter) => adapter,
+        Err(why) => {
+            tracing::error!("Unable to get the adapter: {why}");
+            return Event::DBusError(why);
         }
-        if !active {
-            return Event::Ok;
-        }
-    } else {
-        tracing::error!("Failed to find rfkill ID for bluetooth adapter {name:?}");
+    };
+
+    if rfkill(&adapter_path, active).await && !active {
+        return Event::Ok;
     }
 
-    let mut result: zbus::Result<()> = Ok(());
-    for attempt in 1..5 {
-        result = async {
-            adapter.set_powered(true).await?;
-            adapter.set_discoverable(true).await
+    let mut attempt = 1;
+    loop {
+        let result: zbus::Result<()> = async {
+            adapter.set_powered(active).await?;
+            if active {
+                adapter.set_discoverable(true).await?;
+            }
+            Ok(())
         }
         .await;
-        if let Err(why) = &result {
-            tracing::warn!("Unable to change the adapter state: {why}");
-            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-        } else {
-            return Event::Ok;
+        match result {
+            Ok(()) => return Event::Ok,
+            Err(why) if attempt == ATTEMPTS => {
+                tracing::error!("Failed to change the adapter state: {why}");
+                return Event::DBusError(why);
+            }
+            Err(why) => {
+                tracing::warn!("Unable to change the adapter state: {why}");
+                tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                attempt += 1;
+            }
         }
     }
+}
 
-    if let Err(why) = result {
-        tracing::error!("Failed to change the adapter state!");
-        return Event::DBusError(why);
+async fn rfkill(adapter_path: &OwnedObjectPath, active: bool) -> bool {
+    let Some(name) = Path::new(adapter_path.as_str()).file_name() else {
+        return false;
+    };
+
+    let list = tokio::process::Command::new("rfkill")
+        .env("PATH", rfkill_path_var())
+        .args(["--noheadings", "--output", "ID,DEVICE"])
+        .output()
+        .await;
+
+    let id = list.ok().and_then(|output| {
+        String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .find_map(|row| {
+                let mut columns = row.split_whitespace();
+                let id = columns.next()?;
+                (columns.next()? == name).then(|| id.to_owned())
+            })
+    });
+
+    let Some(id) = id else {
+        tracing::warn!("Failed to find rfkill ID for bluetooth adapter {name:?}");
+        return false;
+    };
+
+    let result = tokio::process::Command::new("rfkill")
+        .env("PATH", rfkill_path_var())
+        .arg(if active { "unblock" } else { "block" })
+        .arg(id)
+        .output()
+        .await;
+
+    match result {
+        Ok(output) if output.status.success() => true,
+        Ok(output) => {
+            tracing::error!(
+                "Failed to set bluetooth state using rfkill: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            );
+            false
+        }
+        Err(why) => {
+            tracing::error!("Failed to set bluetooth state using rfkill. {why:?}");
+            false
+        }
     }
-
-    Event::Ok
 }
 
 pub async fn get_adapters(connection: zbus::Connection) -> Event {
