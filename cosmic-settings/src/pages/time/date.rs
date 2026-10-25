@@ -20,10 +20,10 @@ pub use timedate_zbus::TimeDateProxy;
 use tracing::error;
 
 crate::cache_dynamic_lazy! {
-    static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
-    static SHOW_WEEKDAY: String = fl!("time-format", "show-weekday");
-    static SHOW_SECONDS: String = fl!("time-format", "show-seconds");
-    static SHOW_DATE: String = fl!("time-format", "date");}
+static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
+static SHOW_WEEKDAY: String = fl!("time-format", "show-weekday");
+static SHOW_SECONDS: String = fl!("time-format", "show-seconds");
+static SHOW_DATE: String = fl!("time-format", "date");}
 
 #[derive(Debug, Clone)]
 pub struct Info {
@@ -384,17 +384,19 @@ impl Page {
     fn date_time_applet_view(&self) -> Element<'_, crate::pages::Message> {
         let mut list = widget::list_column();
 
-        list = list.add(
-            settings::item::builder(&*SHOW_DATE)
-                        .toggler(self.show_date_in_top_panel, Message::ShowDate)
-        )
-        .add(
-            settings::item::builder(&*SHOW_WEEKDAY)
-                .toggler(self.show_weekday, Message::ShowWeekday),
-        )
-        .add(
-            settings::item::builder(&*SHOW_SECONDS)
-                        .toggler(self.show_seconds, Message::ShowSeconds));
+        list = list
+            .add(
+                settings::item::builder(&*SHOW_DATE)
+                    .toggler(self.show_date_in_top_panel, Message::ShowDate),
+            )
+            .add(
+                settings::item::builder(&*SHOW_WEEKDAY)
+                    .toggler(self.show_weekday, Message::ShowWeekday),
+            )
+            .add(
+                settings::item::builder(&*SHOW_SECONDS)
+                    .toggler(self.show_seconds, Message::ShowSeconds),
+            );
 
         list.apply(Element::from)
             .map(crate::pages::Message::DateAndTime)
@@ -499,11 +501,10 @@ fn format() -> Section<crate::pages::Message> {
                     ),
                 )
                 // Show a Context Drawer which contains settings for how the Date and Time applet displays the date.
-                .add(
-                    crate::widget::go_next_with_item(
-                        &section.descriptions[date_time_applet_settings_label],
-                        "",
-                        Message::DateAndTimeContext,
+                .add(crate::widget::go_next_with_item(
+                    &section.descriptions[date_time_applet_settings_label],
+                    "",
+                    Message::DateAndTimeContext,
                 ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)

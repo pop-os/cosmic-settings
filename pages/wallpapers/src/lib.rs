@@ -94,7 +94,6 @@ pub fn cache_dir() -> Option<PathBuf> {
 }
 
 /// Loads wallpapers in parallel by spawning tasks with a rayon thread pool.
-#[must_use]
 pub async fn load_each_from_path(
     path: PathBuf,
 ) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
