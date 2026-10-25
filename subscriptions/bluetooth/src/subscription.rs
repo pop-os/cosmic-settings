@@ -119,17 +119,18 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
                         Some(signal) => {
                             let args = signal.args()?;
                             let header = signal.message().header();
-                            match header.path() {
-                                Some(path) if path.contains("/dev_") =>
+                            let Some(path) = header.path() else { continue };
+                            match args.interface_name.as_str() {
+                                "org.bluez.Adapter1" => tx
+                                        .send(Event::UpdatedAdapter(path.to_owned().into(), AdapterUpdate::from_update(args.changed_properties)))
+                                        .await
+                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
+                                "org.bluez.Device1" | "org.bluez.Battery1" =>
                                     tx
                                         .send(Event::UpdatedDevice(path.to_owned().into(), DeviceUpdate::from_update(args.changed_properties)))
                                         .await
                                         .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                Some(path) => tx
-                                        .send(Event::UpdatedAdapter(path.to_owned().into(), AdapterUpdate::from_update(args.changed_properties)))
-                                        .await
-                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                None => continue
+                                _ => continue,
                             }
                         }
                         None => {

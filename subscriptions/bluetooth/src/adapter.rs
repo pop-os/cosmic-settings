@@ -128,7 +128,7 @@ impl AdapterUpdate {
                     }
                     // Battery
                     (message, value) => {
-                        tracing::error!(message, ?value, "adapter update");
+                        tracing::debug!(message, ?value, "adapter update");
                         None
                     }
                 }
