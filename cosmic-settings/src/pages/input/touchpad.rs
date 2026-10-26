@@ -151,7 +151,9 @@ fn click_behavior() -> Section<crate::pages::Message> {
         button_areas = fl!("click-behavior", "button-areas");
         tap_to_click = fl!("tap-to-click");
         tap_and_drag = fl!("tap-and-drag");
+        tap_and_drag_desc = fl!("tap-and-drag", "desc");
         drag_lock = fl!("drag-lock");
+        drag_lock_desc = fl!("drag-lock", "desc");
         _tap_to_click_desc = fl!("tap-to-click", "desc");
     });
 
@@ -184,33 +186,35 @@ fn click_behavior() -> Section<crate::pages::Message> {
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[tap_to_click]).toggler(
-                        tap_enabled,
-                        Message::TapToClick,
-                    ),
+                    settings::item::builder(&descriptions[tap_to_click])
+                        .toggler(tap_enabled, Message::TapToClick),
                 )
                 .add_maybe(if tap_enabled {
                     Some(
-                        settings::item::builder(&descriptions[tap_and_drag]).toggler(
-                            page.input_touchpad
-                                .tap_config
-                                .as_ref()
-                                .is_some_and(|x| x.drag),
-                            Message::TapAndDrag,
-                        ),
+                        settings::item::builder(&descriptions[tap_and_drag])
+                            .description(&descriptions[tap_and_drag_desc])
+                            .toggler(
+                                page.input_touchpad
+                                    .tap_config
+                                    .as_ref()
+                                    .is_some_and(|x| x.drag),
+                                Message::TapAndDrag,
+                            ),
                     )
                 } else {
                     None
                 })
                 .add_maybe(if tap_enabled {
                     Some(
-                        settings::item::builder(&descriptions[drag_lock]).toggler(
-                            page.input_touchpad
-                                .tap_config
-                                .as_ref()
-                                .is_some_and(|x| x.drag_lock),
-                            Message::DragLock,
-                        ),
+                        settings::item::builder(&descriptions[drag_lock])
+                            .description(&descriptions[drag_lock_desc])
+                            .toggler(
+                                page.input_touchpad
+                                    .tap_config
+                                    .as_ref()
+                                    .is_some_and(|x| x.drag_lock),
+                                Message::DragLock,
+                            ),
                     )
                 } else {
                     None

@@ -932,8 +932,10 @@ tap-to-click = Tap to click
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click
 
 tap-and-drag = Tap and drag
+    .desc = Double tap and hold to drag selection
 
 drag-lock = Drag lock
+    .desc = Allow briefly lifting finger during drag without dropping selection
 
 touchpad = Touchpad
     .acceleration = Enable touchpad acceleration
