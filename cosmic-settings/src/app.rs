@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::PageCommands;
+#[cfg(feature = "page-input")]
+use crate::{KeyboardCommands, ShortcutsCommands};
 use crate::config::Config;
 #[cfg(feature = "page-accessibility")]
 use crate::pages::accessibility;
@@ -102,7 +104,15 @@ impl SettingsApp {
             #[cfg(feature = "page-input")]
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             #[cfg(feature = "page-input")]
-            PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            PageCommands::Keyboard { command } => match command {
+                None => self.pages.page_id::<input::keyboard::Page>(),
+                Some(KeyboardCommands::Shortcuts { command: None }) => {
+                    self.pages.page_id::<input::keyboard::shortcuts::Page>()
+                }
+                Some(KeyboardCommands::Shortcuts {
+                    command: Some(ShortcutsCommands::Custom),
+                }) => self.pages.page_id::<input::keyboard::shortcuts::custom::Page>(),
+            },
             #[cfg(feature = "page-legacy-applications")]
             PageCommands::LegacyApplications => self
                 .pages
