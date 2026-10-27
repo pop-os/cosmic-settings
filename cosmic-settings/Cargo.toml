@@ -9,6 +9,8 @@ publish = false
 xdgen = "0.1"
 
 [dependencies]
+
+zbus_polkit = { version = "6.0.0", optional = true }
 accounts-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 anyhow = "1.0"
 ashpd = { version = "0.12", default-features = false, features = [
@@ -39,6 +41,7 @@ cosmic-settings-sound = { path = "../pages/sound", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
+cosmic-theme-bundle-config = { path = "../theme-bundle-config" }
 derive_setters = "0.1.9"
 dirs = "6.0.0"
 eyre = "0.6.12"
@@ -76,7 +79,7 @@ static_init = "1.0.4"
 sunrise = "3.0.0"
 timedate1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 tokio = { workspace = true, features = ["fs", "io-util", "process", "sync"] }
-tracing = "0.1.44"
+tracing.workspace = true
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 udev = { version = "0.9.3", optional = true }
 upower-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
@@ -87,8 +90,7 @@ xkeysym = { version = "0.2.1", optional = true }
 zbus = { version = "6.0", default-features = false, features = [
     "tokio",
 ], optional = true }
-zbus_polkit = { version = "6.0.0", optional = true }
-fontdb = "0.23.0"
+fontdb.workspace = true
 mime = "0.3.17"
 rustix = { version = "1.1.4", features = ["process"] }
 gettext-rs = { version = "0.7.7", features = [

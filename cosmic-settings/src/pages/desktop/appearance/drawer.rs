@@ -2,10 +2,9 @@ use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet};
 use cosmic::cosmic_theme::Spacing;
-use cosmic::iced::Alignment;
 use cosmic::iced::core::{Color, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
-use cosmic::widget::{ColorPickerModel, container, flex_row, row, settings, slider, text};
+use cosmic::widget::{ColorPickerModel, container, flex_row, settings, text};
 use cosmic::{Apply, Element, Task, task, widget};
 use cosmic_config::ConfigGet;
 use std::sync::Arc;
@@ -36,12 +35,6 @@ pub struct Content {
     icon_themes: IconThemes,
     icon_handles: IconHandles,
     tk_config: Option<Config>,
-    frosted: u8,
-    glass: f32,
-    frosted_system_interface: bool,
-    frosted_windows: bool,
-    frosted_panel: bool,
-    frosted_applets: bool,
 
     comp_config: cosmic_config::Config,
     #[cfg(feature = "cosmic-comp-config")]
@@ -123,13 +116,8 @@ impl From<&theme_manager::Manager> for Content {
                 None,
                 theme_manager.get_color(&ContextView::AccentWindowHint),
             ),
-            font_config: font_config::Model::new(),
-            frosted: theme.frosted as u8,
-            glass: theme.alpha_map.guess_offset(),
-            frosted_system_interface: theme.frosted_system_interface,
-            frosted_windows: theme.frosted_windows,
-            frosted_panel: theme.frosted_panel,
-            frosted_applets: theme.frosted_applets,
+            font_config: font_config::Model::from_theme(theme),
+
             icons_fetched: false,
             icon_global: cosmic::config::apply_theme_global(),
             icon_fetch_handle: None,
@@ -241,8 +229,23 @@ impl Content {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
 
-                    if let Some(ref config) = self.tk_config {
+                    let cosmic_theme = cosmic::theme::active().cosmic().clone();
+                    let config = if cosmic_theme.is_dark {
+                        cosmic::cosmic_theme::Theme::dark_config()
+                    } else {
+                        cosmic::cosmic_theme::Theme::light_config()
+                    };
+                    if let Ok(config) = config {
                         _ = config.set::<String>("icon_theme", theme.id);
+                        if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
+                            if let Err(error) =
+                                store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(
+                                    cosmic_theme.is_dark,
+                                ))
+                            {
+                                tracing::warn!(?error, "failed to sync the active theme bundle");
+                            }
+                        }
                     }
                 }
             }
@@ -257,7 +260,7 @@ impl Content {
                 }
             }
             IconMessage::IconLoaded((icon_themes, icon_handles)) => {
-                let active_icon_theme = cosmic::config::icon_theme();
+                let active_icon_theme = cosmic::theme::active().cosmic().icon_theme.clone();
 
                 // Set the icon themes, and define the active icon theme.
                 self.icon_themes = icon_themes;
@@ -300,40 +303,6 @@ impl Content {
             error!(?err, "Failed to set config 'appearance_settings'");
         }
 
-        Task::none()
-    }
-
-    pub fn update_frosted_system_interface(&mut self, v: bool) -> Task<app::Message> {
-        self.frosted_system_interface = v;
-
-        Task::none()
-    }
-
-    pub fn update_frosted_windows(&mut self, v: bool) -> Task<app::Message> {
-        self.frosted_windows = v;
-
-        Task::none()
-    }
-
-    pub fn update_frosted_panel(&mut self, v: bool) -> Task<app::Message> {
-        self.frosted_panel = v;
-
-        Task::none()
-    }
-
-    pub fn update_frosted_applets(&mut self, v: bool) -> Task<app::Message> {
-        self.frosted_applets = v;
-
-        Task::none()
-    }
-
-    pub fn update_blur(&mut self, v: u8) -> Task<app::Message> {
-        self.frosted = v;
-        Task::none()
-    }
-
-    pub fn update_glass(&mut self, v: f32) -> Task<app::Message> {
-        self.glass = v;
         Task::none()
     }
 
@@ -380,6 +349,10 @@ impl Content {
         }
     }
 
+    pub fn sync_fonts(&mut self, manager: &theme_manager::Manager) {
+        self.font_config.set_theme(manager.theme());
+    }
+
     pub fn reset(&mut self, manager: &theme_manager::Manager) {
         self.application_background = ColorPickerModel::new(
             &*HEX,
@@ -419,10 +392,14 @@ impl Content {
         );
     }
 
-    pub fn context_drawer(
+    pub fn context_drawer<F>(
         &self,
         context_view: Option<ContextView>,
-    ) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        wrap: F,
+    ) -> Option<ContextDrawer<'_, crate::pages::Message>>
+    where
+        F: Fn(super::Message) -> crate::pages::Message + Clone + 'static,
+    {
         Some(match context_view? {
             ContextView::AccentWindowHint => context_drawer(
                 color_picker_context_view(
@@ -431,7 +408,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.accent_window_hint,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("window-hint-accent")),
@@ -443,7 +420,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.application_background,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("app-background")),
@@ -455,7 +432,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.container_background,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("container-background")),
@@ -467,7 +444,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.control_component,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("control-tint")),
@@ -479,7 +456,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.custom_accent,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("accent-color")),
@@ -491,7 +468,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.interface_text,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("text-tint")),
@@ -501,7 +478,7 @@ impl Content {
                     .selection_context(&ContextView::SystemFont, |name| {
                         Message::DrawerFont(FontMessage::Select(name))
                     })
-                    .map(crate::pages::Message::Appearance),
+                    .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("interface-font"))
@@ -512,7 +489,7 @@ impl Content {
                     .selection_context(&ContextView::MonospaceFont, |name| {
                         Message::DrawerFont(FontMessage::Select(name))
                     })
-                    .map(crate::pages::Message::Appearance),
+                    .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("monospace-font"))
@@ -526,10 +503,6 @@ impl Content {
             #[cfg(feature = "cosmic-comp-config")]
             ContextView::ShadowAndCorners => context_drawer(
                 self.shadow_and_corners(),
-                crate::pages::Message::CloseContextDrawer,
-            ),
-            ContextView::FrostedGlass => context_drawer(
-                self.frosted_glass(),
                 crate::pages::Message::CloseContextDrawer,
             ),
         })
@@ -614,67 +587,5 @@ impl Content {
         .width(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
-    }
-
-    pub fn frosted_glass(&self) -> Element<'_, crate::pages::Message> {
-        settings::section()
-            .add(
-                settings::item::builder(fl!("style", "frosted-panels"))
-                    .description(fl!("style", "frosted-panels-desc"))
-                    .toggler(self.frosted_panel, Message::FrostedPanel),
-            )
-            .add(
-                settings::item::builder(fl!("style", "frosted-applets"))
-                    .description(fl!("style", "frosted-applets-desc"))
-                    .toggler(self.frosted_applets, Message::FrostedApplets),
-            )
-            .add(
-                settings::item::builder(fl!("style", "frosted-system-interface"))
-                    .description(fl!("style", "frosted-system-interface-desc"))
-                    .toggler(
-                        self.frosted_system_interface,
-                        Message::FrostedSystemInterface,
-                    ),
-            )
-            .add(
-                settings::item::builder(fl!("style", "frosted-windows"))
-                    .description(fl!("style", "frosted-windows-desc"))
-                    .toggler(self.frosted_windows, Message::FrostedWindows),
-            )
-            .add(
-                settings::item::builder(fl!("style", "frosted-thickness")).flex_control({
-                    row::with_children(vec![
-                        text::body(fl!("style", "less")).into(),
-                        slider(0..=13, self.frosted, Message::Blur)
-                            .width(Length::Fill)
-                            .apply(cosmic::widget::container)
-                            .max_width(250)
-                            .into(),
-                        text::body(fl!("style", "more")).into(),
-                    ])
-                    .align_y(Alignment::Center)
-                    .spacing(8)
-                    .width(Length::Fill)
-                }),
-            )
-            .add(
-                settings::item::builder(fl!("style", "glass-opacity")).flex_control({
-                    row::with_children(vec![
-                        text::body(fl!("style", "less")).into(),
-                        slider(0.0..=1.0, self.glass, Message::Glass)
-                            .step(0.05)
-                            .width(Length::Fill)
-                            .apply(cosmic::widget::container)
-                            .max_width(250)
-                            .into(),
-                        text::body(fl!("style", "more")).into(),
-                    ])
-                    .align_y(Alignment::Center)
-                    .spacing(8)
-                    .width(Length::Fill)
-                }),
-            )
-            .apply(Element::from)
-            .map(crate::pages::Message::Appearance)
     }
 }
