@@ -1,6 +1,6 @@
 (
     palette: Light((
-        name: "cosmic-light",
+        name: "COSMIC Light",
         bright_red: "#890418FF",
         bright_green: "#00572CFF",
         bright_orange: "#792C00FF",
@@ -59,7 +59,7 @@
     primary_container_bg: None,
     secondary_container_bg: None,
     text_tint: None,
-    accent: None,
+    accent: Some("#2E496DFF"),
     success: None,
     warning: None,
     destructive: None,
@@ -87,5 +87,18 @@
         very_high_2: 0.64615,
         extremely_high: 0.62308,
         extremely_high_2: 0.6,
+    ),
+    icon_theme: "Cosmic",
+    font: (
+        family: "Open Sans",
+        weight: Normal,
+        stretch: Normal,
+        style: Normal,
+    ),
+    mono_font: (
+        family: "Noto Sans Mono",
+        weight: Normal,
+        stretch: Normal,
+        style: Normal,
     ),
 )

@@ -1,0 +1,8 @@
+(
+    output: "all",
+    source: Path("/usr/share/backgrounds/cosmic/seth-universe-blue-light.png"),
+    rotation_frequency: 3600,
+    filter_method: Lanczos,
+    scaling_mode: Zoom,
+    sampling_method: Alphanumeric,
+)

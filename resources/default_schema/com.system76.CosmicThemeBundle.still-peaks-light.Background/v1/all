@@ -1,0 +1,10 @@
+(
+    output: "all",
+    source: Path("/usr/share/backgrounds/cosmic/system76-still-peaks-light.png"),
+    filter_by_theme: false,
+    rotation_frequency: 3600,
+    transition_duration: 500,
+    filter_method: Lanczos,
+    scaling_mode: Zoom,
+    sampling_method: Alphanumeric,
+)

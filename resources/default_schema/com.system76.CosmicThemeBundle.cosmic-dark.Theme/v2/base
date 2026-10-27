@@ -1,5 +1,5 @@
 (
-    name: "cosmic-dark",
+    name: "COSMIC Dark",
     background: (
         base: "#1B1B1BFF",
         component: (
@@ -303,7 +303,7 @@
         disabled_border: "#BEBEBE80",
     ),
     palette: (
-        name: "cosmic-dark",
+        name: "COSMIC Dark",
         bright_red: "#FFA09AFF",
         bright_green: "#5EDB8CFF",
         bright_orange: "#FFA37DFF",

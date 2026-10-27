@@ -6,7 +6,9 @@ prefix := '/usr'
 usrdir := absolute_path(clean(rootdir / prefix))
 appdir := usrdir / 'share' / 'applications'
 default-schema-target := usrdir / 'share' / 'cosmic'
+backgroundsdir := usrdir / 'share' / 'backgrounds' / 'cosmic'
 iconsdir := usrdir / 'share' / 'icons' / 'hicolor'
+icon-themes-target := usrdir / 'share' / 'icons'
 
 # Installation target paths
 bin-dst := usrdir / 'bin' / name
@@ -34,6 +36,12 @@ install:
     cd target/xdgen && find * -type f -exec install -Dm0644 '{}' '{{appdir}}/{}' \;
     cd resources/default_schema && find * -type f -exec install -Dm0644 '{}' '{{default-schema-target}}/{}' \;
     cd resources/icons && find * -type f -exec install -Dm0644 '{}' '{{iconsdir}}/{}' \;
+    cd resources/backgrounds && find * -type f -exec install -Dm0644 '{}' '{{backgroundsdir}}/{}' \;
+    install -d {{icon-themes-target}}
+    tar --no-same-owner --no-same-permissions -xzf resources/icon-themes/universe-orange.tgz -C {{icon-themes-target}}
+    tar --no-same-owner --no-same-permissions -xzf resources/icon-themes/universe-red.tgz -C {{icon-themes-target}}
+    tar --no-same-owner --no-same-permissions -xzf resources/icon-themes/universe-green.tgz -C {{icon-themes-target}}
+    tar --no-same-owner --no-same-permissions -xzf resources/icon-themes/universe-blue.tgz -C {{icon-themes-target}}
 
 # Uninstalls everything (requires same arguments as given to install)
 uninstall:
@@ -41,6 +49,8 @@ uninstall:
     cd target/xdgen && find * -type f -exec rm '{{appdir}}/{}' \;
     cd resources/default_schema && find * -type f -exec rm '{{default-schema-target}}/{}' \;
     cd resources/icons && find * -type f -exec rm '{{iconsdir}}/{}' \;
+    cd resources/backgrounds && find * -type f -exec rm '{{backgroundsdir}}/{}' \;
+    rm -rf {{icon-themes-target}}/'Universe - Orange' {{icon-themes-target}}/'Universe - Red' {{icon-themes-target}}/'Universe - Green' {{icon-themes-target}}/'Universe - Blue'
 
 heaptrack *args:
     #!/usr/bin/env bash

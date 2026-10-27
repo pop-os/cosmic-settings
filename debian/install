@@ -34,12 +34,6 @@
 /usr/share/metainfo/com.system76.CosmicSettings.metainfo.xml
 /usr/share/polkit-1/actions/com.system76.CosmicSettings.Users.policy
 /usr/share/polkit-1/rules.d/cosmic-settings.rules
-/usr/share/cosmic/com.system76.CosmicTheme.Dark
-/usr/share/cosmic/com.system76.CosmicTheme.Dark.Builder
-/usr/share/cosmic/com.system76.CosmicTheme.Light
-/usr/share/cosmic/com.system76.CosmicTheme.Light.Builder
-/usr/share/cosmic/com.system76.CosmicThemeBundle.cosmic-dark
-/usr/share/cosmic/com.system76.CosmicThemeBundle.cosmic-light
-/usr/share/cosmic/com.system76.CosmicTheme.Mode
-/usr/share/cosmic/com.system76.CosmicComp/v1/input_touchpad
-/usr/share/icons/hicolor
+/usr/share/cosmic
+/usr/share/backgrounds/cosmic
+/usr/share/icons
