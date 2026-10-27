@@ -55,6 +55,13 @@ pub const DEFAULT_COLORS: &[Color] = &[
 ];
 
 pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
+    let context = cosmic_bg_config::context().expect("failed to get helper for cosmic bg config");
+    config_for(context).await
+}
+
+pub async fn config_for(
+    context: cosmic_bg_config::Context,
+) -> (Config, HashMap<String, (String, (u32, u32))>) {
     let mut displays = HashMap::new();
 
     if let Ok(list) = cosmic_randr_shell::list().await {
@@ -62,8 +69,6 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
             displays.insert(output.name, (output.model, output.physical));
         }
     }
-
-    let context = cosmic_bg_config::context().expect("failed to get helper for cosmic bg config");
 
     let config = match Config::load(&context) {
         Ok(conf) => conf,
@@ -74,6 +79,23 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
     };
 
     (config, displays)
+}
+
+pub fn upsert_entry(config: &mut Config, entry: Entry) {
+    if entry.output == "all" {
+        config.default_background = entry;
+    } else {
+        config.outputs.insert(entry.output.clone());
+        if let Some(existing) = config
+            .backgrounds
+            .iter_mut()
+            .find(|existing| existing.output == entry.output)
+        {
+            *existing = entry;
+        } else {
+            config.backgrounds.push(entry);
+        }
+    }
 }
 
 pub fn set(config: &mut Config, entry: Entry) {
