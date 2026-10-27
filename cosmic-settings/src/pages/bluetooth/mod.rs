@@ -204,7 +204,7 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         // TODO start stream for new device
         cosmic::task::future(async move {
             match zbus::Connection::system().await {

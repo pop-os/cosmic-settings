@@ -236,7 +236,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     #[cfg(not(feature = "test"))]
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         use std::time::Duration;
 
         self.cache.orientations = [

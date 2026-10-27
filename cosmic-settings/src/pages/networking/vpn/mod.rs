@@ -311,10 +311,13 @@ impl page::Page<crate::pages::Message> for Page {
             }
 
             VpnDialog::WireGuardName(device, ..) => {
-                let input = widget::text_input("", device.as_str()).on_input(|input| {
-                    Message::WireGuardDeviceInput(input.replace(|c: char| !c.is_alphanumeric(), ""))
-                })
-                .on_submit(|_| Message::WireGuardConfig);
+                let input = widget::text_input("", device.as_str())
+                    .on_input(|input| {
+                        Message::WireGuardDeviceInput(
+                            input.replace(|c: char| !c.is_alphanumeric(), ""),
+                        )
+                    })
+                    .on_submit(|_| Message::WireGuardConfig);
 
                 let primary_action =
                     widget::button::suggested(fl!("connect")).on_press(Message::WireGuardConfig);
@@ -365,7 +368,7 @@ impl page::Page<crate::pages::Message> for Page {
         )
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         let (tx, rx) = tokio::sync::mpsc::channel(4);
         self.secret_tx = Some(tx);
         if self.nm_task.is_none() {

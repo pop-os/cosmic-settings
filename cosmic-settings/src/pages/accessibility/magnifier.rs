@@ -118,7 +118,7 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.wayland_thread.is_none() {
             match wayland::spawn_wayland_connection(1) {
                 Ok((tx, mut rx)) => {

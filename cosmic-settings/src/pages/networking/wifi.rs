@@ -290,7 +290,7 @@ impl page::Page<crate::pages::Message> for Page {
         )
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         let (tx, rx) = tokio::sync::mpsc::channel(4);
         self.secret_tx = Some(tx);
         if self.nm_task.is_none() {
@@ -484,7 +484,10 @@ impl Page {
                 });
 
                 // Open the context drawer
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    None,
+                ));
             }
             Message::AddNetwork => {
                 tokio::task::spawn(super::nm_add_wifi());

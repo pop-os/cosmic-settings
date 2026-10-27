@@ -69,7 +69,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
-        _ = self.model.on_enter();
+        _ = self.model.on_load();
         Task::none()
     }
 
