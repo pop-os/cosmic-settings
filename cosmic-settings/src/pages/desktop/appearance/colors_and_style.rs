@@ -1,16 +1,16 @@
 use crate::pages::desktop::wallpaper::widgets::color_image;
 use cosmic::cosmic_theme::Spacing;
 use cosmic::cosmic_theme::palette::Srgba;
-use cosmic::iced::ContentFit;
-use cosmic::iced::core::{Alignment, Length};
-use cosmic::widget::icon::{from_name, icon};
+use cosmic::iced::core::Length;
+use cosmic::widget::icon::from_name;
 use cosmic::widget::{self, button, container, list, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_wallpaper as wallpaper;
 use std::collections::HashMap;
 
-use super::{ContextView, Message, Page};
+use super::custom::Page;
+use super::{ContextView, Message};
 
 #[allow(clippy::too_many_lines)]
 pub fn section() -> Section<crate::pages::Message> {
@@ -25,9 +25,6 @@ pub fn section() -> Section<crate::pages::Message> {
             let theme_manager = &page.theme_manager;
 
             let mut section = settings::section()
-                .title(&section.title)
-                .add(theme_mode(page, section, &label_keys))
-                .add(auto_switch(page, section, &label_keys))
                 .add(accent_color_palette(page, section, &label_keys))
                 .add(application_background(page, section, &label_keys))
                 .add(container_background(page, section, &label_keys))
@@ -56,7 +53,7 @@ pub fn section() -> Section<crate::pages::Message> {
             }
             section
                 .apply(Element::from)
-                .map(crate::pages::Message::Appearance)
+                .map(crate::pages::Message::AppearanceTheme)
         })
 }
 
@@ -170,28 +167,6 @@ fn interface_text<'a>(
     )
     .on_press(Message::DrawerOpen(ContextView::InterfaceText))
 }
-fn auto_switch<'a>(
-    page: &Page,
-    section: &'a Section<crate::pages::Message>,
-    labels: &HashMap<String, usize>,
-) -> list::ListButton<'a, Message> {
-    let descriptions = &section.descriptions;
-
-    settings::item::builder(&descriptions[labels["auto_switch"]])
-        .description(
-            if !page.day_time && page.theme_manager.mode().is_dark {
-                &descriptions[labels["auto_switch_desc/sunrise"]]
-            } else if page.day_time && !page.theme_manager.mode().is_dark {
-                &descriptions[labels["auto_switch_desc/sunset"]]
-            } else if page.day_time && page.theme_manager.mode().is_dark {
-                &descriptions[labels["auto_switch_desc/next-sunrise"]]
-            } else {
-                &descriptions[labels["auto_switch_desc/next-sunset"]]
-            }
-            .clone(),
-        )
-        .toggler(page.theme_manager.mode().auto_switch, Message::Autoswitch)
-}
 
 fn accent_color_palette<'a>(
     page: &Page,
@@ -245,63 +220,6 @@ fn accent_color_palette<'a>(
     .spacing(space_xxs)
 }
 
-fn theme_mode<'a>(
-    page: &Page,
-    section: &'a Section<crate::pages::Message>,
-    labels: &HashMap<String, usize>,
-) -> impl Into<Element<'a, Message>> {
-    let descriptions = &section.descriptions;
-    let dark_mode_illustration = from_name("illustration-appearance-mode-dark").handle();
-    let light_mode_illustration = from_name("illustration-appearance-mode-light").handle();
-
-    container(
-        cosmic::iced::widget::row![
-            cosmic::iced::widget::column![
-                button::custom_image_button(
-                    icon(dark_mode_illustration)
-                        .content_fit(ContentFit::Contain)
-                        .width(Length::Fill)
-                        .height(Length::Fixed(100.0)),
-                    None
-                )
-                .class(button::ButtonClass::Image)
-                .selected(page.theme_manager.mode().is_dark)
-                .on_press(super::Message::DarkMode(true))
-                .padding(1)
-                .apply(widget::container)
-                .max_width(191),
-                text::body(&descriptions[labels["dark"]])
-            ]
-            .spacing(8)
-            .width(Length::FillPortion(1))
-            .align_x(Alignment::Center),
-            cosmic::iced::widget::column![
-                button::custom_image_button(
-                    icon(light_mode_illustration)
-                        .content_fit(ContentFit::Contain)
-                        .width(Length::Fill)
-                        .height(Length::Fixed(100.0)),
-                    None
-                )
-                .class(button::ButtonClass::Image)
-                .selected(!page.theme_manager.mode().is_dark)
-                .on_press(super::Message::DarkMode(false))
-                .padding(1)
-                .apply(widget::container)
-                .max_width(191),
-                text::body(&descriptions[labels["light"]])
-            ]
-            .spacing(8)
-            .width(Length::FillPortion(1))
-            .align_x(Alignment::Center)
-        ]
-        .spacing(8)
-        .width(Length::Fixed(478.0))
-        .align_y(Alignment::Center),
-    )
-    .center_x(Length::Fill)
-}
-
 /// A button for selecting a color or gradient.
 pub fn color_button<'a, Message: 'a + Clone>(
     on_press: Option<Message>,
@@ -333,26 +251,6 @@ fn i18n() -> (slab::Slab<String>, HashMap<String, usize>) {
     let mut descriptions = slab::Slab::new();
     let keys: HashMap<String, usize> = HashMap::from([
         ("auto".into(), descriptions.insert(fl!("auto"))),
-        (
-            "auto_switch".into(),
-            descriptions.insert(fl!("auto-switch")),
-        ),
-        (
-            "auto_switch_desc/sunrise".into(),
-            descriptions.insert(fl!("auto-switch", "sunrise")),
-        ),
-        (
-            "auto_switch_desc/sunset".into(),
-            descriptions.insert(fl!("auto-switch", "sunset")),
-        ),
-        (
-            "auto_switch_desc/next-sunrise".into(),
-            descriptions.insert(fl!("auto-switch", "next-sunrise")),
-        ),
-        (
-            "auto_switch_desc/next-sunset".into(),
-            descriptions.insert(fl!("auto-switch", "next-sunset")),
-        ),
         (
             "accent_color".into(),
             descriptions.insert(fl!("accent-color")),
@@ -387,8 +285,6 @@ fn i18n() -> (slab::Slab<String>, HashMap<String, usize>) {
             "window_hint".into(),
             descriptions.insert(fl!("window-hint-accent")),
         ),
-        ("dark".into(), descriptions.insert(fl!("dark"))),
-        ("light".into(), descriptions.insert(fl!("light"))),
     ]);
 
     (descriptions, keys)

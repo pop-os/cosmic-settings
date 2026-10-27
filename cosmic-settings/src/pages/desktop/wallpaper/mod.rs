@@ -144,6 +144,9 @@ pub struct Page {
     /// Whether to show the tab_bar or not.
     show_tab_bar: bool,
 
+    /// Bundle mode whose active look receives background edits from the appearance page.
+    target_mode: Option<cosmic_theme_bundle_config::Mode>,
+
     /// The display that is currently being configured.
     ///
     /// If set to `None`, all displays will have the same wallpaper.
@@ -184,6 +187,9 @@ pub struct Page {
 
     /// When set, applys a config update after images are loaded.
     update_config: Option<(usize, HashMap<String, (String, (u32, u32))>)>,
+
+    /// Whether the next update should write the selected wallpaper to config.
+    config_dirty: bool,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -210,8 +216,14 @@ impl page::Page<crate::pages::Message> for Page {
             return Task::none();
         }
 
+        let target_mode = self.target_mode;
+        let context = target_mode
+            .and_then(crate::pages::desktop::appearance::theme_bundles::display_background);
         let (task, on_enter_handle) = Task::future(async move {
-            let (service_config, displays) = wallpaper::config().await;
+            let (service_config, displays) = match context {
+                Some(context) => wallpaper::config_for(context).await,
+                None => wallpaper::config().await,
+            };
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
@@ -225,10 +237,12 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        self.target_mode = None;
         // Reclaim memory
         self.cached_display_handle = None;
         self.selection = Context::default();
         self.outputs = SingleSelectModel::default();
+        self.config_dirty = false;
 
         // Cancel the on_enter task if it was running.
         if let Some(handle) = self.on_enter_handle.take() {
@@ -285,6 +299,7 @@ impl Default for Page {
             on_enter_handle: None,
             context_view: None,
             show_tab_bar: false,
+            target_mode: None,
             active_output: None,
             cached_display_handle: None,
             categories: {
@@ -344,6 +359,7 @@ impl Default for Page {
             selected_rotation,
             selection: Context::default(),
             update_config: None,
+            config_dirty: false,
         };
 
         page.assign_recent_folders();
@@ -353,6 +369,10 @@ impl Default for Page {
 }
 
 impl Page {
+    pub fn set_target_mode(&mut self, mode: cosmic_theme_bundle_config::Mode) {
+        self.target_mode = Some(mode);
+    }
+
     fn get_selected_rotation(rotation_frequency: u64) -> usize {
         match rotation_frequency {
             0..=300 => MINUTES_5,
@@ -502,7 +522,32 @@ impl Page {
             Choice::Color(ref color) => Entry::new(output, wallpaper::Source::Color(color.clone())),
         };
 
-        wallpaper::set(&mut self.wallpaper_service_config, entry);
+        let target = self.target_mode;
+        let screen_mode = crate::pages::desktop::appearance::theme_bundles::on_screen_mode();
+        let bundle_only = target.is_some_and(|mode| mode != screen_mode);
+        if bundle_only {
+            let mode = target.unwrap();
+            wallpaper::upsert_entry(&mut self.wallpaper_service_config, entry.clone());
+            if let Err(error) =
+                crate::pages::desktop::appearance::theme_bundles::set_active_background(
+                    mode,
+                    &self.wallpaper_service_config,
+                )
+            {
+                tracing::warn!(
+                    ?error,
+                    "failed to update the active theme bundle background"
+                );
+            }
+        } else {
+            wallpaper::set(&mut self.wallpaper_service_config, entry);
+            let mode = target.unwrap_or(screen_mode);
+            if let Err(error) =
+                crate::pages::desktop::appearance::theme_bundles::sync_active_background_mode(mode)
+            {
+                tracing::warn!(?error, "failed to sync the active theme bundle background");
+            }
+        }
     }
 
     /// Locate the ID of a wallpaper that's already stored in memory
@@ -577,6 +622,7 @@ impl Page {
                     let _ = self.config.set_current_folder(None);
                 } else {
                     self.select_first_wallpaper();
+                    self.config_dirty = true;
                 }
             }
 
@@ -668,7 +714,6 @@ impl Page {
             entry
                 .sampling_method(old_entry.sampling_method)
                 .filter_method(old_entry.filter_method.clone())
-                .filter_by_theme(old_entry.filter_by_theme)
         } else {
             entry
         }
@@ -773,7 +818,6 @@ impl Page {
                     remaining -= 1;
                     if remaining == 0 {
                         self.wallpaper_service_config_update(displays);
-                        self.config_apply();
                     } else {
                         self.update_config = Some((remaining, displays));
                     }
@@ -812,11 +856,13 @@ impl Page {
             Message::ColorSelect(color) => {
                 self.selection.active = Choice::Color(color);
                 self.cached_display_handle = None;
+                self.config_dirty = true;
             }
 
             Message::Fit(selection) => {
                 self.selected_fit = selection;
                 self.cache_display_image();
+                self.config_dirty = true;
             }
 
             Message::Output(id) => {
@@ -828,22 +874,26 @@ impl Page {
                 if let Err(err) = self.change_rotation_frequency(pos) {
                     tracing::warn!("Failed to save rotation frequency: {err}");
                 }
+                self.config_dirty = true;
             }
 
             Message::SameWallpaper(value) => {
                 self.wallpaper_service_config.same_on_all = value;
                 self.wallpaper_service_config.backgrounds.clear();
+                self.config_dirty = true;
             }
 
             Message::Select(id) => {
                 self.selection.active = Choice::Wallpaper(id);
                 self.cache_display_image();
+                self.config_dirty = true;
             }
 
             Message::Slideshow(enable) => {
                 if enable {
                     self.selection.active = Choice::Slideshow;
                     self.cache_display_image();
+                    self.config_dirty = true;
                 } else {
                     if let Some(output) = self.config_output()
                         && let Some(Source::Path(path)) = self.config.current_image(output)
@@ -998,7 +1048,6 @@ impl Page {
 
                 if custom_images == 0 {
                     self.wallpaper_service_config_update(update.displays);
-                    self.config_apply();
                 } else {
                     // Make note of how many images are to be loaded, with the display update for the service config.
                     self.update_config = Some((custom_images, update.displays));
@@ -1031,7 +1080,10 @@ impl Page {
             }
         }
 
-        self.config_apply();
+        if self.config_dirty {
+            self.config_dirty = false;
+            self.config_apply();
+        }
         Task::none()
     }
 

@@ -72,9 +72,7 @@ impl From<(Option<Config>, Option<Config>, Option<Vec<Srgba>>)> for ThemeCustomi
             .destructive(theme.destructive.base.color)
             .spacing(theme.spacing)
             .success(theme.success.base.color)
-            .warning(theme.warning.base.color)
-            .neutral_tint(theme.palette.neutral_5.color)
-            .text_tint(theme.background(false).on.color);
+            .warning(theme.warning.base.color);
 
         theme_builder.gaps = theme.gaps;
 
@@ -181,6 +179,14 @@ impl Manager {
         };
 
         let mut data = std::iter::once(current).chain(other);
+        let mut sync_modes = vec![cosmic_theme_bundle_config::Mode::from_is_dark(
+            self.mode.0.is_dark,
+        )];
+        if let ThemeStaged::Both = stage {
+            sync_modes.push(cosmic_theme_bundle_config::Mode::from_is_dark(
+                !self.mode.0.is_dark,
+            ));
+        }
 
         cosmic::task::future(async move {
             for (builder, config) in data.by_ref() {
@@ -238,7 +244,7 @@ impl Manager {
                         _ = tx.set("transparent_secondary", new.secondary(true).clone());
                     }
                     if cur.shade != new.shade {
-                        _ = tx.set("shade", new.shade.clone());
+                        _ = tx.set("shade", new.shade);
                     }
                     if cur.success != new.success {
                         _ = tx.set("success", new.success.clone());
@@ -253,12 +259,20 @@ impl Manager {
                         _ = tx.set("warning_button", new.warning_button.clone());
                     }
                     if cur.window_hint != new.window_hint {
-                        _ = tx.set("window_hint", new.window_hint.clone());
+                        _ = tx.set("window_hint", new.window_hint);
                     }
                     if cur.accent_text != new.accent_text {
-                        _ = tx.set("accent_text", new.accent_text.clone());
+                        _ = tx.set("accent_text", new.accent_text);
                     }
                     _ = tx.commit();
+                }
+            }
+
+            if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
+                for mode in sync_modes {
+                    if let Err(err) = store.sync_active(mode) {
+                        tracing::warn!(?err, ?mode, "failed to sync the active theme bundle");
+                    }
                 }
             }
 
@@ -551,6 +565,10 @@ impl ThemeCustomizer {
         let config = self.builder.1.as_ref()?;
 
         self.builder.0.set_text_tint(config, color).ok()?;
+        self.theme
+            .0
+            .set_text_tint(self.theme.1.as_ref()?, color)
+            .ok()?;
         Some(ThemeStaged::Current)
     }
 
@@ -558,6 +576,10 @@ impl ThemeCustomizer {
         let config = self.builder.1.as_ref()?;
 
         self.builder.0.set_neutral_tint(config, color).ok()?;
+        self.theme
+            .0
+            .set_control_tint(self.theme.1.as_ref()?, color)
+            .ok()?;
         Some(ThemeStaged::Current)
     }
 

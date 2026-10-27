@@ -3,7 +3,7 @@
 
 use std::sync::{Arc, LazyLock};
 
-use cosmic::config::{CosmicTk, FontConfig};
+use cosmic::cosmic_theme::{FontConfig, Theme};
 use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigSet;
 
@@ -14,8 +14,8 @@ use super::{ContextView, Message, drawer};
 
 pub static FONT_SEARCH: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("FONT_SEARCH"));
 
-const INTERFACE_FONT: &str = "interface_font";
-const MONOSPACE_FONT: &str = "monospace_font";
+const FONT: &str = "font";
+const MONO_FONT: &str = "mono_font";
 
 pub fn load_font_families() -> (Vec<Arc<str>>, Vec<Arc<str>>) {
     let mut font_system = cosmic::iced::advanced::graphics::text::font_system()
@@ -78,14 +78,23 @@ impl Default for Model {
 
 impl Model {
     pub fn new() -> Model {
+        Model::from_theme(cosmic::theme::active().cosmic())
+    }
+
+    pub fn from_theme(theme: &Theme) -> Model {
         Model {
             font_filter: Vec::new(),
             font_search: String::new(),
             interface_font_families: Vec::new(),
-            interface_font: cosmic::config::interface_font(),
+            interface_font: theme.font.clone(),
             monospace_font_families: Vec::new(),
-            monospace_font: cosmic::config::monospace_font(),
+            monospace_font: theme.mono_font.clone(),
         }
+    }
+
+    pub fn set_theme(&mut self, theme: &Theme) {
+        self.interface_font = theme.font.clone();
+        self.monospace_font = theme.mono_font.clone();
     }
 
     pub fn reset(&mut self) {
@@ -123,7 +132,7 @@ impl Model {
                     stretch: cosmic::iced::font::Stretch::Normal,
                 };
 
-                update_config(MONOSPACE_FONT, self.monospace_font.clone());
+                update_theme(MONO_FONT, self.monospace_font.clone());
                 None
             }
             ContextView::SystemFont => {
@@ -133,7 +142,7 @@ impl Model {
                     style: cosmic::iced::font::Style::Normal,
                     stretch: cosmic::iced::font::Stretch::Normal,
                 };
-                update_config(INTERFACE_FONT, self.interface_font.clone());
+                update_theme(FONT, self.interface_font.clone());
                 None
             }
             _ => None,
@@ -213,8 +222,21 @@ impl Model {
     }
 }
 
-fn update_config(variant: &str, font: FontConfig) {
-    if let Ok(config) = CosmicTk::config() {
-        _ = config.set(variant, font);
+fn update_theme(key: &str, font: FontConfig) {
+    let theme = cosmic::theme::active().cosmic().clone();
+    let config = if theme.is_dark {
+        Theme::dark_config()
+    } else {
+        Theme::light_config()
+    };
+    if let Ok(config) = config {
+        _ = config.set(key, font);
+        if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
+            if let Err(error) = store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(
+                theme.is_dark,
+            )) {
+                tracing::warn!(?error, "failed to sync the active theme bundle");
+            }
+        }
     }
 }
