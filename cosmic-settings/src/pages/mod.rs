@@ -38,6 +38,8 @@ pub enum Message {
     #[cfg(feature = "page-about")]
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
+    AppearanceTheme(desktop::appearance::Message),
+    AppearancePreview(Option<cosmic::theme::Theme>),
     Applications(applications::Message),
     #[cfg(feature = "page-bluetooth")]
     Bluetooth(bluetooth::Message),

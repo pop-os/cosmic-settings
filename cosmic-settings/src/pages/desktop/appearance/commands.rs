@@ -58,6 +58,12 @@ pub fn import_theme(path: &Path) -> color_eyre::Result<()> {
         .apply_builder()
         .apply_theme();
 
+    if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+        && let Err(err) = store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(is_dark))
+    {
+        tracing::warn!(?err, "failed to sync the active theme bundle");
+    }
+
     println!(
         "Successfully imported {} theme from: {}",
         mode_str,
