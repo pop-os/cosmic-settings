@@ -1,5 +1,6 @@
+use cosmic::iced::core::gradient::Linear;
 use cosmic::iced::core::text::Wrapping;
-use cosmic::iced::core::{Alignment, Length};
+use cosmic::iced::core::{Alignment, Background, Border, Color, Degrees, Length};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{button, container, row, settings, slider, text};
 use cosmic::{Apply, Element};
@@ -13,6 +14,26 @@ pub enum Frosted {
     Frosted,
     Glassy,
     Custom,
+}
+
+fn gradient_container() -> cosmic::theme::Container<'static> {
+    cosmic::theme::Container::custom(|theme| {
+        let linear = Linear::new(Degrees(242.4))
+            .add_stop(0.0, Color::from_rgb8(0x82, 0xA1, 0xCA))
+            .add_stop(0.5, Color::from_rgb8(0xA0, 0x82, 0xB1))
+            .add_stop(1.0, Color::from_rgb8(0x3E, 0xB0, 0xBE));
+
+        container::Style {
+            background: Some(Background::Gradient(cosmic::iced::core::Gradient::Linear(
+                linear,
+            ))),
+            border: Border {
+                radius: theme.cosmic().radius_s().into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    })
 }
 
 #[allow(clippy::too_many_lines)]
@@ -63,7 +84,8 @@ pub fn section() -> Section<crate::pages::Message> {
                                 .on_press(Message::Frosted(Frosted::Frosted))
                                 .width(Length::Fill)
                                 .apply(container)
-                                .width(Length::Fixed(191.0)),
+                                .width(Length::Fixed(191.0))
+                                .class(gradient_container()),
                                 text::body(&descriptions[frosty]).wrapping(Wrapping::None)
                             ]
                             .spacing(8)
@@ -89,7 +111,8 @@ pub fn section() -> Section<crate::pages::Message> {
                                 .on_press(Message::Frosted(Frosted::Glassy))
                                 .width(Length::Fill)
                                 .apply(container)
-                                .width(Length::Fixed(191.0)),
+                                .width(Length::Fixed(191.0))
+                                .class(gradient_container()),
                                 text::body(&descriptions[glassy]).wrapping(Wrapping::None)
                             ]
                             .spacing(8)
@@ -116,7 +139,8 @@ pub fn section() -> Section<crate::pages::Message> {
                                 .on_press(Message::Frosted(Frosted::Custom))
                                 .width(Length::Fill)
                                 .apply(container)
-                                .width(Length::Fixed(191.0)),
+                                .width(Length::Fixed(191.0))
+                                .class(gradient_container()),
                                 text::body(&descriptions[custom]).wrapping(Wrapping::None)
                             ]
                             .spacing(8)
