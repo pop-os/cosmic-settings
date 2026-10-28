@@ -407,23 +407,61 @@ impl Page {
         }
     }
 
+    fn target_slideshow_image(&self, output: &str) -> Option<PathBuf> {
+        let mode = self.target_mode?;
+        let context = crate::pages::desktop::appearance::theme_bundles::display_background(mode)?;
+        let config = cosmic_bg_config::Config::load(&context).ok()?;
+        let entry = if config.same_on_all {
+            &config.default_background
+        } else {
+            config.entry(output).unwrap_or(&config.default_background)
+        };
+
+        match &entry.source {
+            Source::Path(path) => wallpaper::preview_path(path),
+            Source::Color(_) => None,
+        }
+    }
+
+    fn active_image_path(&self, output: &str) -> Option<PathBuf> {
+        let inactive_mode = self.target_mode.is_some_and(|mode| {
+            mode != crate::pages::desktop::appearance::theme_bundles::on_screen_mode()
+        });
+
+        if inactive_mode {
+            self.target_slideshow_image(output)
+        } else {
+            match self.config.current_image(output)? {
+                Source::Path(path) => Some(path),
+                Source::Color(_) => None,
+            }
+        }
+    }
+
     fn cache_display_image(&mut self) {
         self.cached_display_handle = None;
 
         let choice = match self.selection.active {
             Choice::Wallpaper(id) => self.selection.display_images.get(id),
 
-            Choice::Slideshow => self
-                .config_output()
-                .and_then(|output| match self.config.current_image(output)? {
-                    Source::Path(path) => {
-                        let id = self.wallpaper_id_from_path(&path)?;
-                        Some(&self.selection.display_images[id])
-                    }
+            Choice::Slideshow => {
+                let inactive_mode = self.target_mode.is_some_and(|mode| {
+                    mode != crate::pages::desktop::appearance::theme_bundles::on_screen_mode()
+                });
 
-                    Source::Color(_color) => None,
-                })
-                .or(self.selection.display_images.values().next()),
+                self.config_output()
+                    .and_then(|output| self.active_image_path(output))
+                    .as_ref()
+                    .and_then(|path| self.wallpaper_id_from_path(path))
+                    .and_then(|id| self.selection.display_images.get(id))
+                    .or_else(|| {
+                        if inactive_mode {
+                            None
+                        } else {
+                            self.selection.display_images.values().next()
+                        }
+                    })
+            }
 
             Choice::Color(_) => None,
         };
@@ -484,7 +522,23 @@ impl Page {
 
     /// Applies the current settings to cosmic-bg.
     pub fn config_apply(&mut self) {
+        let mode = self
+            .target_mode
+            .unwrap_or_else(crate::pages::desktop::appearance::theme_bundles::on_screen_mode);
+        let Some(context) =
+            crate::pages::desktop::appearance::theme_bundles::display_background(mode)
+        else {
+            tracing::warn!("failed to get background config for mode");
+            return;
+        };
+
+        // Keep the toggle effective even if the current selection cannot be written.
+        if let Err(error) = context.set_same_on_all(self.wallpaper_service_config.same_on_all) {
+            tracing::warn!(?error, "failed to set the same-on-all background setting");
+        }
+
         let Some(output) = self.config_output().map(String::from) else {
+            self.reload_background_config(&context);
             return;
         };
 
@@ -504,7 +558,10 @@ impl Page {
             Choice::Slideshow => {
                 match self.config_wallpaper_entry(output, self.config.current_folder()) {
                     Some(entry) => entry,
-                    None => return,
+                    None => {
+                        self.reload_background_config(&context);
+                        return;
+                    }
                 }
             }
 
@@ -512,9 +569,13 @@ impl Page {
                 if let Some(path) = self.selection.paths.get(key) {
                     match self.config_wallpaper_entry(output, path.clone()) {
                         Some(entry) => entry,
-                        None => return,
+                        None => {
+                            self.reload_background_config(&context);
+                            return;
+                        }
                     }
                 } else {
+                    self.reload_background_config(&context);
                     return;
                 }
             }
@@ -522,32 +583,50 @@ impl Page {
             Choice::Color(ref color) => Entry::new(output, wallpaper::Source::Color(color.clone())),
         };
 
-        let target = self.target_mode;
-        let screen_mode = crate::pages::desktop::appearance::theme_bundles::on_screen_mode();
-        let bundle_only = target.is_some_and(|mode| mode != screen_mode);
-        if bundle_only {
-            let mode = target.unwrap();
-            wallpaper::upsert_entry(&mut self.wallpaper_service_config, entry.clone());
-            if let Err(error) =
-                crate::pages::desktop::appearance::theme_bundles::set_active_background(
-                    mode,
-                    &self.wallpaper_service_config,
-                )
-            {
-                tracing::warn!(
-                    ?error,
-                    "failed to update the active theme bundle background"
-                );
-            }
-        } else {
-            wallpaper::set(&mut self.wallpaper_service_config, entry);
-            let mode = target.unwrap_or(screen_mode);
-            if let Err(error) =
-                crate::pages::desktop::appearance::theme_bundles::sync_active_background_mode(mode)
-            {
-                tracing::warn!(?error, "failed to sync the active theme bundle background");
-            }
+        wallpaper::set(&mut self.wallpaper_service_config, &context, entry);
+        self.reload_background_config(&context);
+        if !self.wallpaper_service_config.same_on_all {
+            self.seed_missing_output_entries(&context);
         }
+        if let Err(error) =
+            crate::pages::desktop::appearance::theme_bundles::sync_active_background_mode(mode)
+        {
+            tracing::warn!(?error, "failed to sync the active theme bundle background");
+        }
+    }
+
+    fn seed_missing_output_entries(&mut self, context: &cosmic_bg_config::Context) {
+        let template = self.wallpaper_service_config.default_background.clone();
+        let outputs: Vec<String> = self
+            .outputs
+            .iter()
+            .filter_map(|id| {
+                self.outputs
+                    .data::<OutputName>(id)
+                    .map(|name| name.0.clone())
+            })
+            .collect();
+
+        let mut changed = false;
+        for output in outputs {
+            if self.wallpaper_service_config.entry(&output).is_some() {
+                continue;
+            }
+            let mut entry = template.clone();
+            entry.output = output;
+            wallpaper::set(&mut self.wallpaper_service_config, context, entry);
+            changed = true;
+        }
+        if changed {
+            self.reload_background_config(context);
+        }
+    }
+
+    fn reload_background_config(&mut self, context: &cosmic_bg_config::Context) {
+        if let Ok(config) = wallpaper::Config::load(context) {
+            self.wallpaper_service_config = config;
+        }
+        self.cache_display_image();
     }
 
     /// Locate the ID of a wallpaper that's already stored in memory
@@ -879,7 +958,10 @@ impl Page {
 
             Message::SameWallpaper(value) => {
                 self.wallpaper_service_config.same_on_all = value;
-                self.wallpaper_service_config.backgrounds.clear();
+                if value {
+                    self.wallpaper_service_config.backgrounds.clear();
+                    self.wallpaper_service_config.outputs.clear();
+                }
                 self.config_dirty = true;
             }
 
@@ -896,7 +978,7 @@ impl Page {
                     self.config_dirty = true;
                 } else {
                     if let Some(output) = self.config_output()
-                        && let Some(Source::Path(path)) = self.config.current_image(output)
+                        && let Some(path) = self.active_image_path(output)
                         && let Some(entity) = self.wallpaper_id_from_path(&path)
                         && let Some(entry) = self.config_wallpaper_entry(output.to_owned(), path)
                     {
@@ -906,6 +988,7 @@ impl Page {
                     }
 
                     self.select_first_wallpaper();
+                    self.config_dirty = true;
                 }
             }
 
@@ -1000,21 +1083,21 @@ impl Page {
                         _ => false,
                     };
                     if fix_active {
-                        self.selection.active =
-                            match self.wallpaper_service_config.default_background.source {
-                                Source::Path(ref path) if !path.is_dir() => self
-                                    .selection
-                                    .paths
-                                    .iter()
-                                    .find(|(_key, valid_path)| path == valid_path.as_path())
-                                    .map(|(key, _)| Choice::Wallpaper(key))
-                                    .unwrap_or_default(),
-                                Source::Path(_) => Choice::Slideshow,
-                                Source::Color(ref color) => {
-                                    self.selection.add_custom_color(color.clone());
-                                    Choice::Color(color.clone())
-                                }
+                        let source = self.active_background().source.clone();
+                        self.selection.active = match source {
+                            Source::Path(ref path) if !path.is_dir() => self
+                                .selection
+                                .paths
+                                .iter()
+                                .find(|(_key, valid_path)| path == valid_path.as_path())
+                                .map(|(key, _)| Choice::Wallpaper(key))
+                                .unwrap_or_default(),
+                            Source::Path(_) => Choice::Slideshow,
+                            Source::Color(ref color) => {
+                                self.selection.add_custom_color(color.clone());
+                                Choice::Color(color.clone())
                             }
+                        }
                     }
                 }
                 WallpaperEvent::Loaded => self.cache_display_image(),
@@ -1087,6 +1170,16 @@ impl Page {
         Task::none()
     }
 
+    fn active_background(&self) -> &Entry {
+        if self.wallpaper_service_config.same_on_all {
+            &self.wallpaper_service_config.default_background
+        } else {
+            self.config_output()
+                .and_then(|output| self.wallpaper_service_config.entry(output))
+                .unwrap_or(&self.wallpaper_service_config.default_background)
+        }
+    }
+
     /// Selects the given wallpaper entry.
     fn select_wallpaper_entry(&mut self, entry: &wallpaper::Entry) {
         match entry.source {
@@ -1096,6 +1189,9 @@ impl Page {
                     self.cache_display_image();
                 } else if let Some(entity) = self.wallpaper_id_from_path(path) {
                     self.select_wallpaper(entry, entity, path.is_dir());
+                } else {
+                    self.selection.active = Choice::default();
+                    self.cache_display_image();
                 }
             }
 
@@ -1256,17 +1352,11 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut children = Vec::with_capacity(3);
 
             let mut show_slideshow_toggle = true;
-            // Slideshow is enabled if the background path from cosmic-bg is a directory
-            let mut slideshow_enabled = page
-                .config_output()
-                .and_then(|output| page.wallpaper_service_config.entry(output))
-                .is_some_and(|entry| {
-                    if let Source::Path(path) = &entry.source {
-                        path.is_dir()
-                    } else {
-                        false
-                    }
-                });
+            // Slideshow is enabled if the effective background is a directory.
+            let mut slideshow_enabled = match &page.active_background().source {
+                Source::Path(path) => path.is_dir(),
+                Source::Color(_) => false,
+            };
 
             children.push(crate::widget::display_container(
                 match page.selection.active {

@@ -203,13 +203,12 @@ impl Page {
                             .save_file()
                             .await;
 
-                        let path = match chosen {
-                            Ok(file) => file
-                                .0
-                                .uris()
-                                .first()
-                                .filter(|uri| uri.scheme() == "file")
-                                .and_then(|uri| uri.to_file_path().ok()),
+                        let path_res = match chosen {
+                            Ok(file) => file.url().and_then(|url| {
+                                (url.scheme() == "file")
+                                    .then(|| url.to_file_path().ok())
+                                    .flatten()
+                            }),
                             Err(why) => {
                                 tracing::error!(
                                     ?why,
@@ -218,7 +217,7 @@ impl Page {
                                 None
                             }
                         };
-                        here(Message::ExportThemeFile(path))
+                        here(Message::ExportThemeFile(path_res))
                     }));
                 }
             }
