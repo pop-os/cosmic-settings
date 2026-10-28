@@ -516,6 +516,10 @@ super-key = Super key action
     .applications = Open Applications
     .none = None
 
+window-decorations = Window decoration preference
+    .client-side = Prefer Client Side
+    .server-side = Prefer Server Side
+
 edge-gravity = Floating windows gravitate to nearby edges
 
 window-controls = Window controls

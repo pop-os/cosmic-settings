@@ -5,7 +5,7 @@ use cosmic::iced::Length;
 use cosmic::widget::{self, settings};
 use cosmic::{Apply, Element, surface};
 
-use cosmic_comp_config::CosmicCompConfig;
+use cosmic_comp_config::{CosmicCompConfig, DecorationPreference};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
 use cosmic_settings_page::{self as page, Section, section};
@@ -24,12 +24,15 @@ pub enum Message {
     ShowMaximizeButton(bool),
     ShowMinimizeButton(bool),
     SetEdgeSnapThreshold(u32),
+    SetDecorationPreference(usize),
     Surface(surface::Action<crate::app::Message>),
 }
 
 pub struct Page {
     pub super_key_selections: Vec<String>,
     pub super_key_active: Option<usize>,
+    window_decoration_selections: Vec<String>,
+    decoration_preference: DecorationPreference,
     comp_config: cosmic_config::Config,
     focus_follows_cursor: bool,
     focus_follows_cursor_delay: u64,
@@ -86,6 +89,15 @@ impl Default for Page {
             })
             .unwrap_or(0);
 
+        let decoration_preference = comp_config
+            .get("decoration_preference")
+            .inspect_err(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'decoration_preference'")
+                }
+            })
+            .unwrap_or_default();
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -94,6 +106,11 @@ impl Default for Page {
                 fl!("super-key", "none"),
             ],
             super_key_active: super_key_active_config(),
+            window_decoration_selections: vec![
+                fl!("window-decorations", "client-side"),
+                fl!("window-decorations", "server-side"),
+            ],
+            decoration_preference,
             comp_config,
             focus_follows_cursor,
             focus_follows_cursor_delay,
@@ -193,6 +210,18 @@ impl Page {
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
             }
+            Message::SetDecorationPreference(id) => {
+                let preference = match id {
+                    0 => DecorationPreference::ClientSide,
+                    1 => DecorationPreference::ServerSide,
+                    _ => return cosmic::iced::Task::none(),
+                };
+
+                self.decoration_preference = preference;
+                if let Err(err) = self.comp_config.set("decoration_preference", preference) {
+                    error!(?err, "Failed to set config 'decoration_preference'");
+                }
+            }
         };
         cosmic::iced::Task::none()
     }
@@ -270,6 +299,9 @@ pub fn window_controls() -> Section<crate::pages::Message> {
         maximize = fl!("window-controls", "maximize");
         minimize = fl!("window-controls", "minimize");
         active_window_hint = fl!("window-controls", "active-window-hint");
+        window_decoration = fl!("window-decorations");
+        _client_side = fl!("window-decorations", "client-side");
+        _server_side = fl!("window-decorations", "server-side");
     });
 
     Section::default()
@@ -292,6 +324,20 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     settings::item::builder(&descriptions[minimize])
                         .toggler(cosmic::config::show_minimize(), Message::ShowMinimizeButton),
                 )
+                .add(settings::item::builder(&descriptions[window_decoration]).control(
+                    widget::dropdown::popup_dropdown(
+                        &page.window_decoration_selections,
+                        into_decoration_preference(page.decoration_preference),
+                        Message::SetDecorationPreference,
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| {
+                            crate::app::Message::PageMessage(
+                                crate::pages::Message::WindowManagement(a),
+                            )
+                        },
+                    ),
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })
@@ -348,6 +394,13 @@ fn super_key_active_config() -> Option<usize> {
             Action::System(shortcuts::action::System::AppLibrary) => Some(2),
             _ => None,
         })
+}
+
+fn into_decoration_preference(preference: DecorationPreference) -> Option<usize> {
+    match preference {
+        DecorationPreference::ClientSide => Some(0),
+        DecorationPreference::ServerSide => Some(1),
+    }
 }
 
 fn super_key_set(action: Option<shortcuts::action::System>) {
