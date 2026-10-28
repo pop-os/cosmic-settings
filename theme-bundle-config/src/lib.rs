@@ -8,13 +8,132 @@ use std::sync::OnceLock;
 use std::{fs, io};
 
 use cosmic_config::{Config, ConfigGet, ConfigSet, CosmicConfigEntry};
-use cosmic_theme::{DARK_THEME_ID, Theme, ThemeBuilder, ThemeMode};
+use cosmic_theme::{
+    DARK_THEME_BUILDER_ID, DARK_THEME_ID, LIGHT_THEME_BUILDER_ID, LIGHT_THEME_ID, Theme,
+    ThemeBuilder, ThemeMode,
+};
 
+pub mod bundle;
 pub mod transfer;
 
 pub const MODE_ID: &str = "com.system76.CosmicTheme.Mode";
 
-pub use cosmic_theme::bundle::{BACKGROUND_VERSION, Mode, NAME, Part};
+/// Prefix for all theme bundle config IDs.
+pub const NAME: &str = "com.system76.CosmicThemeBundle";
+
+/// Version of the live background config.
+pub const BACKGROUND_VERSION: u64 = cosmic_bg_config::VERSION;
+
+/// The theme mode a bundle applies to.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+)]
+pub enum Mode {
+    /// Dark mode.
+    Dark,
+    /// Light mode.
+    Light,
+}
+
+impl Mode {
+    /// Every mode.
+    pub const ALL: [Self; 2] = [Self::Dark, Self::Light];
+
+    /// The theme config ID for this mode.
+    pub const fn theme_id(self) -> &'static str {
+        match self {
+            Self::Dark => DARK_THEME_ID,
+            Self::Light => LIGHT_THEME_ID,
+        }
+    }
+
+    /// The theme builder config ID for this mode.
+    pub const fn builder_id(self) -> &'static str {
+        match self {
+            Self::Dark => DARK_THEME_BUILDER_ID,
+            Self::Light => LIGHT_THEME_BUILDER_ID,
+        }
+    }
+
+    /// The config key for this mode.
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Dark => "dark",
+            Self::Light => "light",
+        }
+    }
+
+    /// Whether this mode is dark.
+    pub const fn is_dark(self) -> bool {
+        matches!(self, Self::Dark)
+    }
+
+    /// The mode for a dark / light flag.
+    pub const fn from_is_dark(is_dark: bool) -> Self {
+        if is_dark { Self::Dark } else { Self::Light }
+    }
+}
+
+/// A part of a theme bundle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum Part {
+    /// The theme.
+    Theme,
+    /// The theme builder.
+    Builder,
+    /// The background.
+    Background,
+}
+
+impl Part {
+    /// Every bundle part.
+    pub const ALL: [Self; 3] = [Self::Theme, Self::Builder, Self::Background];
+
+    /// The live config ID for this part.
+    pub const fn live_id(self, mode: Mode) -> &'static str {
+        match self {
+            Self::Theme => mode.theme_id(),
+            Self::Builder => mode.builder_id(),
+            Self::Background => background_id(mode),
+        }
+    }
+
+    /// The config version for this part.
+    pub const fn version(self) -> u64 {
+        match self {
+            Self::Theme => <Theme as CosmicConfigEntry>::VERSION,
+            Self::Builder => <ThemeBuilder as CosmicConfigEntry>::VERSION,
+            Self::Background => BACKGROUND_VERSION,
+        }
+    }
+
+    /// The config ID suffix for this part.
+    pub const fn suffix(self) -> &'static str {
+        match self {
+            Self::Theme => "Theme",
+            Self::Builder => "Builder",
+            Self::Background => "Background",
+        }
+    }
+}
+
+/// The live background config ID for a mode.
+pub const fn background_id(mode: Mode) -> &'static str {
+    match mode {
+        Mode::Dark => "com.system76.CosmicBackground.Dark",
+        Mode::Light => "com.system76.CosmicBackground.Light",
+    }
+}
+
+/// The config ID for `part` of the bundle with `slug`.
+pub fn bundle_id(slug: &str, part: Part) -> String {
+    format!("{NAME}.{slug}.{}", part.suffix())
+}
+
+/// The directory that holds the cosmic config entries.
+pub fn config_dir() -> Option<PathBuf> {
+    cosmic_config::get_config_dir().map(|dir| dir.join("cosmic"))
+}
 
 const TOOLKIT_ID: &str = "com.system76.CosmicTk";
 const TOOLKIT_MIGRATION: &str = "theme-bundle-toolkit-migrated";
@@ -38,7 +157,6 @@ pub struct Bundle {
 #[derive(Debug)]
 pub enum Error {
     OnlyBundle(Mode),
-    Bundle(cosmic_theme::bundle::Error),
     Config(cosmic_config::Error),
     Io(PathBuf, io::Error),
     NoConfigDir,
@@ -56,7 +174,6 @@ impl std::fmt::Display for Error {
             Self::OnlyBundle(mode) => {
                 write!(f, "the only {} theme bundle cannot be removed", mode.name())
             }
-            Self::Bundle(err) => err.fmt(f),
             Self::Config(err) => err.fmt(f),
             Self::Io(path, err) => write!(f, "{}: {err}", path.display()),
             Self::NoConfigDir => f.write_str("no cosmic config directory"),
@@ -73,12 +190,6 @@ impl std::fmt::Display for Error {
 }
 
 impl std::error::Error for Error {}
-
-impl From<cosmic_theme::bundle::Error> for Error {
-    fn from(err: cosmic_theme::bundle::Error) -> Self {
-        Self::Bundle(err)
-    }
-}
 
 impl From<cosmic_config::Error> for Error {
     fn from(err: cosmic_config::Error) -> Self {
@@ -99,7 +210,7 @@ pub struct Store {
 
 impl Store {
     pub fn new() -> Result<Self, Error> {
-        let cosmic_dir = cosmic_theme::bundle::config_dir().ok_or(Error::NoConfigDir)?;
+        let cosmic_dir = config_dir().ok_or(Error::NoConfigDir)?;
         Ok(Self { cosmic_dir })
     }
 
@@ -116,7 +227,7 @@ impl Store {
     }
 
     fn bundle_id(slug: &str, part: Part) -> String {
-        cosmic_theme::bundle::bundle_id(slug, part)
+        bundle_id(slug, part)
     }
 
     pub fn bundle_config(&self, slug: &str, part: Part) -> Result<Config, Error> {
@@ -213,9 +324,10 @@ impl Store {
     }
 
     fn system_dir(&self) -> Option<PathBuf> {
-        let config = Config::system(DARK_THEME_ID, THEME_VERSION).ok()?;
-        let path = config.system_path()?;
-        path.parent()?.parent().map(Path::to_path_buf)
+        xdg::BaseDirectories::with_prefix("cosmic")
+            .get_data_dirs()
+            .into_iter()
+            .find(|dir| slugs_in(dir).is_ok_and(|slugs| !slugs.is_empty()))
     }
 
     /// Copy a bundle installed in the system into the user's config.
@@ -386,67 +498,73 @@ impl Store {
         Ok(Some(bundle))
     }
 
-    /// Replace the active bundle background for `mode` without touching the live config.
-    pub fn set_active_background(
-        &self,
-        mode: Mode,
-        config: &cosmic_bg_config::Config,
-    ) -> Result<(), Error> {
-        let bundle = match self.find_active(mode)? {
-            Some(bundle) => Some(bundle),
-            None => self.preserve_live(mode)?,
+    /// Apply a bundle's background to the live config for a mode.
+    pub fn apply_background(&self, slug: &str, mode: Mode) -> Result<bool, Error> {
+        let user = self.bundle_config(slug, Part::Background)?;
+        let from = if user
+            .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
+            .is_ok()
+        {
+            user
+        } else {
+            match self.system_config(slug, Part::Background) {
+                Ok(system) => system,
+                Err(Error::UnknownBundle(_)) => return Ok(false),
+                Err(err) => return Err(err),
+            }
         };
-        let Some(bundle) = bundle else {
-            return Ok(());
-        };
-        let background = self.bundle_config(&bundle.slug, Part::Background)?;
-        let context = cosmic_bg_config::Context(background);
-        context.set_same_on_all(config.same_on_all)?;
-        let mut stored = config.clone();
-        let backgrounds = stored.backgrounds.clone();
-        for entry in backgrounds {
-            stored.set_entry(&context, entry)?;
-        }
-        let default = stored.default_background.clone();
-        stored.set_entry(&context, default.clone())?;
-        context.0.set(BASE, &default)?;
-        Ok(())
-    }
 
-    /// The active bundle background for a mode, if there is one.
-    pub fn active_background(
-        &self,
-        mode: Mode,
-    ) -> Result<Option<cosmic_bg_config::Context>, Error> {
-        let Some(bundle) = self.find_active(mode)? else {
-            return Ok(None);
-        };
-        Ok(Some(cosmic_bg_config::Context(
-            self.bundle_config(&bundle.slug, Part::Background)?,
-        )))
-    }
-
-    /// Copy the active bundle background into the live config for `mode`.
-    ///
-    /// This is a no-op when the live background already holds the bundle's.
-    pub fn apply_active_background(&self, mode: Mode) -> Result<bool, Error> {
-        let Some(bundle) = self.find_active(mode)? else {
+        let base = from.get::<cosmic_bg_config::Entry>(BASE).ok();
+        let same_on_all = from
+            .get::<bool>(cosmic_bg_config::SAME_ON_ALL)
+            .unwrap_or(true);
+        let Some(default_background) = from
+            .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
+            .ok()
+        else {
             return Ok(false);
         };
-        Ok(cosmic_theme::bundle::apply_background(&bundle.slug)?)
+        let backgrounds = if same_on_all {
+            Vec::new()
+        } else {
+            from.get::<Vec<String>>(cosmic_bg_config::BACKGROUNDS)
+                .unwrap_or_default()
+                .into_iter()
+                .filter_map(|output| {
+                    from.get::<cosmic_bg_config::Entry>(&format!("output.{output}"))
+                        .ok()
+                })
+                .collect::<Vec<_>>()
+        };
+
+        let target = cosmic_bg_config::Context(self.live_config(Part::Background, mode)?);
+        target.set_same_on_all(same_on_all)?;
+        target
+            .0
+            .set(cosmic_bg_config::DEFAULT_BACKGROUND, default_background)?;
+        for entry in &backgrounds {
+            let key = format!("output.{}", entry.output);
+            target.0.set(&key, entry)?;
+        }
+        target.0.set(
+            cosmic_bg_config::BACKGROUNDS,
+            backgrounds
+                .iter()
+                .map(|entry| entry.output.clone())
+                .collect::<Vec<_>>(),
+        )?;
+        if let Some(base) = base {
+            target.0.set(BASE, base)?;
+        }
+
+        Ok(true)
     }
 
-    /// The background shown for a mode: live for the current mode, bundle-based otherwise.
+    /// The background shown for a mode.
     pub fn display_background(&self, mode: Mode) -> Result<cosmic_bg_config::Context, Error> {
-        let config = if mode == self.current_mode() {
-            self.live_config(Part::Background, mode)?
-        } else {
-            self.active_background(mode)?.map_or_else(
-                || self.live_config(Part::Background, mode),
-                |context| Ok(context.0),
-            )?
-        };
-        Ok(cosmic_bg_config::Context(config))
+        Ok(cosmic_bg_config::Context(
+            self.live_config(Part::Background, mode)?,
+        ))
     }
 
     fn find_active(&self, mode: Mode) -> Result<Option<Bundle>, Error> {
@@ -467,27 +585,29 @@ impl Store {
     }
 
     fn sync_bundle_background(&self, bundle: &Bundle, mode: Mode) -> Result<(), Error> {
-        let live = cosmic_bg_config::Context(self.live_config(Part::Background, mode)?);
-        let stored_config = self.bundle_config(&bundle.slug, Part::Background)?;
-        let stored_context = cosmic_bg_config::Context(stored_config.clone());
-        let live = cosmic_bg_config::Config::load(&live)?;
-        let mut stored = cosmic_bg_config::Config::load(&stored_context)?;
+        let live = cosmic_bg_config::Config::load(&cosmic_bg_config::Context(
+            self.live_config(Part::Background, mode)?,
+        ))?;
+        let stored = self.bundle_config(&bundle.slug, Part::Background)?;
 
-        stored_context.set_same_on_all(live.same_on_all)?;
-        stored.outputs.clone_from(&live.outputs);
-        for entry in live.backgrounds.iter().cloned() {
-            stored.set_entry(&stored_context, entry)?;
+        stored.set(cosmic_bg_config::SAME_ON_ALL, live.same_on_all)?;
+        stored.set(
+            cosmic_bg_config::DEFAULT_BACKGROUND,
+            live.default_background.clone(),
+        )?;
+        for entry in &live.backgrounds {
+            let key = format!("output.{}", entry.output);
+            stored.set(&key, entry)?;
         }
-        stored.set_entry(&stored_context, live.default_background.clone())?;
+        stored.set(
+            cosmic_bg_config::BACKGROUNDS,
+            live.backgrounds
+                .iter()
+                .map(|entry| entry.output.clone())
+                .collect::<Vec<_>>(),
+        )?;
+        stored.set(BASE, &live.default_background)?;
 
-        if stored_config
-            .get::<cosmic_bg_config::Entry>(BASE)
-            .ok()
-            .as_ref()
-            != Some(&live.default_background)
-        {
-            stored_config.set(BASE, &live.default_background)?;
-        }
         Ok(())
     }
 
@@ -842,14 +962,11 @@ impl Store {
         const LOOK: [Part; 2] = [Part::Theme, Part::Builder];
         let theme = read::<Theme>(&self.live_config(Part::Theme, mode)?)?;
         let name = store_name(&theme, mode);
-        let live_background = mode == self.current_mode();
-        if let Some(worn) = self.worn_bundle(mode, &name)? {
-            if live_background {
-                self.sync_bundle_background(&worn, mode)?;
-                if !self.live_matches(mode, &worn.slug, &LOOK).unwrap_or(false) {
-                    self.sync_bundle_look(&worn, mode)?;
-                }
-            } else if !self.live_matches(mode, &worn.slug, &LOOK).unwrap_or(false) {
+        if let Some(worn) = self.worn_bundle(mode, &name)?
+            && worn.slug != incoming
+        {
+            self.sync_bundle_background(&worn, mode)?;
+            if !self.live_matches(mode, &worn.slug, &LOOK).unwrap_or(false) {
                 self.sync_bundle_look(&worn, mode)?;
             }
         }
@@ -881,9 +998,7 @@ impl Store {
             builder.write_entry(&self.live_config(Part::Builder, mode)?)?;
         }
 
-        if mode == self.current_mode() {
-            cosmic_theme::bundle::apply_background(slug)?;
-        }
+        self.apply_background(slug, mode)?;
         Ok(())
     }
 

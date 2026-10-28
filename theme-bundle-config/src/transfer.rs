@@ -811,7 +811,7 @@ fn rewrite_backgrounds(
     imported: &str,
     data: &Path,
 ) -> Result<(), Error> {
-    let id = cosmic_theme::bundle::bundle_id(slug, Part::Background);
+    let id = crate::bundle_id(slug, Part::Background);
     for (version, dir) in versions_in(&store.bundle_config_dir(slug, Part::Background))? {
         let config = Config::new(&id, version)?;
         for (key, bytes) in key_files(&dir)? {

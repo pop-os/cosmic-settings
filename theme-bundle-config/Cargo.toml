@@ -8,7 +8,7 @@ rust-version.workspace = true
 appstream = { git = "https://github.com/jackpot51/appstream" }
 cosmic-bg-config.workspace = true
 cosmic-config.workspace = true
-cosmic-theme = { workspace = true, features = ["bundle"] }
+cosmic-theme.workspace = true
 fontdb.workspace = true
 ron.workspace = true
 serde.workspace = true

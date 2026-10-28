@@ -343,10 +343,6 @@ impl Page {
                     tracing::error!(?err, "Error setting dark mode");
                 }
 
-                let mode = cosmic_theme_bundle_config::Mode::from_is_dark(enabled);
-                if let Err(error) = theme_bundles::apply_active_background(mode) {
-                    tracing::warn!(?error, "failed to apply the active bundle background");
-                }
                 tasks.push(cosmic::task::future(async {
                     Message::BundlesLoaded(theme_bundles::load())
                 }));
@@ -530,14 +526,6 @@ impl Page {
                 if was_dark != self.theme_manager.mode().is_dark
                     || was_auto != self.theme_manager.mode().auto_switch
                 {
-                    if was_dark != self.theme_manager.mode().is_dark {
-                        let mode = cosmic_theme_bundle_config::Mode::from_is_dark(
-                            self.theme_manager.mode().is_dark,
-                        );
-                        if let Err(error) = theme_bundles::apply_active_background(mode) {
-                            tracing::warn!(?error, "failed to apply the active bundle background");
-                        }
-                    }
                     self.drawer.reset(&self.theme_manager);
                     self.drawer.sync_fonts(&self.theme_manager);
                     return cosmic::task::future(async {

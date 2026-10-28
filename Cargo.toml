@@ -103,16 +103,10 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/cosmic-bg']
-# cosmic-bg-config = { path = "../cosmic-bg/config" }
+[patch.'https://github.com/pop-os/cosmic-bg']
+cosmic-bg-config = { path = "../cosmic-bg/config" }
 
 [patch."https://github.com/pop-os/libcosmic"]
-# libcosmic = { path = "../libcosmic" }
-# cosmic-config = { path = "../libcosmic/cosmic-config" }
-# cosmic-theme = { path = "../libcosmic/cosmic-theme" }
-# iced_futures = { path = "../libcosmic/iced/futures" }
-# iced_winit = { path = "../libcosmic/iced/winit" }
-# iced_graphics = { path = "../libcosmic/iced/graphics" }
 cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
 libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
 cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }

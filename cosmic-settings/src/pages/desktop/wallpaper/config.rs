@@ -40,8 +40,7 @@ impl Config {
             }
         };
 
-        let state = match cosmic_config::Config::new_state("com.system76.CosmicBackground", VERSION)
-        {
+        let state = match cosmic_config::Config::new_state(cosmic_bg_config::NAME, VERSION) {
             Ok(state) => state,
             Err(why) => {
                 tracing::warn!(?why, "failed to get state");

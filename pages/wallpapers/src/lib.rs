@@ -17,6 +17,35 @@ use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use walkdir::WalkDir;
 
+/// Pick a representative image for a wallpaper source.
+/// Needed for when a slideshow background is not for the active mode.
+#[must_use]
+pub fn preview_path(path: &Path) -> Option<PathBuf> {
+    if path.is_file() {
+        return Some(path.to_path_buf());
+    }
+    if !path.is_dir() {
+        return None;
+    }
+
+    let mut images = WalkDir::new(path)
+        .max_depth(3)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_file())
+        .map(walkdir::DirEntry::into_path)
+        .filter(|path| {
+            image::ImageReader::open(path)
+                .ok()
+                .and_then(|reader| reader.with_guessed_format().ok())
+                .is_some_and(|reader| reader.format().is_some_and(|format| format.can_read()))
+        })
+        .collect::<Vec<_>>();
+    images.sort();
+    images.into_iter().next()
+}
+
 pub const DEFAULT_COLORS: &[Color] = &[
     Color::Single([0.580, 0.922, 0.922]),
     Color::Single([0.000, 0.286, 0.427]),
@@ -98,13 +127,11 @@ pub fn upsert_entry(config: &mut Config, entry: Entry) {
     }
 }
 
-pub fn set(config: &mut Config, entry: Entry) {
-    if let Ok(context) = cosmic_bg_config::context() {
-        let _res = context.set_same_on_all(config.same_on_all);
+pub fn set(config: &mut Config, context: &cosmic_bg_config::Context, entry: Entry) {
+    let _res = context.set_same_on_all(config.same_on_all);
 
-        if let Err(why) = config.set_entry(&context, entry) {
-            tracing::error!(?why, "failed to set background");
-        }
+    if let Err(why) = config.set_entry(context, entry) {
+        tracing::error!(?why, "failed to set background");
     }
 }
 
