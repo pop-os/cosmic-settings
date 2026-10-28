@@ -207,9 +207,6 @@ impl Page {
                     error!(?err, "Failed to set config 'edge_snap_threshold'");
                 }
             }
-            Message::Surface(a) => {
-                return cosmic::task::message(crate::app::Message::Surface(a));
-            }
             Message::SetDecorationPreference(id) => {
                 let preference = match id {
                     0 => DecorationPreference::ClientSide,
@@ -221,6 +218,9 @@ impl Page {
                 if let Err(err) = self.comp_config.set("decoration_preference", preference) {
                     error!(?err, "Failed to set config 'decoration_preference'");
                 }
+            }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
             }
         };
         cosmic::iced::Task::none()
