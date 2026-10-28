@@ -132,6 +132,10 @@ xdg-entry-workspaces = Workspaces
 xdg-entry-workspaces-comment = Workspace orientation, overview, and multi-monitor behavior
 xdg-entry-workspaces-keywords = COSMIC;Workspace;Orientation;Overview;Monitor;
 
+xdg-entry-launcher = Launcher
+xdg-entry-launcher-comment = Cosmic launcher
+xdg-entry-launcher-keywords = COSMIC;Launcher;
+
 xdg-entry-x11-applications = X11 Applications Compatibility
 xdg-entry-x11-applications-comment = X11 window system application scaling, primary display, and global shortcuts
 xdg-entry-x11-applications-keywords = COSMIC;X11;Application;Game;Compatibility;
@@ -561,6 +565,13 @@ hot-corner = Hot Corner
 
 workspaces-navigation = Navigation
     .wraparound = Move between first and last workspace using keyboard shortcuts and gestures
+
+## Desktop: Launcher
+
+launcher = Launcher
+
+launcher-plugins = Plugins
+    .none = No plugins loaded
 
 ## Displays
 

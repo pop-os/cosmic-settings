@@ -722,6 +722,13 @@ impl cosmic::Application for SettingsApp {
                         return page.update(message).map(Into::into);
                     }
                 }
+
+                #[cfg(feature = "page-launcher")]
+                crate::pages::Message::Launcher(message) => {
+                    if let Some(page) = self.pages.page_mut::<desktop::launcher::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
             },
 
             #[cfg(feature = "wayland")]
