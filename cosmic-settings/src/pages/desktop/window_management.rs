@@ -299,7 +299,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
         maximize = fl!("window-controls", "maximize");
         minimize = fl!("window-controls", "minimize");
         active_window_hint = fl!("window-controls", "active-window-hint");
-        window_decoration = fl!("window-decorations");
+        decoration_preference = fl!("window-decorations");
         _client_side = fl!("window-decorations", "client-side");
         _server_side = fl!("window-decorations", "server-side");
     });
@@ -324,7 +324,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     settings::item::builder(&descriptions[minimize])
                         .toggler(cosmic::config::show_minimize(), Message::ShowMinimizeButton),
                 )
-                .add(settings::item::builder(&descriptions[window_decoration]).control(
+                .add(settings::item::builder(&descriptions[decoration_preference]).control(
                     widget::dropdown::popup_dropdown(
                         &page.window_decoration_selections,
                         into_decoration_preference(page.decoration_preference),
