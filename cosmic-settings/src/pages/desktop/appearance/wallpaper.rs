@@ -37,10 +37,12 @@ fn active_wallpapers(mode: Mode) -> Vec<Wallpaper> {
 
     for entry in entries {
         let wallpaper = match &entry.source {
-            cosmic_bg_config::Source::Path(path) if path.is_file() => {
-                Wallpaper::Image(path.clone())
+            cosmic_bg_config::Source::Path(path) => {
+                let Some(path) = wallpaper::preview_path(path) else {
+                    continue;
+                };
+                Wallpaper::Image(path)
             }
-            cosmic_bg_config::Source::Path(_) => continue,
             cosmic_bg_config::Source::Color(color) => Wallpaper::Color(color.clone()),
         };
 

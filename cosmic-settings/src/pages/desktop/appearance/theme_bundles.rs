@@ -255,27 +255,8 @@ pub fn sync_active_background_mode(mode: Mode) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
-pub fn set_active_background(mode: Mode, config: &cosmic_bg_config::Config) -> Result<(), String> {
-    let store = Store::new().map_err(|error| error.to_string())?;
-    store
-        .set_active_background(mode, config)
-        .map_err(|error| error.to_string())
-}
-
-pub fn active_background(mode: Mode) -> Option<cosmic_bg_config::Context> {
-    Store::new().ok()?.active_background(mode).ok().flatten()
-}
-
 pub fn display_background(mode: Mode) -> Option<cosmic_bg_config::Context> {
     Store::new().ok()?.display_background(mode).ok()
-}
-
-pub fn apply_active_background(mode: Mode) -> Result<(), String> {
-    let store = Store::new().map_err(|error| error.to_string())?;
-    store
-        .apply_active_background(mode)
-        .map(|_| ())
-        .map_err(|error| error.to_string())
 }
 
 pub fn activate(slug: &str) -> Result<(), String> {
@@ -411,6 +392,20 @@ fn read_theme(config: &Config) -> Theme {
 fn preview(config: Option<Config>, fallback: Srgba) -> Preview {
     let source = config
         .and_then(|config| {
+            let same_on_all = config
+                .get::<bool>(cosmic_bg_config::SAME_ON_ALL)
+                .unwrap_or(true);
+            if !same_on_all
+                && let Ok(outputs) = config.get::<Vec<String>>(cosmic_bg_config::BACKGROUNDS)
+            {
+                for output in outputs {
+                    if let Ok(entry) =
+                        config.get::<cosmic_bg_config::Entry>(&format!("output.{output}"))
+                    {
+                        return Some(entry);
+                    }
+                }
+            }
             config
                 .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
                 .ok()
@@ -418,11 +413,11 @@ fn preview(config: Option<Config>, fallback: Srgba) -> Preview {
         .map(|entry| entry.source);
 
     match source {
-        Some(cosmic_bg_config::Source::Path(path)) if path.exists() => {
-            Preview::Wallpaper(path, colored(fallback.into()))
-        }
+        Some(cosmic_bg_config::Source::Path(path)) => wallpaper::preview_path(&path)
+            .map(|path| Preview::Wallpaper(path, colored(fallback.into())))
+            .unwrap_or_else(|| Preview::Color(colored(fallback.into()))),
         Some(cosmic_bg_config::Source::Color(color)) => Preview::Color(color),
-        Some(cosmic_bg_config::Source::Path(_)) | None => Preview::Color(colored(fallback.into())),
+        None => Preview::Color(colored(fallback.into())),
     }
 }
 

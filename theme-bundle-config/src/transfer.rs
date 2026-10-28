@@ -320,7 +320,8 @@ impl Store {
                     Part::Background => {
                         let rewritten = assets.background(&key, bytes)?;
                         if key == "all" {
-                            exported_all = Some(rewritten.clone());
+                            exported_all = Some(rewritten);
+                            continue;
                         }
                         rewritten
                     }
@@ -335,10 +336,6 @@ impl Store {
                 && let Some(bytes) = background_base
             {
                 let bytes = assets.background("base", bytes)?;
-                configs.push((
-                    format!("{CONFIG_ROOT}/cosmic/{id}/v{version}/all"),
-                    bytes.clone(),
-                ));
                 background = Some(bytes);
             }
 
@@ -347,12 +344,8 @@ impl Store {
                 && let Some((output, entry)) = output_background(&outputs, &output_backgrounds)
             {
                 let output = output.clone();
-                let bytes = assets.background_entry("all", entry.clone())?;
+                let bytes = assets.background_entry("base", entry.clone())?;
                 tracing::warn!(%output, "exporting an output background as the default");
-                configs.push((
-                    format!("{CONFIG_ROOT}/cosmic/{id}/v{version}/all"),
-                    bytes.clone(),
-                ));
                 background = Some(bytes);
             }
 
@@ -811,7 +804,7 @@ fn rewrite_backgrounds(
     imported: &str,
     data: &Path,
 ) -> Result<(), Error> {
-    let id = cosmic_theme::bundle::bundle_id(slug, Part::Background);
+    let id = crate::bundle_id(slug, Part::Background);
     for (version, dir) in versions_in(&store.bundle_config_dir(slug, Part::Background))? {
         let config = Config::new(&id, version)?;
         for (key, bytes) in key_files(&dir)? {

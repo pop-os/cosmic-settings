@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "a11y-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "zbus 6.2.1",
 ]
@@ -112,7 +112,7 @@ dependencies = [
 [[package]]
 name = "accounts-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "zbus 6.2.1",
 ]
@@ -131,6 +131,17 @@ name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
+
+[[package]]
+name = "aes"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
+dependencies = [
+ "cfg-if",
+ "cipher 0.4.4",
+ "cpufeatures 0.2.17",
+]
 
 [[package]]
 name = "aes"
@@ -924,7 +935,7 @@ dependencies = [
 [[package]]
 name = "build_helpers"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "cfg_aliases 0.2.2",
 ]
@@ -1055,9 +1066,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.11.0"
+version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "375989decec1a0fa424442bed520fa12ede43a48475ce8c7417d2c69b32b5f6b"
+checksum = "4ff2a8126fff0f8c839080d619675a585e61720bb12d2baceae45769fd66f155"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -1432,7 +1443,7 @@ dependencies = [
 [[package]]
 name = "cosmic-bg-config"
 version = "1.11.0"
-source = "git+https://github.com/pop-os/cosmic-bg#afce6904b201754fcad3f3d3bd9acd6ba21536ab"
+source = "git+https://github.com/pop-os/cosmic-bg?branch=bundles#48749e43a49cf572bfc2a87703b704a3c16e1464"
 dependencies = [
  "cosmic-config",
  "derive_setters",
@@ -1444,7 +1455,7 @@ dependencies = [
 [[package]]
 name = "cosmic-bluez-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -1468,7 +1479,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/cosmic-comp#cb86b9ec6f18ca2d2ad3b39426a57ab850867070"
+source = "git+https://github.com/pop-os/cosmic-comp#63dacd148f634023f904d27e94ce0da93eef6710"
 dependencies = [
  "cosmic-config",
  "input",
@@ -1480,7 +1491,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "atomicwrites",
  "cosmic-config-derive",
@@ -1501,7 +1512,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "quote",
  "syn 3.0.9",
@@ -1533,7 +1544,7 @@ dependencies = [
 [[package]]
 name = "cosmic-launch"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "bstr",
  "cosmic-settings-config",
@@ -1827,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-daemon-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "zbus 6.2.1",
 ]
@@ -1915,7 +1926,7 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "almost",
  "configparser",
@@ -1971,6 +1982,21 @@ checksum = "5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "crc"
+version = "3.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5eb8a2a1cd12ab0d987a5d5e825195d372001a4094a0376319d5a0ad71c1ba0d"
+dependencies = [
+ "crc-catalog",
+]
+
+[[package]]
+name = "crc-catalog"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "217698eaf96b4a3f0bc4f3662aaa55bdf913cd54d7204591faa790070c6d0853"
 
 [[package]]
 name = "crc32fast"
@@ -2670,9 +2696,9 @@ dependencies = [
 
 [[package]]
 name = "flate2"
-version = "1.1.10"
+version = "1.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e634e2e0ebac1ee034020da1ca582e17ffe4e0f5e985823721e168928136dcb"
+checksum = "626d4928326b646e70f65ed36fc7cf9f206bdb68a0019ee7c6b4709da4e084c4"
 dependencies = [
  "crc32fast",
  "miniz_oxide 0.9.1",
@@ -3326,7 +3352,7 @@ checksum = "f558a64ac9af88b5ba400d99b579451af0d39c6d360980045b91aac966d705e2"
 [[package]]
 name = "hostname1-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "zbus 6.2.1",
 ]
@@ -3434,7 +3460,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "build_helpers",
  "dnd",
@@ -3456,7 +3482,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3465,7 +3491,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "bitflags 2.13.2",
  "build_helpers",
@@ -3492,7 +3518,7 @@ dependencies = [
 [[package]]
 name = "iced_debug"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -3502,7 +3528,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "futures",
  "iced_core",
@@ -3516,7 +3542,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "bitflags 2.13.2",
  "bytemuck",
@@ -3537,7 +3563,7 @@ dependencies = [
 [[package]]
 name = "iced_program"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -3546,7 +3572,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -3558,7 +3584,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "build_helpers",
  "bytes",
@@ -3575,7 +3601,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -3592,7 +3618,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "as-raw-xcb-connection",
  "bitflags 2.13.2",
@@ -3624,7 +3650,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.14.2"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "build_helpers",
  "cosmic-client-toolkit",
@@ -3645,7 +3671,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "build_helpers",
  "cosmic-client-toolkit",
@@ -4780,7 +4806,7 @@ checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 [[package]]
 name = "libcosmic"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/libcosmic#7cd76ae3160cbd26ae89a4c01e64eda21f648c7f"
+source = "git+https://github.com/pop-os/libcosmic//?branch=bundles#40c616f5b544a255508c0850ab0ce1dfe21e6e38"
 dependencies = [
  "apply",
  "ashpd 0.13.13",
@@ -4931,7 +4957,7 @@ checksum = "4744e383959f0db86ede514b809b1c53251889093803c05267acc7d4e7030d70"
 [[package]]
 name = "locale1-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "zbus 6.2.1",
 ]
@@ -6020,12 +6046,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
-name = "pin-utils"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13bee6c73da26345c729282832b60b0363cf3dd9f4bfd81d8551b7a1c889a113"
-
-[[package]]
 name = "piper"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6870,7 +6890,7 @@ version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5107b24b91445dd2aa449a258a1807b63240942157292354dc5bfdbeb8bc6db8"
 dependencies = [
- "aes 0.9.3",
+ "aes 0.9.4",
  "cbc",
  "futures-util",
  "getrandom 0.4.3",
@@ -6975,9 +6995,9 @@ dependencies = [
 
 [[package]]
 name = "serde_spanned"
-version = "1.1.2"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e7523beb55eece201a2356bee0bbca0d1ab466c14c07703b2e0ee6d42cb0c2c"
+checksum = "9c187e0a369471c550af028cba56d4f4fa2a489ad28151ae95a4d340a2a8b782"
 dependencies = [
  "serde_core",
 ]
@@ -7400,7 +7420,7 @@ dependencies = [
 [[package]]
 name = "switcheroo-control-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "zbus 6.2.1",
 ]
@@ -7481,7 +7501,7 @@ dependencies = [
  "cfg-expr",
  "heck 0.5.0",
  "pkg-config",
- "toml 1.2.0+spec-1.1.0",
+ "toml 1.2.1+spec-1.1.0",
  "version-compare",
 ]
 
@@ -7612,7 +7632,7 @@ dependencies = [
 [[package]]
 name = "timedate1-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "zbus 6.2.1",
 ]
@@ -7763,9 +7783,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "1.2.0+spec-1.1.0"
+version = "1.2.1+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5ffcdf8f50436dbbfd675c1fe1b8e0854f42b7defea8584bdebe1aee900e561"
+checksum = "d5755c51863cdac711f1956baf8eb9588e060755f7d3c4c979e70ea1e1f32cd7"
 dependencies = [
  "indexmap 2.14.2",
  "serde_core",
@@ -7778,18 +7798,18 @@ dependencies = [
 
 [[package]]
 name = "toml_datetime"
-version = "1.1.2+spec-1.1.0"
+version = "1.1.3+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b86d767906c6c42421dcba507eb9d203e779497710a47782a224bb871653053"
+checksum = "173f25c883cd2176a2d8212155638c0a60d484a9d84546d270866f40f56b6e49"
 dependencies = [
  "serde_core",
 ]
 
 [[package]]
 name = "toml_edit"
-version = "0.25.18+spec-1.1.0"
+version = "0.25.19+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ec6e78bd70db9420d8d212fa9dc97f116448a1ceff5d00eabb991d407e21396"
+checksum = "dd43688c4858d7264ae1cf9a9f874a67c3feb74a883b1cd7bebd6a4ea8307218"
 dependencies = [
  "indexmap 2.14.2",
  "toml_datetime",
@@ -8031,7 +8051,7 @@ checksum = "ca718471876992059f251e33aafc334346ada08042b7661dd1fe313a9bced557"
 [[package]]
 name = "upower-zbus"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#4c6c886a758adcbb0bda876c53135ca738549edc"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#6ccc9fbf034220f0142bc907a7d7513b49aba0e1"
 dependencies = [
  "serde",
  "serde_repr",
@@ -8232,14 +8252,14 @@ dependencies = [
 
 [[package]]
 name = "wasmtimer"
-version = "0.4.3"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c598d6b99ea013e35844697fc4670d08339d5cda15588f193c6beedd12f644b"
+checksum = "c62b7f338e4397a45d054c15a2b36a93d57cccdda7be11a7d7b045d47b5e70ce"
 dependencies = [
  "futures",
  "js-sys",
  "parking_lot",
- "pin-utils",
+ "pin-project-lite",
  "slab",
  "wasm-bindgen",
 ]
@@ -9836,6 +9856,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
 
 [[package]]
+name = "zopfli"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aaf7fc5d30c28483d93805c4a5e12b05bbb52407fa67c5f8bd552374cd01fb11"
+dependencies = [
+ "bumpalo",
+ "crc32fast",
+ "log",
+ "simd-adler32",
+]
+
+[[package]]
 name = "zruntime"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9847,6 +9879,34 @@ dependencies = [
  "socket2",
  "tracing",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "zstd"
+version = "0.13.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdb02c3132d251ab1606e9fc913a7da6c6ed08cc263df15edf082e1dc497d157"
+dependencies = [
+ "zstd-safe",
+]
+
+[[package]]
+name = "zstd-safe"
+version = "7.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c8ea04668f5de8d8d51051714ba560c9536519cadcdb8829bba4fe2ad159b03"
+dependencies = [
+ "zstd-sys",
+]
+
+[[package]]
+name = "zstd-sys"
+version = "2.1.2+zstd.1.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "481ada9c543b2323cbb7bbdbb5249177fbf0188ed959ed2c15e4b22421c84ed3"
+dependencies = [
+ "cc",
+ "pkg-config",
 ]
 
 [[package]]
