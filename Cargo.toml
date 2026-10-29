@@ -48,6 +48,9 @@ git = "https://github.com/pop-os/cosmic-panel"
 [workspace.dependencies.cosmic-randr-shell]
 git = "https://github.com/pop-os/cosmic-randr"
 
+[workspace.dependencies.cosmic-launcher-config]
+git = "https://github.com/pop-os/cosmic-launcher"
+
 [workspace.dependencies.sctk]
 version = "0.20"
 package = "smithay-client-toolkit"
@@ -95,3 +98,10 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 [patch.crates-io]
 atspi = { git = "https://github.com/wash2/atspi" }
 atspi-common = { git = "https://github.com/wash2/atspi" }
+
+[patch."https://github.com/pop-os/cosmic-launcher"]
+cosmic-launcher-config = { git = "https://github.com/avnyu/cosmic-launcher", branch = "config" }
+
+[patch."https://github.com/pop-os/launcher/"]
+pop-launcher = { git = "https://github.com/avnyu/launcher", branch = "config" }
+pop-launcher-service = { git = "https://github.com/avnyu/launcher", branch = "config" }

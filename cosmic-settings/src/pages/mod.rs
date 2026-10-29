@@ -111,6 +111,8 @@ pub enum Message {
     Wired(networking::wired::Message),
     #[cfg(feature = "page-workspaces")]
     Workspaces(desktop::workspaces::Message),
+    #[cfg(feature = "page-launcher")]
+    Launcher(desktop::launcher::Message),
 
     // Common page functionality
     CloseContextDrawer,

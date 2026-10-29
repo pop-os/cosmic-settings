@@ -27,6 +27,7 @@ cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-randr-shell.workspace = true
 cosmic-randr = { workspace = true, optional = true }
+cosmic-launcher-config = { workspace = true, optional = true }
 cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-accessibility-subscription = { path = "../subscriptions/accessibility", optional = true }
@@ -136,6 +137,7 @@ linux = [
     "page-users",
     "page-window-management",
     "page-workspaces",
+    "page-launcher",
     "xdg-portal",
     "wayland",
 ]
@@ -186,6 +188,7 @@ page-sound = ["dep:cosmic-settings-audio-client", "dep:cosmic-settings-sound"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
 page-workspaces = ["cosmic-comp-config"]
+page-launcher = ["cosmic-launcher-config"]
 
 # Other features
 a11y = ["libcosmic/a11y"]
