@@ -1448,6 +1448,7 @@ dependencies = [
 [[package]]
 name = "cosmic-bg-config"
 version = "1.11.0"
+source = "git+https://github.com/pop-os/cosmic-bg//?branch=bundles#48749e43a49cf572bfc2a87703b704a3c16e1464"
 dependencies = [
  "cosmic-config",
  "derive_setters",

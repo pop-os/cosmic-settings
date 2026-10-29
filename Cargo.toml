@@ -104,7 +104,7 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 
 # For development and testing purposes
 [patch.'https://github.com/pop-os/cosmic-bg']
-cosmic-bg-config = { path = "../cosmic-bg/config" }
+cosmic-bg-config = { git = "https://github.com/pop-os/cosmic-bg//", branch = "bundles" }
 
 [patch."https://github.com/pop-os/libcosmic"]
 cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
