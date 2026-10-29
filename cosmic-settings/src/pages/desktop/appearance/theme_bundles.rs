@@ -392,20 +392,6 @@ fn read_theme(config: &Config) -> Theme {
 fn preview(config: Option<Config>, fallback: Srgba) -> Preview {
     let source = config
         .and_then(|config| {
-            let same_on_all = config
-                .get::<bool>(cosmic_bg_config::SAME_ON_ALL)
-                .unwrap_or(true);
-            if !same_on_all
-                && let Ok(outputs) = config.get::<Vec<String>>(cosmic_bg_config::BACKGROUNDS)
-            {
-                for output in outputs {
-                    if let Ok(entry) =
-                        config.get::<cosmic_bg_config::Entry>(&format!("output.{output}"))
-                    {
-                        return Some(entry);
-                    }
-                }
-            }
             config
                 .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
                 .ok()
@@ -413,11 +399,11 @@ fn preview(config: Option<Config>, fallback: Srgba) -> Preview {
         .map(|entry| entry.source);
 
     match source {
-        Some(cosmic_bg_config::Source::Path(path)) => wallpaper::preview_path(&path)
-            .map(|path| Preview::Wallpaper(path, colored(fallback.into())))
-            .unwrap_or_else(|| Preview::Color(colored(fallback.into()))),
+        Some(cosmic_bg_config::Source::Path(path)) if path.exists() => {
+            Preview::Wallpaper(path, colored(fallback.into()))
+        }
         Some(cosmic_bg_config::Source::Color(color)) => Preview::Color(color),
-        None => Preview::Color(colored(fallback.into())),
+        Some(cosmic_bg_config::Source::Path(_)) | None => Preview::Color(colored(fallback.into())),
     }
 }
 
@@ -487,7 +473,7 @@ pub fn section(mode: Mode) -> Section<crate::pages::Message> {
 
 fn title_row<'a>(section: &'a Section<crate::pages::Message>) -> Element<'a, Message> {
     row::with_capacity(1)
-        .push(text::heading(section.title.as_str()))
+        .push(text::title4(section.title.as_str()))
         .align_y(Alignment::Center)
         .apply(Element::from)
 }
