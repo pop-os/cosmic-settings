@@ -80,7 +80,7 @@ pub fn section() -> Section<crate::pages::Message> {
     let (descriptions, label_keys) = i18n();
 
     Section::default()
-        .title(fl!("mode-and-colors"))
+        .title(fl!("mode"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let label_keys = label_keys.clone();
