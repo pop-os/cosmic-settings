@@ -2,13 +2,24 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::{Active, Event};
+use bluez_zbus::device1::Device1Proxy;
 use futures::join;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
+use zbus::proxy::CacheProperties;
 use zbus::zvariant::OwnedObjectPath;
 
 const DEFAILT_DEVICE_ICON: &str = "bluetooth-symbolic";
+const ATTEMPTS: u64 = 5;
+const FINAL_ERRORS: &[&str] = &[
+    "org.bluez.Error.AuthenticationCanceled",
+    "org.bluez.Error.AuthenticationFailed",
+    "org.bluez.Error.AuthenticationRejected",
+    "org.bluez.Error.AuthenticationTimeout",
+    "org.bluez.Error.DoesNotExist",
+    "org.freedesktop.DBus.Error.UnknownObject",
+];
 
 // Copied from https://github.com/bluez/bluez/blob/39467578207889fd015775cbe81a3db9dd26abea/src/dbus-common.c#L53
 fn device_type_to_icon(device_type: &str) -> &'static str {
@@ -196,89 +207,110 @@ impl DeviceUpdate {
 }
 
 pub async fn is_paired(connection: zbus::Connection, device_path: OwnedObjectPath) -> bool {
-    match bluez_zbus::get_device(&connection, device_path).await {
-        Ok(proxy) => proxy.device.paired().await.unwrap_or(false),
+    match proxy(&connection, device_path).await {
+        Ok(device) => device.paired().await.unwrap_or(false),
         Err(_) => false,
     }
+}
+
+async fn proxy(
+    connection: &zbus::Connection,
+    path: OwnedObjectPath,
+) -> zbus::Result<Device1Proxy<'static>> {
+    Device1Proxy::builder(connection)
+        .path(path)?
+        .cache_properties(CacheProperties::No)
+        .build()
+        .await
 }
 
 pub async fn disconnect_device(
     connection: zbus::Connection,
     device_path: OwnedObjectPath,
 ) -> Event {
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let device = match proxy(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
         }
-        Ok(proxy) => proxy,
+        Ok(device) => device,
     };
 
-    for attempt in 1..5 {
+    for attempt in 1..=ATTEMPTS {
         let result = async {
-            if !proxy.device.connected().await? {
+            if !device.connected().await? {
                 return Ok(());
             }
 
-            proxy.device.disconnect().await
+            device.disconnect().await
         }
         .await;
 
-        if let Err(why) = result {
-            tracing::warn!("Unable to disconnect to device: {why}");
-            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-        } else {
-            return Event::Ok;
+        match result {
+            Ok(()) => return Event::Ok,
+            Err(why) => {
+                tracing::warn!("Unable to disconnect the device: {why}");
+                if attempt < ATTEMPTS {
+                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                }
+            }
         }
     }
 
     Event::DeviceFailed(device_path)
 }
 
+fn is_final(why: &zbus::Error) -> bool {
+    matches!(why, zbus::Error::MethodError(name, ..) if FINAL_ERRORS.contains(&name.as_str()))
+}
+
 pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Event {
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let device = match proxy(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
         }
-        Ok(proxy) => proxy,
+        Ok(device) => device,
     };
 
-    for attempt in 1..5 {
+    for attempt in 1..=ATTEMPTS {
         let result = async {
-            if proxy.device.connected().await? {
-                Ok(())
-            } else if !proxy.device.paired().await.unwrap_or(false) {
-                proxy.device.pair().await?;
-                proxy.device.connect().await
-            } else {
-                proxy.device.connect().await
+            if device.connected().await? {
+                return Ok(());
             }
+            if !device.paired().await.unwrap_or(false) {
+                device.pair().await?;
+            }
+            device.connect().await
         }
         .await;
 
-        if let Err(why) = result {
-            tracing::warn!("Unable to connect to device: {why}");
-            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-        } else {
-            return Event::Ok;
+        match result {
+            Ok(()) => return Event::Ok,
+            Err(why) => {
+                tracing::warn!("Unable to connect to device: {why}");
+                if is_final(&why) {
+                    break;
+                }
+                if attempt < ATTEMPTS {
+                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                }
+            }
         }
     }
     Event::DeviceFailed(device_path)
 }
 
 pub async fn forget_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Event {
-    let mut result: zbus::Result<()> = Ok(());
-
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let device = match proxy(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
         }
-        Ok(proxy) => proxy,
+        Ok(device) => device,
     };
 
-    let adapter_path = match proxy.device.adapter().await {
+    let adapter_path = match device.adapter().await {
         Err(why) => {
             tracing::error!("Unable to get the adapter: {why}");
             return Event::DeviceFailed(device_path);
@@ -294,29 +326,28 @@ pub async fn forget_device(connection: zbus::Connection, device_path: OwnedObjec
         Ok(adapter) => adapter,
     };
 
-    for attempt in 1..5 {
-        result = async {
-            if proxy.device.connected().await? {
-                proxy.device.disconnect().await?;
+    for attempt in 1..=ATTEMPTS {
+        let result = async {
+            if device.connected().await? {
+                device.disconnect().await?;
             }
 
-            adapter.remove_device(&proxy.path()).await
+            adapter.remove_device(&device_path).await
         }
         .await;
 
-        if let Err(why) = &result {
-            tracing::warn!("Unable to connect to device: {why}");
-            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-        } else {
-            return Event::Ok;
+        match result {
+            Ok(()) => return Event::Ok,
+            Err(why) => {
+                tracing::warn!("Unable to forget the device: {why}");
+                if attempt < ATTEMPTS {
+                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                }
+            }
         }
     }
 
-    if result.is_err() {
-        Event::DeviceFailed(device_path)
-    } else {
-        Event::Ok
-    }
+    Event::DeviceFailed(device_path)
 }
 
 pub async fn rename_device(
@@ -324,25 +355,25 @@ pub async fn rename_device(
     device_path: OwnedObjectPath,
     name: String,
 ) -> Event {
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let device = match proxy(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
         }
-        Ok(proxy) => proxy,
+        Ok(device) => device,
     };
 
-    for attempt in 1..5 {
-        let result = proxy.device.set_alias(&name).await;
-
-        if let Err(why) = result {
-            tracing::warn!("Unable to rename device: {why}");
-            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-        } else {
-            return Event::Ok;
+    for attempt in 1..=ATTEMPTS {
+        match device.set_alias(&name).await {
+            Ok(()) => return Event::Ok,
+            Err(why) => {
+                tracing::warn!("Unable to rename device: {why}");
+                if attempt < ATTEMPTS {
+                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                }
+            }
         }
     }
-
     Event::DeviceRenameFailed(device_path)
 }
 

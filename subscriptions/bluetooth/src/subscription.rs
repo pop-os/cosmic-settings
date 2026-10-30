@@ -1,7 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::{AdapterUpdate, Device, DeviceUpdate, Event};
+use crate::{Adapter, AdapterUpdate, Device, DeviceUpdate, Event};
 use std::pin::Pin;
 
 use bluez_zbus::BluetoothDevice;
@@ -119,17 +119,18 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
                         Some(signal) => {
                             let args = signal.args()?;
                             let header = signal.message().header();
-                            match header.path() {
-                                Some(path) if path.contains("/dev_") =>
+                            let Some(path) = header.path() else { continue };
+                            match args.interface_name.as_str() {
+                                "org.bluez.Adapter1" => tx
+                                        .send(Event::UpdatedAdapter(path.to_owned().into(), AdapterUpdate::from_update(args.changed_properties)))
+                                        .await
+                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
+                                "org.bluez.Device1" | "org.bluez.Battery1" =>
                                     tx
                                         .send(Event::UpdatedDevice(path.to_owned().into(), DeviceUpdate::from_update(args.changed_properties)))
                                         .await
                                         .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                Some(path) => tx
-                                        .send(Event::UpdatedAdapter(path.to_owned().into(), AdapterUpdate::from_update(args.changed_properties)))
-                                        .await
-                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                None => continue
+                                _ => continue,
                             }
                         }
                         None => {
@@ -139,6 +140,24 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
                     signal = receive_interfaces_added.next() => match signal {
                         Some(signal) => {
                             let args = signal.args()?;
+                            if args.interfaces_and_properties.contains_key("org.bluez.Adapter1") {
+                                let path: OwnedObjectPath = args.object_path.to_owned().into();
+                                let adapter: zbus::Result<Adapter> = async {
+                                    let proxy = bluez_zbus::get_adapter(&connection, path.clone()).await?;
+                                    Adapter::from_device(&proxy).await
+                                }
+                                .await;
+                                match adapter {
+                                    Ok(adapter) => {
+                                        tx
+                                            .send(Event::AddedAdapter(path, adapter))
+                                            .await
+                                            .map_err(|e| zbus::Error::Failure(e.to_string()))?;
+                                    }
+                                    Err(why) => tracing::warn!("Cannot read the adapter: {why}"),
+                                }
+                                continue;
+                            }
                             match BluetoothDevice::new(&connection, args.object_path.clone()).await {
                                 Ok(device) => {
                                     match Device::from_device(&device).await {
