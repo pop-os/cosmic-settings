@@ -658,6 +658,19 @@ impl Page {
                             self.dialog = None;
                         }
 
+                        bluez_zbus::agent1::Message::AuthorizeService {
+                            device, response, ..
+                        } => {
+                            let Some(connection) = self.connection.clone() else {
+                                return Task::none();
+                            };
+
+                            return cosmic::task::future(async move {
+                                _ = response.send(is_paired(connection, device).await);
+                                Event::Ok
+                            });
+                        }
+
                         _ => (),
                     }
                 }
