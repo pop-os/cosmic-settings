@@ -836,7 +836,7 @@ dependencies = [
 [[package]]
 name = "bluez-zbus"
 version = "0.1.0"
-source = "git+https://github.com/LinuxBoy-96/dbus-settings-bindings?branch=BT9#229e26cd1b6bec8f6a39c404f6ce0d782a1a3c22"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0a2f682cb505ca2fba4a08de3a9dcdf865284638"
 dependencies = [
  "futures-channel",
  "futures-util",
