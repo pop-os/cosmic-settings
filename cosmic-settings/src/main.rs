@@ -210,6 +210,7 @@ impl CosmicFlags for Args {
 /// Returns error if iced fails to run the application.
 pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
+    jxl_image_rs_integration::register_image_decoding_hook();
 
     if std::env::var("RUST_SPANTRACE").is_err() {
         unsafe { std::env::set_var("RUST_SPANTRACE", "0") };

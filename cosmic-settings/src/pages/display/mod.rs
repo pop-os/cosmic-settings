@@ -503,11 +503,9 @@ impl Page {
                                     return self.update(Message::DialogComplete);
                                 }
                             }
-                            Some(Randr::RefreshRate(rate)) => {
-                                if mode.refresh_rate == rate {
-                                    self.config.refresh_rate = Some(rate);
-                                    return self.update(Message::DialogComplete);
-                                }
+                            Some(Randr::RefreshRate(rate)) if mode.refresh_rate == rate => {
+                                self.config.refresh_rate = Some(rate);
+                                return self.update(Message::DialogComplete);
                             }
                             _ => {}
                         }

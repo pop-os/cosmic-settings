@@ -1,15 +1,12 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
-use eyre::eyre;
 use fast_image_resize::SrcCropping;
 use futures_lite::Stream;
 use futures_util::StreamExt;
 use image::imageops::FilterType;
 use image::{DynamicImage, ImageBuffer, ImageDecoder, ImageResult, Limits, Rgba, RgbaImage};
-use jxl_oxide::integration::JxlDecoder;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
-use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
@@ -97,7 +94,6 @@ pub fn cache_dir() -> Option<PathBuf> {
 }
 
 /// Loads wallpapers in parallel by spawning tasks with a rayon thread pool.
-#[must_use]
 pub async fn load_each_from_path(
     path: PathBuf,
 ) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
@@ -243,19 +239,10 @@ fn load_thumbnail(
 }
 
 fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
-    if path.extension().map(|ext| ext == "jxl").unwrap_or_default() {
-        return match decode_jpegxl(path) {
-            Ok(image) => Some(image),
-            Err(why) => {
-                tracing::error!(?path, ?why, "image decode failed");
-                None
-            }
-        };
-    }
-
     const SUPPORTED_FORMATS: &[&[u8]] = &[
         "jpg".as_bytes(),
         "jpeg".as_bytes(),
+        "jxl".as_bytes(),
         "png".as_bytes(),
         "avif".as_bytes(),
         "webp".as_bytes(),
@@ -446,25 +433,6 @@ fn border_radius(
             img[coordinates(r0 - i, r0 - j)].0[3] = 0;
         }
     }
-}
-
-/// Decodes JPEG XL image files into `image::DynamicImage` via `jxl-oxide`.
-pub fn decode_jpegxl(path: &std::path::Path) -> eyre::Result<DynamicImage> {
-    let file = File::open(path).map_err(|why| eyre!("failed to open jxl image file: {why}"))?;
-
-    let mut decoder =
-        JxlDecoder::new(file).map_err(|why| eyre!("failed to read jxl image header: {why}"))?;
-
-    let orientation = decoder
-        .orientation()
-        .map_err(|why| eyre!("failed to read jxl image orientation: {why}"))?;
-
-    let mut image = image::DynamicImage::from_decoder(decoder)
-        .map_err(|why| eyre!("failed to decode jxl image: {why}"))?;
-
-    image.apply_orientation(orientation);
-
-    Ok(image)
 }
 
 /// Use `fast-image-resize` crate for faster thumbnail generation.

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::PageCommands;
-#[cfg(feature = "page-input")]
-use crate::{KeyboardCommands, ShortcutsCommands};
 use crate::config::Config;
 #[cfg(feature = "page-accessibility")]
 use crate::pages::accessibility;
@@ -23,6 +21,8 @@ use crate::pages::sound;
 use crate::pages::{self, applications, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
+#[cfg(feature = "page-input")]
+use crate::{KeyboardCommands, ShortcutsCommands};
 use cosmic::app::context_drawer::ContextDrawer;
 use cosmic::app::{Core, Task};
 #[cfg(feature = "wayland")]
@@ -111,7 +111,9 @@ impl SettingsApp {
                 }
                 Some(KeyboardCommands::Shortcuts {
                     command: Some(ShortcutsCommands::Custom),
-                }) => self.pages.page_id::<input::keyboard::shortcuts::custom::Page>(),
+                }) => self
+                    .pages
+                    .page_id::<input::keyboard::shortcuts::custom::Page>(),
             },
             #[cfg(feature = "page-legacy-applications")]
             PageCommands::LegacyApplications => self

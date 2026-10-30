@@ -22,7 +22,9 @@ cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
 cosmic-idle-config.workspace = true
-cosmic-osk-config = { git = "https://github.com/pop-os/cosmic-osk", features = ["subscription"] }
+cosmic-osk-config = { git = "https://github.com/pop-os/cosmic-osk", features = [
+    "subscription",
+] }
 cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-randr-shell.workspace = true
@@ -46,6 +48,7 @@ hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 i18n-embed-fl = "0.10.1"
 image.workspace = true
+jxl-image-rs-integration.workspace = true
 indexmap = "2.14.0"
 itertools = "0.14.0"
 itoa = "1.0.18"
@@ -53,7 +56,9 @@ libcosmic.workspace = true
 iced_winit.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 sysinfo = { version = "=0.38.0", optional = true }
-mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = ["tokio"], optional = true }
+mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = [
+    "tokio",
+], optional = true }
 notify = "8.2.0"
 nmrs = { version = "3.5.3", optional = true }
 regex = "1.13.1"
@@ -61,7 +66,9 @@ ron = "0.12"
 rust-embed = "8.12.0"
 sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
-secret-service = { version = "5.1.0", features = ["rt-tokio-crypto-rust"], optional = true }
+secret-service = { version = "5.1.0", features = [
+    "rt-tokio-crypto-rust",
+], optional = true }
 serde = { version = "1.0.229", features = ["derive"] }
 slab = "0.4.12"
 slotmap = "1.1.1"
@@ -168,12 +175,7 @@ page-input = [
     "wayland",
 ]
 page-legacy-applications = ["cosmic-comp-config", "dep:cosmic-randr"]
-page-networking = [
-    "xdg-portal",
-    "dep:nmrs",
-    "dep:secret-service",
-    "dep:zbus",
-]
+page-networking = ["xdg-portal", "dep:nmrs", "dep:secret-service", "dep:zbus"]
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = [
     "gettext",
@@ -194,6 +196,11 @@ cosmic-comp-config = ["dep:cosmic-comp-config"]
 dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
 single-instance = ["libcosmic/single-instance"]
 test = []
-wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr", "iced_winit/wayland"]
+wayland = [
+    "libcosmic/wayland",
+    "dep:cosmic-panel-config",
+    "dep:cosmic-randr",
+    "iced_winit/wayland",
+]
 wgpu = ["libcosmic/wgpu"]
 xdg-portal = ["ashpd", "libcosmic/xdg-portal"]
