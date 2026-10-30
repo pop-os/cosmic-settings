@@ -25,16 +25,14 @@ use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::segmented_button::Model;
-use cosmic::widget::text_input::focus;
 use cosmic::widget::{segmented_button, settings, text};
-use cosmic::{Apply, Element, Task, task, widget};
+use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::{Key, SlotMap};
 
 use crate::app;
-use crate::pages::desktop::appearance::font_config::FONT_SEARCH;
 use crate::pages::desktop::appearance::frosted::Frosted;
 
 #[derive(Clone, Copy, Debug)]
@@ -73,8 +71,10 @@ pub struct Page {
     theme_manager: theme_manager::Manager,
 
     decks: Vec<theme_bundles::Deck>,
+    activating: Option<String>,
 
     import: Option<theme_bundles::Import>,
+    rename: Option<theme_bundles::Rename>,
 
     tk_config: Option<Config>,
     day_time: bool,
@@ -124,7 +124,9 @@ impl From<theme_manager::Manager> for Page {
 
             theme_manager,
             decks: Vec::new(),
+            activating: None,
             import: None,
+            rename: None,
             tk_config,
             day_time: true,
         }
@@ -148,6 +150,11 @@ pub enum Message {
     ImportConfirm,
     ImportFileChosen(Option<std::path::PathBuf>),
     ImportNameChanged(String),
+    SaveAs,
+    SaveAsCancel,
+    SaveAsConfirm,
+    SaveAsNameChanged(String),
+    SavedAs(Result<String, String>),
     BundleWallpaper(
         Vec<(cosmic_theme_bundle_config::Mode, String)>,
         Option<cosmic::widget::image::Handle>,
@@ -170,6 +177,11 @@ pub enum Message {
     Left,
     PaletteAccent(cosmic::iced::Color),
     Reset,
+    RenameBundle(String, String),
+    RenameCancel,
+    RenameConfirm,
+    RenameNameChanged(String),
+    Renamed(Result<String, String>),
     Roundness(Roundness),
     Frosted(frosted::Frosted),
     UseDefaultWindowHint(bool),
@@ -204,23 +216,30 @@ impl Page {
 
         match message {
             Message::ActivateBundle(slug) => {
+                if self.activating.is_some() {
+                    return Task::none();
+                }
+                self.activating = Some(slug.clone());
                 tasks.push(cosmic::task::future(async move {
                     let result = theme_bundles::activate(&slug);
                     Message::BundleActivated(slug, result)
                 }));
             }
 
-            Message::BundleActivated(slug, result) => match result {
-                Ok(()) => {
-                    tasks.push(self.reload_theme());
-                    tasks.push(cosmic::task::future(async {
-                        Message::BundlesLoaded(theme_bundles::load())
-                    }));
+            Message::BundleActivated(slug, result) => {
+                self.activating = None;
+                match result {
+                    Ok(()) => {
+                        tasks.push(self.reload_theme());
+                        tasks.push(cosmic::task::future(async {
+                            Message::BundlesLoaded(theme_bundles::load())
+                        }));
+                    }
+                    Err(error) => {
+                        tracing::error!(%slug, ?error, "failed to activate theme bundle");
+                    }
                 }
-                Err(error) => {
-                    tracing::error!(%slug, ?error, "failed to activate theme bundle");
-                }
-            },
+            }
 
             Message::BundlesLoaded(decks) => {
                 for (slugs, path) in theme_bundles::wallpapers(&decks) {
@@ -256,12 +275,61 @@ impl Page {
             }
 
             Message::BundleImport => {
+                self.rename = None;
                 self.import = Some(theme_bundles::Import::default());
             }
 
             Message::Open(_) => {}
 
             Message::ExportTheme | Message::ExportThemeFile(_) | Message::Exported(_) => {}
+
+            Message::SaveAs
+            | Message::SaveAsCancel
+            | Message::SaveAsConfirm
+            | Message::SaveAsNameChanged(_)
+            | Message::SavedAs(_)
+            | Message::DrawerFont(_)
+            | Message::DrawerIcon(_)
+            | Message::FocusFontInput => {}
+
+            Message::RenameBundle(slug, name) => {
+                self.import = None;
+                self.rename = Some(theme_bundles::Rename { slug, name });
+                tasks.push(theme_bundles::focus_input(
+                    theme_bundles::RENAME_INPUT.clone(),
+                    true,
+                ));
+            }
+
+            Message::RenameNameChanged(name) => {
+                if let Some(rename) = self.rename.as_mut() {
+                    rename.name = name;
+                }
+            }
+
+            Message::RenameCancel => self.rename = None,
+
+            Message::RenameConfirm => {
+                let chosen = self.rename.as_ref().and_then(|rename| {
+                    let name = rename.name.trim().to_owned();
+                    (!name.is_empty()).then(|| (rename.slug.clone(), name))
+                });
+                if let Some((slug, name)) = chosen {
+                    self.rename = None;
+                    tasks.push(cosmic::task::future(async move {
+                        Message::Renamed(theme_bundles::rename(&slug, &name))
+                    }));
+                }
+            }
+
+            Message::Renamed(result) => match result {
+                Ok(_) => {
+                    tasks.push(cosmic::task::future(async {
+                        Message::BundlesLoaded(theme_bundles::load())
+                    }));
+                }
+                Err(error) => tracing::error!(?error, "failed to rename theme bundle"),
+            },
 
             Message::ImportNameChanged(name) => {
                 if let Some(import) = self.import.as_mut() {
@@ -363,10 +431,6 @@ impl Page {
                 tasks.push(self.drawer.on_open(&context_view));
             }
 
-            Message::DrawerFont(message) => {
-                tasks.push(self.drawer.update_font(message, self.context_view.as_ref()));
-            }
-
             Message::DrawerColor(u) => {
                 if let Some(context_view) = self.context_view.as_ref()
                     && self.drawer.update_color(&mut tasks, u, context_view)
@@ -374,12 +438,6 @@ impl Page {
                     theme_staged = self
                         .theme_manager
                         .set_color(self.drawer.current_color(context_view), context_view);
-                }
-            }
-
-            Message::DrawerIcon(message) => {
-                if let Some(context_view) = self.context_view.as_ref() {
-                    tasks.push(self.drawer.update_icon(message, context_view));
                 }
             }
 
@@ -534,25 +592,6 @@ impl Page {
                 }
             }
 
-            Message::FocusFontInput => {
-                // retry until the widget is in the tree and focused or the dialog is removed.
-                if matches!(
-                    self.context_view,
-                    Some(ContextView::SystemFont | ContextView::MonospaceFont)
-                ) {
-                    return cosmic::iced::runtime::task::widget(
-                        cosmic::iced::core::widget::operation::focusable::find_focused(),
-                    )
-                    .collect()
-                    .then(|id| {
-                        if id.first().is_some_and(|id| *id == FONT_SEARCH.clone()) {
-                            Task::none()
-                        } else {
-                            focus(FONT_SEARCH.clone()).chain(task::message(Message::FocusFontInput))
-                        }
-                    });
-                }
-            }
             Message::Blur(b) => {
                 let Ok(blur_strength) = b.try_into() else {
                     tracing::error!("Invalid blur strength: {b}");
@@ -771,17 +810,14 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
+        if let Some(rename) = self.rename.as_ref() {
+            return Some(
+                theme_bundles::rename_dialog(rename).map(crate::pages::Message::Appearance),
+            );
+        }
         self.import.as_ref().map(|import| {
             theme_bundles::import_dialog(import).map(crate::pages::Message::Appearance)
         })
-    }
-
-    fn header(&self) -> Option<Element<'_, crate::pages::Message>> {
-        Some(
-            text::title3(fl!("appearance"))
-                .apply(Element::from)
-                .map(crate::pages::Message::Appearance),
-        )
     }
 
     fn content(
@@ -799,7 +835,6 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(interface_density()),
             sections.insert(frosted::section()),
             sections.insert(window_management()),
-            sections.insert(experimental()),
         ])
     }
 
@@ -819,12 +854,6 @@ impl page::Page<crate::pages::Message> for Page {
                 self.refresh_theme();
                 cosmic::task::none()
             },
-            // Load font families
-            cosmic::task::future(async move {
-                let (interface, mono) = font_config::load_font_families();
-                Message::DrawerFont(drawer::FontMessage::FontLoaded(interface, mono))
-            })
-            .map(crate::pages::Message::Appearance),
         ])
         .abortable();
 
@@ -902,6 +931,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         active_hint = fl!("window-management-appearance", "active-hint");
         gaps = fl!("window-management-appearance", "gaps");
+        shadow_and_corners_txt = fl!("shadow-and-corners");
     });
 
     Section::default()
@@ -910,7 +940,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::section()
+            let mut section = settings::section()
                 .title(&section.title)
                 .add(settings::item::builder(&descriptions[active_hint]).control(
                     widget::spin_button(
@@ -933,7 +963,17 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         500,
                         Message::GapSize,
                     )),
-                )
+                );
+
+            #[cfg(feature = "cosmic-comp-config")]
+            {
+                section = section.add(crate::widget::go_next_item(
+                    &descriptions[shadow_and_corners_txt],
+                    Message::DrawerOpen(ContextView::ShadowAndCorners),
+                ));
+            }
+
+            section
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
@@ -944,13 +984,12 @@ pub fn experimental() -> Section<crate::pages::Message> {
         interface_font_txt = fl!("interface-font");
         monospace_font_txt = fl!("monospace-font");
         icons_and_toolkit_txt = fl!("icons-and-toolkit");
-        shadow_and_corners_txt = fl!("shadow-and-corners");
     });
 
     Section::default()
         .title(fl!("experimental-settings"))
         .descriptions(descriptions)
-        .view::<Page>(move |_binder, page, section| {
+        .view::<custom::Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
             let system_font = crate::widget::go_next_with_item(
@@ -970,19 +1009,11 @@ pub fn experimental() -> Section<crate::pages::Message> {
                 Message::DrawerOpen(ContextView::IconsAndToolkit),
             );
 
-            let mut section = settings::section()
+            let section = settings::section()
                 .title(&*section.title)
                 .add(system_font)
                 .add(mono_font)
                 .add(icons_and_toolkit);
-
-            #[cfg(feature = "cosmic-comp-config")]
-            {
-                section = section.add(crate::widget::go_next_item(
-                    &descriptions[shadow_and_corners_txt],
-                    Message::DrawerOpen(ContextView::ShadowAndCorners),
-                ));
-            }
 
             section
                 .apply(Element::from)
