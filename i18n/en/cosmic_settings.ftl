@@ -380,7 +380,6 @@ hex = Hex
 import = Import
 light = Light
 mode = Mode
-mode-and-colors = Mode and colors
 recent-colors = Recent colors
 reset-to-default = Reset to default
 rgb = RGB
@@ -392,6 +391,9 @@ theme-bundles-import-file = Select file
 theme-bundles-import-input-label = Theme name
 theme-bundles-import-title = Import theme
 theme-bundles-light = Light theme
+theme-bundles-rename-title = Rename theme
+theme-bundles-save-as = Save as...
+theme-bundles-save-as-title = Save theme as
 window-hint-accent = Active window hint color
 window-hint-accent-toggle = Use theme accent color as active window hint
 

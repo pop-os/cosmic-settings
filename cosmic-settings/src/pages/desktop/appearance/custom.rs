@@ -6,14 +6,19 @@ use cosmic::cosmic_theme::Roundness;
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::text_input::focus;
 use cosmic::widget::{button, container};
-use cosmic::{Apply, Element, Task};
+use cosmic::{Apply, Element, Task, task};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_theme_bundle_config::Mode;
 use slotmap::{Key, SlotMap};
 
+use crate::pages::desktop::appearance::font_config::FONT_SEARCH;
+
 use super::theme_manager;
-use super::{ContextView, Message, colors_and_style, drawer, style, theme_bundles, wallpaper};
+use super::{
+    ContextView, Message, colors_and_style, drawer, font_config, style, theme_bundles, wallpaper,
+};
 
 pub struct Page {
     pub(crate) entity: page::Entity,
@@ -22,6 +27,7 @@ pub struct Page {
     pub(crate) drawer: drawer::Content,
     pub(crate) context_view: Option<ContextView>,
     pub(crate) roundness: Roundness,
+    pub(crate) save_as: Option<String>,
 }
 
 impl Default for Page {
@@ -34,6 +40,7 @@ impl Default for Page {
             drawer: drawer::Content::from(&theme_manager),
             theme_manager,
             context_view: None,
+            save_as: None,
         }
     }
 }
@@ -52,6 +59,7 @@ impl Page {
         self.theme_manager = manager;
         self.roundness = self.theme_manager.theme().corner_radii.into();
         self.drawer.reset(&self.theme_manager);
+        self.drawer.sync_fonts(&self.theme_manager);
         self.context_view = None;
     }
 
@@ -72,6 +80,7 @@ impl Page {
         match message {
             Message::Open(mode) => {
                 self.mode = mode;
+                self.save_as = None;
                 self.reload();
 
                 return cosmic::task::message(crate::app::Message::Page(self.entity));
@@ -185,6 +194,72 @@ impl Page {
                 )));
             }
 
+            Message::SaveAs => {
+                self.save_as = Some(String::new());
+                tasks.push(theme_bundles::focus_input(
+                    theme_bundles::SAVE_AS_INPUT.clone(),
+                    false,
+                ));
+            }
+
+            Message::SaveAsNameChanged(name) => {
+                self.save_as = Some(name);
+            }
+
+            Message::SaveAsCancel => self.save_as = None,
+
+            Message::SaveAsConfirm => {
+                if let Some(name) = self
+                    .save_as
+                    .as_ref()
+                    .map(|name| name.trim().to_owned())
+                    .filter(|name| !name.is_empty())
+                {
+                    self.save_as = None;
+                    let mode = self.mode;
+                    tasks.push(cosmic::task::future(async move {
+                        here(Message::SavedAs(theme_bundles::save_live_as(mode, &name)))
+                    }));
+                }
+            }
+
+            Message::SavedAs(result) => match result {
+                Ok(_) => {
+                    self.reload();
+                    theme_changed = true;
+                }
+                Err(error) => tracing::error!(?error, "failed to save the theme as a new bundle"),
+            },
+
+            Message::DrawerFont(message) => {
+                tasks.push(self.drawer.update_font(message, self.context_view.as_ref()));
+            }
+
+            Message::DrawerIcon(message) => {
+                if let Some(context_view) = self.context_view.as_ref() {
+                    tasks.push(self.drawer.update_icon(message, context_view));
+                }
+            }
+
+            Message::FocusFontInput => {
+                if matches!(
+                    self.context_view,
+                    Some(ContextView::SystemFont | ContextView::MonospaceFont)
+                ) {
+                    return cosmic::iced::runtime::task::widget(
+                        cosmic::iced::core::widget::operation::focusable::find_focused(),
+                    )
+                    .collect()
+                    .then(|id| {
+                        if id.first().is_some_and(|id| *id == FONT_SEARCH.clone()) {
+                            Task::none()
+                        } else {
+                            focus(FONT_SEARCH.clone()).chain(task::message(Message::FocusFontInput))
+                        }
+                    });
+                }
+            }
+
             Message::ExportTheme => {
                 #[cfg(feature = "xdg-portal")]
                 {
@@ -275,6 +350,8 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(wallpaper::section()),
             sections.insert(colors_and_style::section()),
             sections.insert(style::section()),
+            sections.insert(super::experimental()),
+            sections.insert(export_action()),
         ])
     }
 
@@ -283,12 +360,12 @@ impl page::Page<crate::pages::Message> for Page {
 
         let reset = button::standard(fl!("reset-to-default"))
             .on_press(crate::pages::Message::AppearanceTheme(Message::Reset));
-        let export = button::standard(fl!("export"))
-            .on_press(crate::pages::Message::AppearanceTheme(Message::ExportTheme));
+        let save_as = button::standard(fl!("theme-bundles-save-as"))
+            .on_press(crate::pages::Message::AppearanceTheme(Message::SaveAs));
 
         Some(
             container(
-                cosmic::iced::widget::row![reset, export]
+                cosmic::iced::widget::row![reset, save_as]
                     .spacing(spacing.space_xs)
                     .align_y(Alignment::Center),
             )
@@ -298,6 +375,12 @@ impl page::Page<crate::pages::Message> for Page {
         )
     }
 
+    fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
+        self.save_as.as_ref().map(|name| {
+            theme_bundles::save_as_dialog(name).map(crate::pages::Message::AppearanceTheme)
+        })
+    }
+
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.drawer
             .context_drawer(self.context_view, crate::pages::Message::AppearanceTheme)
@@ -305,10 +388,32 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         self.reload();
-        cosmic::task::message(self.preview())
+        let fonts = cosmic::task::future(async {
+            let (interface, mono) = font_config::load_font_families();
+            Message::DrawerFont(drawer::FontMessage::FontLoaded(interface, mono))
+        })
+        .map(crate::pages::Message::AppearanceTheme);
+
+        Task::batch(vec![cosmic::task::message(self.preview()), fonts])
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        cosmic::task::message(crate::pages::Message::AppearancePreview(None))
+        self.save_as = None;
+        Task::batch(vec![
+            self.drawer.on_leave(),
+            cosmic::task::message(crate::pages::Message::AppearancePreview(None)),
+        ])
     }
+}
+
+fn export_action() -> Section<crate::pages::Message> {
+    Section::default().search_ignore().view::<Page>(|_, _, _| {
+        container(
+            button::standard(fl!("export"))
+                .on_press(crate::pages::Message::AppearanceTheme(Message::ExportTheme)),
+        )
+        .width(Length::Fill)
+        .align_x(Alignment::End)
+        .apply(Element::from)
+    })
 }

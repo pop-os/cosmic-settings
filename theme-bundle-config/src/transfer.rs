@@ -12,8 +12,8 @@ use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
 use crate::{
-    DEFAULT_PACKAGE_VERSION, Error, Mode, NAME_KEY, Package, Part, Store, interface_key, is_slug,
-    neutral_builder, neutral_theme, read, rename, rename_base, version_of,
+    DEFAULT_PACKAGE_VERSION, Error, Mode, Package, Part, Store, interface_key, is_slug,
+    neutral_builder, neutral_theme, read, rename, version_of,
 };
 
 const METAINFO_SUFFIX: &str = ".metainfo.xml";
@@ -256,6 +256,28 @@ impl Store {
             &package,
             &name,
             &slug,
+            mode,
+            &theme,
+            path,
+        )
+    }
+
+    /// Export the live look under an explicit package identity.
+    pub(crate) fn export_live_archive_as(
+        &self,
+        mode: Mode,
+        path: &Path,
+        name: &str,
+        slug: &str,
+        package: &Package,
+    ) -> Result<Manifest, Error> {
+        let theme = read::<Theme>(&self.live_config(Part::Theme, mode)?)?;
+        self.export_tree(
+            |part| Self::bundle_id(slug, part),
+            |part| part.live_id(mode).to_owned(),
+            package,
+            name,
+            slug,
             mode,
             &theme,
             path,
@@ -520,7 +542,6 @@ impl Store {
                 "the archive names no package version".to_owned(),
             ));
         }
-
         let data = xdg::BaseDirectories::new()
             .get_data_home()
             .ok_or(Error::NoDataDir)?;
@@ -541,6 +562,14 @@ impl Store {
         let avoid = self.reserved_names();
         let (name, slug) =
             self.unique_name_avoiding(name.unwrap_or(manifest.name.as_str()), &avoid)?;
+        if self.system_bundle(&slug).is_ok() {
+            return Err(Error::SystemBundle(slug));
+        }
+        let package_id = if self.package_id_in_use(&manifest.package_id)? {
+            self.unique_package_id(&slug)?
+        } else {
+            manifest.package_id.clone()
+        };
 
         let mut used = BTreeSet::new();
         let mut plans = Vec::new();
@@ -552,7 +581,7 @@ impl Store {
                     asset.path
                 )));
             };
-            let base = asset_base_id(&manifest.package_id, asset);
+            let base = asset_base_id(&package_id, asset);
             let (target, id) = match asset.kind {
                 AssetKind::Wallpaper => {
                     let id = unique_installed_id(&data.join("cosmic"), &base, &used);
@@ -599,7 +628,7 @@ impl Store {
             save_receipt(
                 self,
                 &Receipt {
-                    package_id: manifest.package_id.clone(),
+                    package_id: package_id.clone(),
                     package_version: manifest.package_version.clone(),
                     slug: slug.clone(),
                     assets: plans.iter().map(|plan| plan.installed.clone()).collect(),
@@ -629,7 +658,7 @@ impl Store {
             self.write_package(
                 &slug,
                 &Package {
-                    package_id: manifest.package_id.clone(),
+                    package_id: package_id.clone(),
                     version: manifest.package_version.clone(),
                 },
             )?;
@@ -646,10 +675,7 @@ impl Store {
 
     /// Name a copied-in or renamed bundle.
     pub(crate) fn write_imported_name(&self, slug: &str, name: &str) -> Result<(), Error> {
-        let config = self.bundle_config(slug, Part::Theme)?;
-        config.set(NAME_KEY, name.to_owned())?;
-        rename_base(&config, name)?;
-        Ok(())
+        self.rename_stored(slug, name)
     }
 }
 

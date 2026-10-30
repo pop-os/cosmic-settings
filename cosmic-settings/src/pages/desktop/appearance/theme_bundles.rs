@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
+use std::time::Duration;
 
 use cosmic::cosmic_config::{self, Config, ConfigGet, CosmicConfigEntry};
 use cosmic::cosmic_theme::Theme;
@@ -8,14 +10,20 @@ use cosmic::iced::Radius;
 use cosmic::iced::alignment::Vertical;
 use cosmic::iced::core::{Alignment, Background, Border, Length};
 use cosmic::iced::widget::Stack;
+use cosmic::widget::text_input::{focus, select_all};
 use cosmic::widget::{self, button, column, container, icon, row, space, text};
-use cosmic::{Apply, Element};
+use cosmic::{Apply, Element, Task};
 use cosmic_settings_page::Section;
 use cosmic_settings_wallpaper as wallpaper;
 use cosmic_theme_bundle_config::{Bundle, Mode, Part, Store};
 
 use super::{Message, Page};
 use crate::pages::desktop::wallpaper::widgets::color_image;
+
+pub(crate) static SAVE_AS_INPUT: LazyLock<widget::Id> =
+    LazyLock::new(|| widget::Id::new("theme-bundle-save-as-name"));
+pub(crate) static RENAME_INPUT: LazyLock<widget::Id> =
+    LazyLock::new(|| widget::Id::new("theme-bundle-rename-name"));
 
 const CARD_WIDTH: f32 = 218.0;
 const CARD_HEIGHT: f32 = 152.0;
@@ -69,6 +77,12 @@ impl Deck {
         self.cards
             .iter()
             .position(|card| card.name == self.live_name)
+    }
+
+    fn active_card(&self) -> Option<&Card> {
+        self.cards
+            .iter()
+            .find(|card| !card.system && !card.slug.is_empty() && card.name == self.live_name)
     }
 
     fn row(&self) -> Vec<(&Card, bool)> {
@@ -282,6 +296,12 @@ pub fn delete(slug: &str) -> Result<(), String> {
 }
 
 #[derive(Debug, Default, Clone)]
+pub struct Rename {
+    pub slug: String,
+    pub name: String,
+}
+
+#[derive(Debug, Default, Clone)]
 pub struct Import {
     pub name: String,
     pub path: Option<PathBuf>,
@@ -299,6 +319,76 @@ pub fn import_archive(path: &Path, name: Option<&str>) -> Result<String, String>
         .import_archive(path, name)
         .map(|bundle| bundle.name)
         .map_err(|error| error.to_string())
+}
+
+pub fn rename(slug: &str, name: &str) -> Result<String, String> {
+    let store = Store::new().map_err(|error| error.to_string())?;
+    store
+        .rename(slug, name)
+        .map(|bundle| bundle.name)
+        .map_err(|error| error.to_string())
+}
+
+pub fn rename_dialog(rename: &Rename) -> Element<'_, Message> {
+    let input = widget::text_input("", rename.name.as_str())
+        .id(RENAME_INPUT.clone())
+        .label(fl!("theme-bundles-import-input-label"))
+        .on_input(Message::RenameNameChanged)
+        .on_submit_maybe((!rename.name.trim().is_empty()).then_some(|_| Message::RenameConfirm));
+
+    let primary = button::suggested(fl!("rename"))
+        .on_press_maybe((!rename.name.trim().is_empty()).then_some(Message::RenameConfirm));
+    let secondary = button::standard(fl!("cancel")).on_press(Message::RenameCancel);
+
+    widget::dialog()
+        .title(fl!("theme-bundles-rename-title"))
+        .control(input)
+        .primary_action(primary)
+        .secondary_action(secondary)
+        .apply(Element::from)
+}
+
+pub fn save_live_as(mode: Mode, name: &str) -> Result<String, String> {
+    let store = Store::new().map_err(|error| error.to_string())?;
+    store
+        .save_live_as(mode, name)
+        .map(|bundle| bundle.name)
+        .map_err(|error| error.to_string())
+}
+
+pub fn save_as_dialog(name: &str) -> Element<'_, Message> {
+    let input = widget::text_input("", name)
+        .id(SAVE_AS_INPUT.clone())
+        .label(fl!("theme-bundles-import-input-label"))
+        .on_input(Message::SaveAsNameChanged)
+        .on_submit_maybe((!name.trim().is_empty()).then_some(|_| Message::SaveAsConfirm));
+
+    let primary = button::suggested(fl!("save"))
+        .on_press_maybe((!name.trim().is_empty()).then_some(Message::SaveAsConfirm));
+    let secondary = button::standard(fl!("cancel")).on_press(Message::SaveAsCancel);
+
+    widget::dialog()
+        .title(fl!("theme-bundles-save-as-title"))
+        .control(input)
+        .primary_action(primary)
+        .secondary_action(secondary)
+        .apply(Element::from)
+}
+
+pub(crate) fn focus_input(id: widget::Id, select: bool) -> Task<crate::app::Message> {
+    // Give the dialog a frame to enter the widget tree before asking for focus.
+    cosmic::task::future(async {
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    })
+    .then(move |()| {
+        let focus = focus::<Message>(id.clone());
+        if select {
+            focus.chain(select_all::<Message>(id.clone()))
+        } else {
+            focus
+        }
+    })
+    .map(crate::app::Message::from)
 }
 
 pub fn import_dialog(import: &Import) -> Element<'_, Message> {
@@ -423,10 +513,11 @@ pub fn section(mode: Mode) -> Section<crate::pages::Message> {
 
             let body: Element<'_, crate::pages::Message> = match deck {
                 Some(deck) => {
+                    let activating = page.activating.is_some();
                     let cards = deck
                         .row()
                         .into_iter()
-                        .map(|(card, active)| card_button(card, active, mode))
+                        .map(|(card, active)| card_button(card, active, activating))
                         .collect();
 
                     container(widget::flex_row(cards).spacing(spacing.space_s))
@@ -491,6 +582,12 @@ fn active_row<'a>(deck: &'a Deck, mode: Mode) -> Element<'a, crate::pages::Messa
         deck.live_name.clone()
     };
 
+    let rename = deck.active_card().map(|card| {
+        button::icon(icon::from_name("edit-symbolic")).on_press(crate::pages::Message::Appearance(
+            Message::RenameBundle(card.slug.clone(), card.name.clone()),
+        ))
+    });
+
     let remove = deck.removable().map(|card| {
         button::icon(icon::from_name("edit-delete-symbolic")).on_press(
             crate::pages::Message::Appearance(Message::DeleteBundle(card.slug.clone())),
@@ -510,9 +607,13 @@ fn active_row<'a>(deck: &'a Deck, mode: Mode) -> Element<'a, crate::pages::Messa
 
     let gap = |width: u16| space::horizontal().width(Length::Fixed(f32::from(width)));
 
-    let mut row = row::with_capacity(4)
+    let mut row = row::with_capacity(5)
         .push(text::body(name))
         .push(gap(spacing.space_s));
+
+    if let Some(rename) = rename {
+        row = row.push(rename).push(gap(spacing.space_xxs));
+    }
 
     if let Some(remove) = remove {
         row = row.push(remove).push(gap(spacing.space_xs));
@@ -526,7 +627,7 @@ fn active_row<'a>(deck: &'a Deck, mode: Mode) -> Element<'a, crate::pages::Messa
 fn card_button<'a>(
     card: &'a Card,
     selected: bool,
-    mode: Mode,
+    activating: bool,
 ) -> Element<'a, crate::pages::Message> {
     let preview = Stack::new()
         .width(Length::Fixed(CARD_WIDTH))
@@ -539,16 +640,16 @@ fn card_button<'a>(
                 .align_y(Alignment::End),
         );
 
-    let press: Option<crate::pages::Message> = if selected {
-        Some(crate::pages::Message::AppearanceTheme(Message::Open(mode)))
+    let press: Option<crate::pages::Message> = if activating {
+        None
     } else {
-        (!card.slug.is_empty())
+        (!selected && !card.slug.is_empty())
             .then(|| crate::pages::Message::Appearance(Message::ActivateBundle(card.slug.clone())))
     };
 
     let image = button::custom_image_button(preview, None)
         .padding(0)
-        .force_enabled(true)
+        .force_enabled(!activating)
         .width(Length::Fixed(CARD_WIDTH))
         .height(Length::Fixed(CARD_HEIGHT))
         .selected(selected)

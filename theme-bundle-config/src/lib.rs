@@ -188,6 +188,8 @@ pub enum Error {
     Config(cosmic_config::Error),
     Io(PathBuf, io::Error),
     NoConfigDir,
+    Name,
+    PackageInUse(String),
     SystemBundle(String),
     UnknownBundle(String),
     Slug(String),
@@ -205,6 +207,10 @@ impl std::fmt::Display for Error {
             Self::Config(err) => err.fmt(f),
             Self::Io(path, err) => write!(f, "{}: {err}", path.display()),
             Self::NoConfigDir => f.write_str("no cosmic config directory"),
+            Self::Name => f.write_str("a theme bundle needs a name"),
+            Self::PackageInUse(id) => {
+                write!(f, "theme bundle package id is already in use: {id}")
+            }
             Self::SystemBundle(slug) => {
                 write!(f, "theme bundle '{slug}' is part of the system install")
             }
@@ -992,6 +998,55 @@ impl Store {
         Ok(())
     }
 
+    /// Save the live look as a new, self-contained bundle.
+    pub fn save_live_as(&self, mode: Mode, name: &str) -> Result<Bundle, Error> {
+        let name = name.trim();
+        if name.is_empty() {
+            return Err(Error::Name);
+        }
+        let avoid = self.reserved_names();
+        let (name, slug) = self.unique_name_avoiding(name, &avoid)?;
+        if self.system_bundle(&slug).is_ok() {
+            return Err(Error::SystemBundle(slug));
+        }
+        let package = Package {
+            package_id: format!("{NAME}.{slug}"),
+            version: DEFAULT_PACKAGE_VERSION.to_owned(),
+        };
+        if self.package_id_in_use(&package.package_id)? {
+            return Err(Error::PackageInUse(package.package_id));
+        }
+        let temp = tempfile::Builder::new()
+            .prefix(".cosmic-theme-save-as-")
+            .tempdir()
+            .map_err(|err| Error::Io(std::env::temp_dir(), err))?;
+        let path = temp.path().join(format!("{slug}.zip"));
+
+        self.export_live_archive_as(mode, &path, &name, &slug, &package)?;
+        let bundle = self.import_archive(&path, Some(&name))?;
+        self.write_live(mode, &bundle.slug)?;
+        Ok(bundle)
+    }
+
+    pub fn rename(&self, slug: &str, name: &str) -> Result<Bundle, Error> {
+        if self.is_system(slug)? {
+            return Err(Error::SystemBundle(slug.to_owned()));
+        }
+        let bundle = self.bundle(slug)?;
+        let name = name.trim();
+        if name.is_empty() {
+            return Err(Error::Name);
+        }
+        if name == bundle.name {
+            return Ok(bundle);
+        }
+        let avoid = self.reserved_names();
+        let (name, _) = self.unique_name_avoiding(name, &avoid)?;
+        self.rename_stored(slug, &name)?;
+        self.rename_live(bundle.mode, &bundle.name, &name)?;
+        self.bundle(slug)
+    }
+
     fn store_live(&self, name: &str, slug: &str, mode: Mode) -> Result<Bundle, Error> {
         let bundle = Bundle {
             slug: slug.to_owned(),
@@ -1185,7 +1240,7 @@ impl Store {
     }
 
     /// Rename a stored bundle's theme and palette.
-    fn rename_stored(&self, slug: &str, name: &str) -> Result<(), Error> {
+    pub(crate) fn rename_stored(&self, slug: &str, name: &str) -> Result<(), Error> {
         let config = self.bundle_config(slug, Part::Theme)?;
         if let Ok(mut theme) = theme_of(&config) {
             theme.name = name.to_owned();
@@ -1294,6 +1349,38 @@ impl Store {
             }
         }
         Ok(false)
+    }
+
+    /// Whether a package identity is already held by a saved or installed bundle.
+    fn package_id_in_use(&self, package_id: &str) -> Result<bool, Error> {
+        if self.bundles()?.into_iter().any(|bundle| {
+            bundle
+                .package
+                .is_some_and(|package| package.package_id == package_id)
+        }) {
+            return Ok(true);
+        }
+        Ok(self.system_bundles()?.into_iter().any(|bundle| {
+            bundle
+                .package
+                .is_some_and(|package| package.package_id == package_id)
+        }))
+    }
+
+    /// A package identity for a copied-in bundle that does not collide.
+    fn unique_package_id(&self, slug: &str) -> Result<String, Error> {
+        let base = format!("{NAME}.{slug}");
+        if !self.package_id_in_use(&base)? {
+            return Ok(base);
+        }
+        let mut nth = 2;
+        loop {
+            let id = format!("{base}.{nth}");
+            if !self.package_id_in_use(&id)? {
+                return Ok(id);
+            }
+            nth += 1;
+        }
     }
 
     /// Names a new look must not reuse: the live looks and the presets.
@@ -1466,14 +1553,6 @@ const INTERFACE_KEYS: [&str; 11] = [
     "alpha_map",
 ];
 
-fn rename_base(config: &Config, name: &str) -> Result<(), Error> {
-    if let Ok(mut base) = config.get::<Theme>(BASE) {
-        name.clone_into(&mut base.name);
-        config.set(BASE, neutral_theme(&base))?;
-    }
-    Ok(())
-}
-
 /// Restore one part's look keys from a stored copy.
 fn restore_part(from: &Config, to: &Config, part: Part) -> Result<bool, Error> {
     match part {
@@ -1521,8 +1600,8 @@ fn slugify(name: &str) -> String {
     let mut slug = String::with_capacity(name.len().min(MAX_SLUG * 4));
     let mut dashed = false;
     for ch in name.chars() {
-        if ch.is_alphanumeric() {
-            slug.extend(ch.to_lowercase().filter(|lower| lower.is_alphanumeric()));
+        if ch.is_ascii_alphanumeric() {
+            slug.push(ch.to_ascii_lowercase());
             dashed = false;
         } else if !dashed && !slug.is_empty() {
             slug.push('-');
