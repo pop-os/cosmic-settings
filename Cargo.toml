@@ -89,8 +89,9 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
 # iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
 
-# [patch.'https://github.com/pop-os/dbus-settings-bindings']
+[patch.'https://github.com/pop-os/dbus-settings-bindings']
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
+bluez-zbus = { git = "https://github.com/LinuxBoy-96/dbus-settings-bindings", branch = "BT9" }
 
 [patch.crates-io]
 atspi = { git = "https://github.com/wash2/atspi" }
