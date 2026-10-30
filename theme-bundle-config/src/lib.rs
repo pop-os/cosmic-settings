@@ -145,12 +145,40 @@ const LEGACY_THEME_NAMES: [(&str, &str); 2] = [
 const BASE: &str = "base";
 const NAME_KEY: &str = "name";
 const THEME_VERSION: u64 = <Theme as CosmicConfigEntry>::VERSION;
+/// Default package version for exports that do not specify one.
+pub const DEFAULT_PACKAGE_VERSION: &str = "1.0.0";
+const PACKAGE_SUFFIX: &str = "Package";
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+    cosmic_config::cosmic_config_derive::CosmicConfigEntry,
+)]
+#[version = 1]
+pub struct Package {
+    pub package_id: String,
+    pub version: String,
+}
+
+impl Default for Package {
+    fn default() -> Self {
+        Self {
+            package_id: String::new(),
+            version: DEFAULT_PACKAGE_VERSION.to_owned(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Bundle {
     pub slug: String,
     pub name: String,
     pub mode: Mode,
+    pub package: Option<Package>,
 }
 
 /// An error from managing bundles.
@@ -230,6 +258,61 @@ impl Store {
         bundle_id(slug, part)
     }
 
+    fn package_config_id(slug: &str) -> String {
+        format!("{NAME}.{slug}.{PACKAGE_SUFFIX}")
+    }
+
+    fn package_config(&self, slug: &str) -> Result<Config, Error> {
+        self.config(
+            &Self::package_config_id(slug),
+            <Package as CosmicConfigEntry>::VERSION,
+        )
+    }
+
+    fn bundle_package(&self, slug: &str) -> Option<Package> {
+        let dir = self.cosmic_dir.join(Self::package_config_id(slug));
+        if !any_version_keys(&dir).ok()? {
+            return None;
+        }
+        self.package_of(&self.package_config(slug).ok()?)
+    }
+
+    fn system_package(&self, slug: &str) -> Option<Package> {
+        let dir = self.system_dir()?.join(Self::package_config_id(slug));
+        if !any_version_keys(&dir).ok()? {
+            return None;
+        }
+        let config = Config::system(
+            &Self::package_config_id(slug),
+            <Package as CosmicConfigEntry>::VERSION,
+        )
+        .ok()?;
+        self.package_of(&config)
+    }
+
+    fn package_of(&self, config: &Config) -> Option<Package> {
+        let package = match Package::get_entry(config) {
+            Ok(package) => package,
+            Err((errors, package)) => {
+                for error in errors {
+                    tracing::warn!(?error, "invalid package metadata");
+                }
+                package
+            }
+        };
+        (!package.package_id.is_empty()).then_some(package)
+    }
+
+    fn write_package(&self, slug: &str, package: &Package) -> Result<(), Error> {
+        let config = self.package_config(slug)?;
+        package.write_entry(&config)?;
+        Ok(())
+    }
+
+    pub(crate) fn remove_package(&self, slug: &str) -> Result<(), Error> {
+        remove_dir(&self.cosmic_dir.join(Self::package_config_id(slug)))
+    }
+
     pub fn bundle_config(&self, slug: &str, part: Part) -> Result<Config, Error> {
         self.config(&Self::bundle_id(slug, part), part.version())
     }
@@ -297,6 +380,7 @@ impl Store {
             slug: slug.to_owned(),
             name: theme.name,
             mode: Mode::from_is_dark(theme.is_dark),
+            package: self.system_package(slug),
         })
     }
 
@@ -342,6 +426,9 @@ impl Store {
             self.copy_part(&from, &to, part)?;
         }
         self.materialize(slug)?;
+        if let Some(package) = self.system_package(slug) {
+            self.write_package(slug, &package)?;
+        }
 
         let name = self.bundle(slug)?.name;
         if self
@@ -427,6 +514,7 @@ impl Store {
             slug: slug.to_owned(),
             name: theme.name,
             mode: Mode::from_is_dark(theme.is_dark),
+            package: self.bundle_package(slug),
         })
     }
 
@@ -805,6 +893,8 @@ impl Store {
         for part in Part::ALL {
             remove_dir(&self.bundle_config_dir(slug, part))?;
         }
+        self.remove_package(slug)?;
+        crate::transfer::remove_installed_assets(self, slug)?;
         if was_active {
             self.promote(&bundle)?;
         }
@@ -907,6 +997,7 @@ impl Store {
             slug: slug.to_owned(),
             name: name.to_owned(),
             mode,
+            package: None,
         };
         self.sync_bundle(&bundle, mode)?;
         for part in Part::ALL {
@@ -1150,7 +1241,7 @@ impl Store {
         Ok(())
     }
 
-    fn state_dir(&self) -> PathBuf {
+    pub(crate) fn state_dir(&self) -> PathBuf {
         if let Some(dir) = xdg::BaseDirectories::new().get_state_home() {
             return dir.join("cosmic");
         }
@@ -1422,7 +1513,7 @@ fn slug_of(id: &str) -> Option<String> {
 }
 
 /// The longest slug in characters.
-const MAX_SLUG: usize = 48;
+const MAX_SLUG: usize = 40;
 
 /// Turn a display name into a config-safe slug.
 #[must_use]

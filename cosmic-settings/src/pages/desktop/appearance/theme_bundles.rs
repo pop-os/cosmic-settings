@@ -130,6 +130,7 @@ fn decks(store: &Store) -> Vec<Deck> {
             slug: String::new(),
             name: live_name(store, mode),
             mode,
+            package: None,
         })
         .collect();
 

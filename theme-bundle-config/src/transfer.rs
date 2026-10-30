@@ -6,14 +6,14 @@ use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 
 use appstream::xmltree::{Element, EmitterConfig, XMLNode};
-use cosmic_config::{Config, ConfigSet};
+use cosmic_config::{Config, ConfigGet, ConfigSet};
 use cosmic_theme::{DEFAULT_FONT_FAMILY, DEFAULT_ICON_THEME, FontConfig, Theme, ThemeBuilder};
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
 use crate::{
-    Error, Mode, NAME_KEY, Part, Store, interface_key, is_slug, neutral_builder, neutral_theme,
-    read, rename, rename_base, version_of,
+    DEFAULT_PACKAGE_VERSION, Error, Mode, NAME_KEY, Package, Part, Store, interface_key, is_slug,
+    neutral_builder, neutral_theme, read, rename, rename_base, version_of,
 };
 
 const METAINFO_SUFFIX: &str = ".metainfo.xml";
@@ -23,6 +23,7 @@ pub const DATA_ROOT: &str = "data";
 
 const BUNDLE_ID: &str = "com.system76.CosmicThemeBundle.";
 const META_FORMAT: &str = "x-cosmic-format";
+const META_VERSION: &str = "x-cosmic-version";
 const META_SLUG: &str = "x-cosmic-slug";
 const META_MODE: &str = "x-cosmic-mode";
 const META_PARTS: &str = "x-cosmic-parts";
@@ -32,12 +33,18 @@ const OPTIONAL_KEYS: [&str; 3] = ["icon_theme", "font", "mono_font"];
 
 const MAX_DEPTH: usize = 64;
 const MAX_PATH: usize = 1024;
+const MAX_ASSET_ID: usize = 140;
+const MAX_PACKAGE_ID: usize = 80;
 
 /// A bundle written out as one file.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Manifest {
     pub version: u64,
-    /// The slug the trees inside are named with.
+    /// The package identity.
+    pub package_id: String,
+    /// The package release version.
+    pub package_version: String,
+    /// The local config slug.
     pub slug: String,
     pub name: String,
     pub mode: Mode,
@@ -49,6 +56,9 @@ pub struct Manifest {
 /// A file the look needs, and what it is for.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Asset {
+    /// The unique asset identity.
+    #[serde(default)]
+    pub id: String,
     pub kind: AssetKind,
     /// Where it sits in the archive.
     pub path: String,
@@ -69,10 +79,9 @@ impl Manifest {
         component
             .attributes
             .insert("type".to_owned(), "generic".to_owned());
-        component.children.push(XMLNode::Element(text_element(
-            "id",
-            &format!("{BUNDLE_ID}{}", self.slug),
-        )));
+        component
+            .children
+            .push(XMLNode::Element(text_element("id", &self.package_id)));
         component
             .children
             .push(XMLNode::Element(text_element("name", &self.name)));
@@ -102,6 +111,7 @@ impl Manifest {
         let mut metadata = Element::new("custom");
         for (key, value) in [
             (META_FORMAT, self.version.to_string()),
+            (META_VERSION, self.package_version.clone()),
             (META_SLUG, self.slug.clone()),
             (META_MODE, self.mode.name().to_owned()),
             (META_PARTS, parts.join(",")),
@@ -144,8 +154,16 @@ impl Manifest {
             .ok_or_else(|| Error::Archive("the manifest names no format version".to_owned()))?
             .parse()
             .map_err(|_| Error::Archive("the manifest has an invalid format version".to_owned()))?;
+        let package_id = component.id.0.clone();
+        let package_version =
+            value(META_VERSION).unwrap_or_else(|| DEFAULT_PACKAGE_VERSION.to_owned());
         let slug = value(META_SLUG)
-            .or_else(|| component.id.0.strip_prefix(BUNDLE_ID).map(str::to_owned))
+            .or_else(|| {
+                let id = package_id.as_str();
+                id.strip_prefix(BUNDLE_ID)
+                    .or_else(|| id.rsplit('.').next())
+                    .map(str::to_owned)
+            })
             .filter(|slug| !slug.is_empty())
             .ok_or_else(|| Error::Archive("the manifest names no bundle slug".to_owned()))?;
         let name = component
@@ -190,6 +208,8 @@ impl Manifest {
 
         Ok(Self {
             version,
+            package_id,
+            package_version,
             slug,
             name,
             mode,
@@ -222,10 +242,18 @@ impl Store {
             .filter(|stem| !stem.is_empty())
             .map_or(default_name, str::to_owned);
         let slug = crate::slugify(&name);
+        let active = self.find_active(mode).ok().flatten();
+        let package = active
+            .and_then(|bundle| bundle.package)
+            .unwrap_or_else(|| Package {
+                package_id: format!("{BUNDLE_ID}{slug}"),
+                version: DEFAULT_PACKAGE_VERSION.to_owned(),
+            });
 
         self.export_tree(
             |part| Self::bundle_id(&slug, part),
             |part| part.live_id(mode).to_owned(),
+            &package,
             &name,
             &slug,
             mode,
@@ -239,6 +267,7 @@ impl Store {
         &self,
         id: impl Fn(Part) -> String,
         source_id: impl Fn(Part) -> String,
+        package: &Package,
         name: &str,
         slug: &str,
         mode: Mode,
@@ -248,10 +277,51 @@ impl Store {
         if !is_slug(slug) {
             return Err(Error::Slug(slug.to_owned()));
         }
+        let package_id = &package.package_id;
+        let package_version = &package.version;
+        if !is_component_id(package_id) {
+            return Err(Error::Archive(format!(
+                "the bundle names an invalid package id: {package_id:.64}"
+            )));
+        }
+        if package_version.trim().is_empty() {
+            return Err(Error::Archive(
+                "the bundle names no package version".to_owned(),
+            ));
+        }
+
         let mut assets = Assets {
             slug: slug.to_owned(),
+            package_id: package_id.to_owned(),
             ..Assets::default()
         };
+        let icon_asset = (icontheme_is_custom(theme)
+            && icon_theme_dir(&theme.icon_theme).is_some())
+        .then(|| assets.reserve_id(format!("{package_id}.icons")));
+
+        let mut exported_theme = neutral_theme(theme);
+        let builder = self
+            .config(&source_id(Part::Builder), Part::Builder.version())
+            .ok()
+            .and_then(|config| {
+                read::<ThemeBuilder>(&config)
+                    .map_err(|why| {
+                        tracing::warn!(?why, "failed to read theme builder; using defaults")
+                    })
+                    .ok()
+            })
+            .unwrap_or_else(|| {
+                if theme.is_dark {
+                    ThemeBuilder::dark()
+                } else {
+                    ThemeBuilder::light()
+                }
+            });
+        let mut exported_builder = neutral_builder(&builder);
+        if let Some(icon_asset) = &icon_asset {
+            exported_theme.icon_theme.clone_from(icon_asset);
+            exported_builder.icon_theme.clone_from(icon_asset);
+        }
 
         let mut parts = Vec::new();
         let mut configs = Vec::new();
@@ -260,24 +330,27 @@ impl Store {
             let source = source_id(part);
             let versions = versions_in(&self.cosmic_dir.join(&source))?;
 
-            let Some((version, dir)) = versions
+            let found = versions
                 .into_iter()
-                .find(|(version, _)| *version == part.version())
-            else {
-                continue;
+                .find(|(version, _)| *version == part.version());
+            let (version, dir) = match found {
+                Some(found) => found,
+                None if part == Part::Builder => (Part::Builder.version(), PathBuf::new()),
+                None => continue,
             };
             parts.push(part);
 
             let exported_base: Option<Vec<u8>> = match part {
-                Part::Theme => Some(serialize_base(&neutral_theme(theme))?),
-                Part::Builder => {
-                    let builder = read::<ThemeBuilder>(&self.config(&source, part.version())?)?;
-                    Some(serialize_base(&neutral_builder(&builder))?)
-                }
+                Part::Theme => Some(serialize_base(&exported_theme)?),
+                Part::Builder => Some(serialize_base(&exported_builder)?),
                 Part::Background => None,
             };
 
-            let keys = key_files(&dir)?;
+            let keys = if dir.as_os_str().is_empty() {
+                Vec::new()
+            } else {
+                key_files(&dir)?
+            };
 
             let outputs: Vec<String> = keys
                 .iter()
@@ -316,6 +389,16 @@ impl Store {
                 if key == "base" {
                     continue;
                 }
+                let bytes = if let Some(icon_asset) = &icon_asset
+                    && matches!(part, Part::Theme | Part::Builder)
+                    && key == "icon_theme"
+                {
+                    ron::ser::to_string(icon_asset)
+                        .map(String::into_bytes)
+                        .map_err(|err| Error::Archive(format!("icon theme: {err}")))?
+                } else {
+                    bytes
+                };
                 let bytes = match part {
                     Part::Background => {
                         let rewritten = assets.background(&key, bytes)?;
@@ -376,8 +459,8 @@ impl Store {
             }
         }
 
-        if !theme.icon_theme.is_empty() && theme.icon_theme != DEFAULT_ICON_THEME {
-            assets.icon_theme(&theme.icon_theme);
+        if let Some(icon_asset) = &icon_asset {
+            assets.icon_theme(icon_asset, &theme.icon_theme);
         }
         if theme.font.family != DEFAULT_FONT_FAMILY
             || theme.mono_font.family != cosmic_theme::DEFAULT_MONOSPACE_FONT_FAMILY
@@ -391,8 +474,16 @@ impl Store {
             );
         }
 
+        if let Some(asset) = assets.records.iter().find(|asset| !is_asset_id(&asset.id)) {
+            return Err(Error::Archive(format!(
+                "the bundle names an invalid asset id: {:.64}",
+                asset.id
+            )));
+        }
         let manifest = Manifest {
             version: VERSION,
+            package_id: package_id.to_owned(),
+            package_version: package_version.to_owned(),
             slug: slug.to_owned(),
             name: name.to_owned(),
             mode,
@@ -418,6 +509,17 @@ impl Store {
                 manifest.slug
             )));
         }
+        if !is_component_id(&manifest.package_id) {
+            return Err(Error::Archive(format!(
+                "the archive names an invalid package id: {:.64}",
+                manifest.package_id
+            )));
+        }
+        if manifest.package_version.trim().is_empty() {
+            return Err(Error::Archive(
+                "the archive names no package version".to_owned(),
+            ));
+        }
 
         let data = xdg::BaseDirectories::new()
             .get_data_home()
@@ -439,57 +541,107 @@ impl Store {
         let avoid = self.reserved_names();
         let (name, slug) =
             self.unique_name_avoiding(name.unwrap_or(manifest.name.as_str()), &avoid)?;
-        for part in Part::ALL {
-            let id = Self::bundle_id(&manifest.slug, part);
-            let Some(version) = source_version(&source.join(&id), part.version())? else {
-                continue;
+
+        let mut used = BTreeSet::new();
+        let mut plans = Vec::new();
+        let mut wallpaper_paths = Vec::new();
+        for asset in &manifest.assets {
+            let Some(source) = asset_source(temp.path(), asset) else {
+                return Err(Error::Archive(format!(
+                    "the archive names an asset it does not carry: {}",
+                    asset.path
+                )));
             };
-            let from = Config::with_custom_path(&id, version, source_root.clone())?;
-            let to = self.bundle_config(&slug, part)?;
-            self.copy_part(&from, &to, part)?;
-        }
-
-        let wallpapers = temp
-            .path()
-            .join(DATA_ROOT)
-            .join("cosmic")
-            .join(&manifest.slug)
-            .join("wallpapers");
-        install_wallpapers(
-            &wallpapers,
-            &data.join("cosmic").join(&slug).join("wallpapers"),
-        )?;
-        rewrite_backgrounds(self, &slug, &manifest.slug, &data)?;
-
-        for root in ["icons", "fonts"] {
-            let dir = temp.path().join(DATA_ROOT).join(root);
-            let Ok(entries) = fs::read_dir(&dir) else {
-                continue;
+            let base = asset_base_id(&manifest.package_id, asset);
+            let (target, id) = match asset.kind {
+                AssetKind::Wallpaper => {
+                    let id = unique_installed_id(&data.join("cosmic"), &base, &used);
+                    used.insert(id.clone());
+                    (data.join("cosmic").join(&id), id)
+                }
+                AssetKind::IconTheme => {
+                    let id = unique_installed_id(&data.join("icons"), &base, &used);
+                    used.insert(id.clone());
+                    (data.join("icons").join(&id), id)
+                }
+                AssetKind::Font => {
+                    let id = unique_installed_id(&data.join("fonts"), &base, &used);
+                    used.insert(id.clone());
+                    (data.join("fonts").join(&id), id)
+                }
             };
-            for entry in entries.flatten() {
-                let from = entry.path();
-                if !from.is_dir() {
-                    continue;
-                }
-                let to = data.join(root).join(entry.file_name());
-                if to.exists() {
-                    continue;
-                }
-                rename(&from, &to)?;
+            if asset.kind == AssetKind::Wallpaper {
+                wallpaper_paths.push((PathBuf::from(&asset.path), target.clone()));
             }
+            plans.push(AssetPlan {
+                source,
+                target,
+                installed: InstalledAsset {
+                    id,
+                    kind: asset.kind,
+                },
+            });
         }
 
-        self.write_imported_name(&slug, &name)?;
-
-        match self.bundle(&slug) {
-            Ok(bundle) => Ok(bundle),
-            Err(err) => {
-                for part in Part::ALL {
-                    let _ = crate::remove_dir(&self.bundle_config_dir(&slug, part));
-                }
-                Err(err)
-            }
+        if let Some(plan) = plans.iter().find(|plan| !is_asset_id(&plan.installed.id)) {
+            return Err(Error::Archive(format!(
+                "the archive names an invalid asset id: {:.64}",
+                plan.installed.id
+            )));
         }
+
+        let icon_id = plans
+            .iter()
+            .find(|plan| plan.installed.kind == AssetKind::IconTheme)
+            .map(|plan| plan.installed.id.clone());
+
+        let installed = (|| -> Result<crate::Bundle, Error> {
+            save_receipt(
+                self,
+                &Receipt {
+                    package_id: manifest.package_id.clone(),
+                    package_version: manifest.package_version.clone(),
+                    slug: slug.clone(),
+                    assets: plans.iter().map(|plan| plan.installed.clone()).collect(),
+                },
+            )?;
+
+            for plan in &plans {
+                install_asset(plan)?;
+            }
+
+            for part in Part::ALL {
+                let id = Self::bundle_id(&manifest.slug, part);
+                let Some(version) = source_version(&source.join(&id), part.version())? else {
+                    continue;
+                };
+                let from = Config::with_custom_path(&id, version, source_root.clone())?;
+                let to = self.bundle_config(&slug, part)?;
+                self.copy_part(&from, &to, part)?;
+            }
+
+            if let Some(icon_id) = &icon_id {
+                rewrite_imported_icon_theme(self, &slug, icon_id)?;
+            }
+
+            rewrite_backgrounds(self, &slug, &wallpaper_paths)?;
+            self.write_imported_name(&slug, &name)?;
+            self.write_package(
+                &slug,
+                &Package {
+                    package_id: manifest.package_id.clone(),
+                    version: manifest.package_version.clone(),
+                },
+            )?;
+            self.bundle(&slug)
+        })();
+
+        if let Err(err) = installed {
+            cleanup_import(self, &slug, &plans);
+            return Err(err);
+        }
+
+        installed
     }
 
     /// Name a copied-in or renamed bundle.
@@ -501,19 +653,253 @@ impl Store {
     }
 }
 
+fn cleanup_import(store: &Store, slug: &str, plans: &[AssetPlan]) {
+    for part in Part::ALL {
+        let _ = crate::remove_dir(&store.bundle_config_dir(slug, part));
+    }
+    for plan in plans {
+        let _ = crate::remove_dir(&plan.target);
+    }
+    let _ = store.remove_package(slug);
+    let _ = fs::remove_file(receipt_path(store, slug));
+}
+
+/// The assets a bundle owns after installation.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+struct Receipt {
+    package_id: String,
+    package_version: String,
+    slug: String,
+    assets: Vec<InstalledAsset>,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+struct InstalledAsset {
+    id: String,
+    kind: AssetKind,
+}
+
+fn receipt_path(store: &Store, slug: &str) -> PathBuf {
+    store
+        .state_dir()
+        .join("theme-bundles")
+        .join(format!("{slug}.ron"))
+}
+
+fn save_receipt(store: &Store, receipt: &Receipt) -> Result<(), Error> {
+    let path = receipt_path(store, &receipt.slug);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|err| Error::Io(parent.to_path_buf(), err))?;
+    }
+    let text = ron::ser::to_string_pretty(receipt, ron::ser::PrettyConfig::default())
+        .map_err(|err| Error::Archive(format!("receipt: {err}")))?;
+    fs::write(&path, text).map_err(|err| Error::Io(path, err))
+}
+
+/// Remove the assets owned by a deleted bundle.
+pub(crate) fn remove_installed_assets(store: &Store, slug: &str) -> Result<(), Error> {
+    let path = receipt_path(store, slug);
+    let Ok(text) = fs::read_to_string(&path) else {
+        return Ok(());
+    };
+    let receipt =
+        ron::from_str::<Receipt>(&text).map_err(|err| Error::Archive(format!("receipt: {err}")))?;
+    if !is_slug(&receipt.slug) || !is_component_id(&receipt.package_id) {
+        return Ok(());
+    }
+    let data = xdg::BaseDirectories::new()
+        .get_data_home()
+        .ok_or(Error::NoDataDir)?;
+
+    for asset in &receipt.assets {
+        let Some(target) = installed_asset_path(&data, &receipt.package_id, &receipt.slug, asset)
+        else {
+            continue;
+        };
+        crate::remove_dir(&target)?;
+        if asset.kind == AssetKind::Wallpaper {
+            let legacy = data.join("cosmic").join(&receipt.slug);
+            if target.starts_with(&legacy) {
+                let _ = fs::remove_dir(&legacy);
+            }
+        }
+    }
+
+    match fs::remove_file(&path) {
+        Ok(()) => Ok(()),
+        Err(err) if err.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(err) => Err(Error::Io(path, err)),
+    }
+}
+
+fn installed_asset_path(
+    data: &Path,
+    package_id: &str,
+    slug: &str,
+    asset: &InstalledAsset,
+) -> Option<PathBuf> {
+    let prefix = format!("{package_id}.");
+    if !is_asset_id(&asset.id)
+        || Path::new(&asset.id).components().count() != 1
+        || !asset.id.starts_with(&prefix)
+    {
+        return None;
+    }
+    Some(match asset.kind {
+        AssetKind::IconTheme => data.join("icons").join(&asset.id),
+        AssetKind::Font => data.join("fonts").join(&asset.id),
+        AssetKind::Wallpaper => {
+            let installed = data.join("cosmic").join(&asset.id);
+            let legacy = data.join("cosmic").join(slug).join("wallpapers");
+            if installed.exists() || !legacy.exists() {
+                installed
+            } else {
+                legacy
+            }
+        }
+    })
+}
+
+/// Where one archive asset will be installed.
+#[derive(Debug)]
+struct AssetPlan {
+    source: PathBuf,
+    target: PathBuf,
+    installed: InstalledAsset,
+}
+
+fn asset_source(temp: &Path, asset: &Asset) -> Option<PathBuf> {
+    let rel = Path::new(&asset.path).strip_prefix(DATA_ROOT).ok()?;
+    if rel
+        .components()
+        .any(|component| !matches!(component, std::path::Component::Normal(_)))
+    {
+        return None;
+    }
+    let source = temp.join(DATA_ROOT).join(rel);
+    source.exists().then_some(source)
+}
+
+fn asset_base_id(package_id: &str, asset: &Asset) -> String {
+    let prefix = format!("{package_id}.");
+    if is_asset_id(&asset.id) && asset.id.starts_with(&prefix) {
+        return asset.id.clone();
+    }
+    match asset.kind {
+        AssetKind::IconTheme => format!("{package_id}.icons"),
+        AssetKind::Font => format!(
+            "{package_id}.fonts.{}",
+            crate::slugify(if asset.name.is_empty() {
+                "font"
+            } else {
+                &asset.name
+            })
+        ),
+        AssetKind::Wallpaper => format!("{package_id}.wallpapers"),
+    }
+}
+
+fn unique_installed_id(parent: &Path, base: &str, used: &BTreeSet<String>) -> String {
+    let mut id = base.to_owned();
+    let mut nth = 2;
+    while parent.join(&id).exists() || used.contains(&id) {
+        id = format!("{base}.{nth}");
+        nth += 1;
+    }
+    id
+}
+
+fn install_asset(plan: &AssetPlan) -> Result<(), Error> {
+    match plan.installed.kind {
+        AssetKind::Wallpaper => {
+            if plan.source.is_dir() {
+                install_wallpapers(&plan.source, &plan.target)
+            } else if plan.source.is_file() {
+                fs::create_dir_all(&plan.target)
+                    .map_err(|err| Error::Io(plan.target.clone(), err))?;
+                let Some(name) = plan.source.file_name() else {
+                    return Err(Error::Archive("wallpaper has no file name".to_owned()));
+                };
+                fs::copy(&plan.source, plan.target.join(name))
+                    .map_err(|err| Error::Io(plan.target.clone(), err))?;
+                Ok(())
+            } else {
+                Err(Error::Archive("wallpaper asset is missing".to_owned()))
+            }
+        }
+        AssetKind::IconTheme | AssetKind::Font => {
+            if !plan.source.is_dir() {
+                return Err(Error::Archive("asset is not a directory".to_owned()));
+            }
+            rename(&plan.source, &plan.target)
+        }
+    }
+}
+
+fn rewrite_imported_icon_theme(store: &Store, slug: &str, icon_id: &str) -> Result<(), Error> {
+    for part in [Part::Theme, Part::Builder] {
+        let config = store.bundle_config(slug, part)?;
+        if config.get::<String>("icon_theme").is_ok() {
+            config.set("icon_theme", icon_id)?;
+        }
+        match part {
+            Part::Theme => {
+                if let Ok(mut theme) = config.get::<Theme>(crate::BASE) {
+                    theme.icon_theme = icon_id.to_owned();
+                    config.set(crate::BASE, theme)?;
+                }
+            }
+            Part::Builder => {
+                if let Ok(mut builder) = config.get::<ThemeBuilder>(crate::BASE) {
+                    builder.icon_theme = icon_id.to_owned();
+                    config.set(crate::BASE, builder)?;
+                }
+            }
+            Part::Background => {}
+        }
+    }
+    Ok(())
+}
+
 /// The files a bundle carries, and where they go.
 #[derive(Debug, Default)]
 struct Assets {
     slug: String,
+    package_id: String,
+    wallpaper_asset: bool,
     /// Source files and their archive paths.
     files: BTreeMap<PathBuf, String>,
     /// What the manifest lists.
     records: Vec<Asset>,
+    /// IDs reserved for assets that have not been recorded yet.
+    reserved: BTreeSet<String>,
     /// The archive paths already given out.
     taken: BTreeSet<String>,
 }
 
 impl Assets {
+    fn unique_id(&mut self, base: String) -> String {
+        if !self.records.iter().any(|asset| asset.id == base) && !self.reserved.contains(&base) {
+            return base;
+        }
+        let mut nth = 2;
+        loop {
+            let candidate = format!("{base}.{nth}");
+            if !self.records.iter().any(|asset| asset.id == candidate)
+                && !self.reserved.contains(&candidate)
+            {
+                return candidate;
+            }
+            nth += 1;
+        }
+    }
+
+    fn reserve_id(&mut self, base: String) -> String {
+        let id = self.unique_id(base);
+        self.reserved.insert(id.clone());
+        id
+    }
+
     fn place(&mut self, source: &Path, wanted: String) -> String {
         if let Some(placed) = self.files.get(source) {
             return placed.clone();
@@ -578,35 +964,34 @@ impl Assets {
 
     fn wallpaper(&mut self, path: &Path) -> Option<String> {
         let root = format!("{DATA_ROOT}/cosmic/{}/wallpapers", self.slug);
-        if path.is_file() {
-            let name = path.file_name()?.to_str()?;
-            let place = self.place(path, format!("{root}/{name}"));
-            self.records.push(Asset {
-                kind: AssetKind::Wallpaper,
-                path: place.clone(),
-                name: path.display().to_string(),
-            });
-            return Some(place);
-        }
-        if !path.is_dir() {
+        if !path.is_file() && !path.is_dir() {
             return None;
         }
+        if !self.wallpaper_asset {
+            self.wallpaper_asset = true;
+            self.records.push(Asset {
+                id: format!("{}.wallpapers", self.package_id),
+                kind: AssetKind::Wallpaper,
+                path: root.clone(),
+                name: self.slug.clone(),
+            });
+        }
+        if path.is_file() {
+            let name = path.file_name()?.to_str()?;
+            return Some(self.place(path, format!("{root}/{name}")));
+        }
         self.carry_tree(path, &root);
-        self.records.push(Asset {
-            kind: AssetKind::Wallpaper,
-            path: root.clone(),
-            name: path.display().to_string(),
-        });
         Some(root)
     }
 
-    fn icon_theme(&mut self, name: &str) {
+    fn icon_theme(&mut self, id: &str, name: &str) {
         let Some(dir) = icon_theme_dir(name) else {
             return;
         };
-        let root = format!("{DATA_ROOT}/icons/{name}");
+        let root = format!("{DATA_ROOT}/icons/{id}");
         self.carry_tree(&dir, &root);
         self.records.push(Asset {
+            id: id.to_owned(),
             kind: AssetKind::IconTheme,
             path: root,
             name: name.to_owned(),
@@ -621,7 +1006,13 @@ impl Assets {
         if files.is_empty() {
             return;
         }
-        let root = format!("{DATA_ROOT}/fonts/{}", crate::slugify(&config.family));
+        let base = format!(
+            "{}.fonts.{}",
+            self.package_id,
+            crate::slugify(&config.family)
+        );
+        let id = self.unique_id(base);
+        let root = format!("{DATA_ROOT}/fonts/{id}");
         for file in files {
             let Some(name) = file.file_name().and_then(|name| name.to_str()) else {
                 continue;
@@ -629,6 +1020,7 @@ impl Assets {
             self.place(&file, format!("{root}/{name}"));
         }
         self.records.push(Asset {
+            id,
             kind: AssetKind::Font,
             path: root,
             name: config.family.clone(),
@@ -808,8 +1200,7 @@ fn extract(archive: &mut ZipArchive<File>, into: &Path) -> Result<(), Error> {
 fn rewrite_backgrounds(
     store: &Store,
     slug: &str,
-    imported: &str,
-    data: &Path,
+    wallpapers: &[(PathBuf, PathBuf)],
 ) -> Result<(), Error> {
     let id = crate::bundle_id(slug, Part::Background);
     for (version, dir) in versions_in(&store.bundle_config_dir(slug, Part::Background))? {
@@ -823,7 +1214,7 @@ fn rewrite_backgrounds(
             let cosmic_bg_config::Source::Path(path) = &entry.source else {
                 continue;
             };
-            let Some(installed) = installed_path(path, imported, slug, data) else {
+            let Some(installed) = installed_path(path, wallpapers) else {
                 continue;
             };
             entry.source = cosmic_bg_config::Source::Path(installed);
@@ -834,15 +1225,17 @@ fn rewrite_backgrounds(
 }
 
 /// Where an archive path lands once installed.
-fn installed_path(archive: &Path, imported: &str, slug: &str, data: &Path) -> Option<PathBuf> {
-    let rest = archive.strip_prefix(DATA_ROOT).ok()?;
-    let old = Path::new("cosmic").join(imported);
-    let rest = match rest.strip_prefix(&old) {
-        Ok(rel) if rel.as_os_str().is_empty() => Path::new("cosmic").join(slug),
-        Ok(rel) => Path::new("cosmic").join(slug).join(rel),
-        Err(_) => rest.to_path_buf(),
-    };
-    Some(data.join(rest))
+fn installed_path(archive: &Path, wallpapers: &[(PathBuf, PathBuf)]) -> Option<PathBuf> {
+    wallpapers
+        .iter()
+        .filter_map(|(source, target)| {
+            archive
+                .strip_prefix(source)
+                .ok()
+                .map(|relative| (source, target, relative))
+        })
+        .max_by_key(|(source, _, _)| source.as_os_str().len())
+        .map(|(_, target, relative)| target.join(relative))
 }
 
 fn serialize_base<T: serde::Serialize>(value: &T) -> Result<Vec<u8>, Error> {
@@ -886,6 +1279,34 @@ fn collect(dir: &Path, out: &mut Vec<(PathBuf, String)>) {
         };
         out.push((entry.path().to_path_buf(), rel.to_owned()));
     }
+}
+
+fn icontheme_is_custom(theme: &Theme) -> bool {
+    !theme.icon_theme.is_empty() && theme.icon_theme != DEFAULT_ICON_THEME
+}
+
+fn is_asset_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= MAX_ASSET_ID
+        && id.contains('.')
+        && id.split('.').all(|segment| {
+            !segment.is_empty()
+                && segment
+                    .chars()
+                    .all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')
+        })
+}
+
+fn is_component_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= MAX_PACKAGE_ID
+        && id.contains('.')
+        && id.split('.').all(|segment| {
+            !segment.is_empty()
+                && segment
+                    .chars()
+                    .all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')
+        })
 }
 
 fn icon_theme_dir(name: &str) -> Option<PathBuf> {
