@@ -521,15 +521,15 @@ magnifier = Lupa
                 { $zoom_out } pro oddálení,
         }
         Super + posouvání kolečkem myši
-    .scroll_controls = Povolit přiblížení s myší nebo touchpadem pomocí Super + posouvání
+    .scroll_controls = Povolit přiblížení myší nebo touchpadem pomocí Super + posouvání
     .show_overlay = Zobrazit překrytí lupy
     .increment = Krok přiblížení
     .signin = Spustit lupu při přihlášení
     .applet = Lupu lze přepnout (zap/vyp) v nabídce zobrazené po kliknutí na applet přímo v panelu
     .movement = Pohyb přiblížené oblasti
-    .continuous = Neustále s ukazatelem
+    .continuous = Plynule s ukazatelem
     .onedge = Když ukazatel dosáhne okraje
-    .centered = Udržovat ukazatele ve středu obrazovky
+    .centered = Udržovat ukazatele uprostřed obrazovky
 color-filter = Typ barevného filtru
     .unknown = Neznámý filtr aktivní
     .greyscale = Stupně šedi
