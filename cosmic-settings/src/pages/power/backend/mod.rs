@@ -1,3 +1,7 @@
+use std::collections::BTreeMap;
+
+use cosmic_config::{Config, ConfigGet};
+use cosmic_settings_config::shortcuts::action::System;
 use futures::future::join_all;
 use futures::{FutureExt, Stream, StreamExt};
 use jiff::{Span, SpanRelativeTo, SpanRound, ToSpan, Unit};
@@ -94,6 +98,92 @@ pub fn get_power_profiles() -> Vec<PowerProfile> {
         PowerProfile::Battery,
         PowerProfile::Balanced,
         PowerProfile::Performance,
+    ]
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PowerButtonBehavior {
+    ConfirmShutdown,
+    ConfirmLogOut,
+    ConfirmRestart,
+    Shutdown,
+    LogOut,
+    Restart,
+    Suspend,
+    Hibernate,
+}
+
+impl PowerButtonBehavior {
+    pub fn from_config() -> Option<Self> {
+        match Config::new("com.system76.CosmicSettings.Shortcuts", 1)
+            .and_then(|cfg| cfg.get::<BTreeMap<System, String>>("system_actions")) {
+            Ok(system_actions) => match system_actions.get(&System::PowerOff) {
+                None => Some(PowerButtonBehavior::ConfirmShutdown),
+                Some(cmd) if cmd == "cosmic-osd shutdown" => Some(Self::ConfirmShutdown),
+                Some(cmd) if cmd == "cosmic-osd log-out" => Some(Self::ConfirmLogOut),
+                Some(cmd) if cmd == "cosmic-osd restart" => Some(Self::ConfirmRestart),
+                Some(cmd) if cmd == "systemctl poweroff" => Some(Self::Shutdown),
+                Some(cmd) if cmd == "loginctl terminate-user $USER" => Some(Self::LogOut),
+                Some(cmd) if cmd == "systemctl reboot" => Some(Self::Restart),
+                Some(cmd) if cmd == "systemctl suspend" => Some(Self::Suspend),
+                Some(cmd) if cmd == "systemctl hibernate" => Some(Self::Hibernate),
+                // Only return None if the user has customized the command
+                _ => None,
+            },
+            Err(_) => Some(Self::ConfirmShutdown),
+        }
+    }
+
+    pub fn title(&self) -> String {
+        match self {
+            Self::ConfirmShutdown => fl!("power-button-behavior", "confirm-shutdown"),
+            Self::ConfirmLogOut => fl!("power-button-behavior", "confirm-log-out"),
+            Self::ConfirmRestart => fl!("power-button-behavior", "confirm-restart"),
+            Self::Shutdown => fl!("power-button-behavior", "shutdown"),
+            Self::LogOut => fl!("power-button-behavior", "log-out"),
+            Self::Restart => fl!("power-button-behavior", "restart"),
+            Self::Suspend => fl!("power-button-behavior", "suspend"),
+            Self::Hibernate => fl!("power-button-behavior", "hibernate"),
+        }
+    }
+
+    pub fn description(&self) -> String {
+        match self {
+            Self::ConfirmShutdown => fl!("power-button-behavior", "confirm-shutdown-desc"),
+            Self::ConfirmLogOut => fl!("power-button-behavior", "confirm-log-out-desc"),
+            Self::ConfirmRestart => fl!("power-button-behavior", "confirm-restart-desc"),
+            Self::Shutdown => fl!("power-button-behavior", "shutdown-desc"),
+            Self::LogOut => fl!("power-button-behavior", "log-out-desc"),
+            Self::Restart => fl!("power-button-behavior", "restart-desc"),
+            Self::Suspend => fl!("power-button-behavior", "suspend-desc"),
+            Self::Hibernate => fl!("power-button-behavior", "hibernate-desc"),
+        }
+    }
+
+    pub fn command(&self) -> String {
+        match self {
+            Self::ConfirmShutdown => "cosmic-osd shutdown".to_string(),
+            Self::ConfirmLogOut => "cosmic-osd log-out".to_string(),
+            Self::ConfirmRestart => "cosmic-osd restart".to_string(),
+            Self::Shutdown => "systemctl poweroff".to_string(),
+            Self::LogOut => "loginctl terminate-user $USER".to_string(),
+            Self::Restart => "systemctl reboot".to_string(),
+            Self::Suspend => "systemctl suspend".to_string(),
+            Self::Hibernate => "systemctl hibernate".to_string(),
+        }
+    }
+}
+
+pub fn get_power_button_behaviors() -> Vec<PowerButtonBehavior> {
+    vec![
+        PowerButtonBehavior::ConfirmShutdown,
+        PowerButtonBehavior::ConfirmLogOut,
+        PowerButtonBehavior::ConfirmRestart,
+        PowerButtonBehavior::Shutdown,
+        PowerButtonBehavior::LogOut,
+        PowerButtonBehavior::Restart,
+        PowerButtonBehavior::Suspend,
+        PowerButtonBehavior::Hibernate,
     ]
 }
 
