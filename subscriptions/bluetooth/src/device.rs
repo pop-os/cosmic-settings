@@ -195,6 +195,13 @@ impl DeviceUpdate {
     }
 }
 
+pub async fn is_paired(connection: zbus::Connection, device_path: OwnedObjectPath) -> bool {
+    match bluez_zbus::get_device(&connection, device_path).await {
+        Ok(proxy) => proxy.device.paired().await.unwrap_or(false),
+        Err(_) => false,
+    }
+}
+
 pub async fn disconnect_device(
     connection: zbus::Connection,
     device_path: OwnedObjectPath,
