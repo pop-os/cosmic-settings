@@ -137,11 +137,9 @@ pub fn config_dir() -> Option<PathBuf> {
 
 const TOOLKIT_ID: &str = "com.system76.CosmicTk";
 const TOOLKIT_MIGRATION: &str = "theme-bundle-toolkit-migrated";
-const THEME_NAMES_MIGRATION: &str = "theme-bundle-names-migrated";
-const LEGACY_THEME_NAMES: [(&str, &str); 2] = [
-    ("cosmic-dark", "COSMIC Dark"),
-    ("cosmic-light", "COSMIC Light"),
-];
+const CUSTOM_THEMES_MIGRATION: &str = "theme-bundle-custom-themes-migrated";
+const CUSTOM_THEMES: [(&str, Mode); 2] =
+    [("Custom Dark", Mode::Dark), ("Custom Light", Mode::Light)];
 const BASE: &str = "base";
 const NAME_KEY: &str = "name";
 const THEME_VERSION: u64 = <Theme as CosmicConfigEntry>::VERSION;
@@ -1252,22 +1250,32 @@ impl Store {
         Ok(())
     }
 
-    /// Rename stored copies of the built-in themes to their current names.
-    pub fn migrate_names(&self) -> Result<(), Error> {
-        let marker = self.state_dir().join(THEME_NAMES_MIGRATION);
+    /// Turn legacy built-in looks into saved Custom bundles.
+    pub fn migrate_custom_themes(&self) -> Result<(), Error> {
+        let marker = self.state_dir().join(CUSTOM_THEMES_MIGRATION);
         if marker.exists() {
             return Ok(());
         }
 
-        for (old, new) in LEGACY_THEME_NAMES {
-            for bundle in self.bundles()? {
-                if bundle.name == old {
-                    self.rename_stored(&bundle.slug, new)?;
-                }
+        let installed = self.system_bundles()?;
+        for (custom_name, mode) in CUSTOM_THEMES {
+            if self
+                .bundles()?
+                .iter()
+                .any(|bundle| bundle.name == custom_name)
+            {
+                continue;
             }
-            for mode in [Mode::Dark, Mode::Light] {
-                self.rename_live(mode, old, new)?;
+            let live = read::<Theme>(&self.live_config(Part::Theme, mode)?)?;
+            if installed
+                .iter()
+                .any(|bundle| bundle.mode == mode && bundle.name == live.name)
+            {
+                continue;
             }
+            let (name, slug) = self.unique_name_avoiding(custom_name, &[])?;
+            self.rename_live(mode, &live.name, &name)?;
+            self.store_live(&name, &slug, mode)?;
         }
 
         if let Some(parent) = marker.parent() {

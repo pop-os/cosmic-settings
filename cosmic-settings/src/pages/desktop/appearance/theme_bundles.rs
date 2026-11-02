@@ -118,8 +118,8 @@ pub fn load() -> Vec<Deck> {
                     "failed to copy the toolkit settings into the themes"
                 );
             }
-            if let Err(error) = store.migrate_names() {
-                tracing::warn!(?error, "failed to rename the built-in themes");
+            if let Err(error) = store.migrate_custom_themes() {
+                tracing::warn!(?error, "failed to create custom copies of legacy themes");
             }
             if let Err(error) = store.normalize_names() {
                 tracing::warn!(?error, "failed to make theme bundle names unique");
