@@ -340,10 +340,14 @@ impl Page {
             Message::ImportChooseFile => {
                 #[cfg(feature = "xdg-portal")]
                 tasks.push(cosmic::task::future(async {
-                    let description = fl!("theme-bundles-archive");
+                    let description = format!(
+                        "{} / {}",
+                        fl!("theme-bundles-archive"),
+                        fl!("theme-bundles-theme-file")
+                    );
                     let chosen = file_chooser::open::Dialog::new()
                         .modal(true)
-                        .filter(FileFilter::glob(FileFilter::new(&description), "*.zip"))
+                        .filter(FileFilter::new(&description).glob("*.zip").glob("*.ron"))
                         .open_file()
                         .await;
 
@@ -356,7 +360,7 @@ impl Page {
                             Message::ImportFileChosen(path_res)
                         }
                         Err(why) => {
-                            tracing::error!(?why, "failed to select a theme bundle archive");
+                            tracing::error!(?why, "failed to select a theme file");
                             Message::ImportFileChosen(None)
                         }
                     }
@@ -365,10 +369,24 @@ impl Page {
 
             Message::ImportFileChosen(path) => {
                 if let (Some(path), Some(import)) = (path, self.import.as_mut()) {
-                    if import.name.is_empty()
-                        && let Ok(name) = cosmic_theme_bundle_config::transfer::archive_name(&path)
-                    {
-                        import.name = name;
+                    if import.name.is_empty() {
+                        let is_ron = path
+                            .extension()
+                            .and_then(|extension| extension.to_str())
+                            .is_some_and(|extension| extension.eq_ignore_ascii_case("ron"));
+                        if is_ron {
+                            if let Some(name) = path
+                                .file_stem()
+                                .and_then(|name| name.to_str())
+                                .filter(|name| !name.is_empty())
+                            {
+                                import.name = name.to_owned();
+                            }
+                        } else if let Ok(name) =
+                            cosmic_theme_bundle_config::transfer::archive_name(&path)
+                        {
+                            import.name = name;
+                        }
                     }
                     import.path = Some(path);
                 }
@@ -383,10 +401,23 @@ impl Page {
                 if let Some((path, name)) = chosen {
                     self.import = None;
                     tasks.push(cosmic::task::future(async move {
-                        Message::BundleImported(theme_bundles::import_archive(
-                            &path,
-                            (!name.is_empty()).then_some(name.as_str()),
-                        ))
+                        let is_ron = path
+                            .extension()
+                            .and_then(|extension| extension.to_str())
+                            .is_some_and(|extension| extension.eq_ignore_ascii_case("ron"));
+                        let name = (!name.is_empty()).then_some(name.as_str());
+                        let result = if is_ron {
+                            theme_bundles::import_theme(&path, name)
+                        } else if path
+                            .extension()
+                            .and_then(|extension| extension.to_str())
+                            .is_some_and(|extension| extension.eq_ignore_ascii_case("zip"))
+                        {
+                            theme_bundles::import_archive(&path, name)
+                        } else {
+                            Err("select a .zip bundle or .ron theme file".to_owned())
+                        };
+                        Message::BundleImported(result)
                     }));
                 }
             }

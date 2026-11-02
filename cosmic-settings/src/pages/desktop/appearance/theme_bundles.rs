@@ -1,11 +1,12 @@
 use std::collections::BTreeMap;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 use std::time::Duration;
 
 use cosmic::cosmic_config::{self, Config, ConfigGet, CosmicConfigEntry};
-use cosmic::cosmic_theme::Theme;
 use cosmic::cosmic_theme::palette::Srgba;
+use cosmic::cosmic_theme::{Theme, ThemeBuilder};
 use cosmic::iced::Radius;
 use cosmic::iced::alignment::Vertical;
 use cosmic::iced::core::{Alignment, Background, Border, Length};
@@ -318,6 +319,26 @@ pub fn import_archive(path: &Path, name: Option<&str>) -> Result<String, String>
     let store = Store::new().map_err(|error| error.to_string())?;
     store
         .import_archive(path, name)
+        .map(|bundle| bundle.name)
+        .map_err(|error| error.to_string())
+}
+
+pub fn import_theme(path: &Path, name: Option<&str>) -> Result<String, String> {
+    let content =
+        fs::read_to_string(path).map_err(|error| format!("failed to read theme RON: {error}"))?;
+    let builder: ThemeBuilder = ron::de::from_str(&content)
+        .map_err(|error| format!("failed to parse theme RON: {error}"))?;
+    let fallback = path
+        .file_stem()
+        .and_then(|name| name.to_str())
+        .filter(|name| !name.is_empty());
+    let name = name
+        .filter(|name| !name.trim().is_empty())
+        .or(fallback)
+        .ok_or_else(|| "a theme needs a name".to_owned())?;
+    let store = Store::new().map_err(|error| error.to_string())?;
+    store
+        .import_theme_builder(&builder, name)
         .map(|bundle| bundle.name)
         .map_err(|error| error.to_string())
 }

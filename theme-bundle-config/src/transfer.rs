@@ -509,6 +509,16 @@ impl Store {
     }
 
     pub fn import_archive(&self, path: &Path, name: Option<&str>) -> Result<crate::Bundle, Error> {
+        self.import_archive_with_assets(path, name, true)
+    }
+
+    /// Import an archive, optionally skipping icon/font assets.
+    pub(crate) fn import_archive_with_assets(
+        &self,
+        path: &Path,
+        name: Option<&str>,
+        look_assets: bool,
+    ) -> Result<crate::Bundle, Error> {
         let file = File::open(path).map_err(|err| Error::Io(path.to_path_buf(), err))?;
         let mut archive = ZipArchive::new(file)?;
         let manifest = read_manifest(&mut archive)?;
@@ -568,6 +578,9 @@ impl Store {
         let mut plans = Vec::new();
         let mut wallpaper_paths = Vec::new();
         for asset in &manifest.assets {
+            if !look_assets && asset.kind != AssetKind::Wallpaper {
+                continue;
+            }
             let Some(source) = asset_source(temp.path(), asset) else {
                 return Err(Error::Archive(format!(
                     "the archive names an asset it does not carry: {}",
