@@ -1024,6 +1024,48 @@ impl Store {
         Ok(bundle)
     }
 
+    /// Import an old-style ThemeBuilder RON as a new saved bundle.
+    pub fn import_theme_builder(
+        &self,
+        builder: &ThemeBuilder,
+        name: &str,
+    ) -> Result<Bundle, Error> {
+        let name = name.trim();
+        if name.is_empty() {
+            return Err(Error::Name);
+        }
+        let mode = Mode::from_is_dark(builder.palette.is_dark());
+
+        let mut builder = builder.clone();
+        let live_builder = read::<ThemeBuilder>(&self.live_config(Part::Builder, mode)?)?;
+        keep_builder_interface(&mut builder, &live_builder);
+        let mut theme = builder.clone().build();
+        let live_theme = read::<Theme>(&self.live_config(Part::Theme, mode)?)?;
+        keep_theme_interface(&mut theme, &live_theme);
+
+        let temp = tempfile::Builder::new()
+            .prefix(".cosmic-theme-ron-")
+            .tempdir()
+            .map_err(|err| Error::Io(std::env::temp_dir(), err))?;
+        let path = temp.path().join("theme.zip");
+        self.export_live_archive(mode, &path)?;
+        let bundle = self.import_archive_with_assets(&path, Some(name), false)?;
+
+        theme.name.clone_from(&bundle.name);
+        theme.palette.name.clone_from(&bundle.name);
+        builder.palette.as_mut().name.clone_from(&bundle.name);
+
+        let config = self.bundle_config(&bundle.slug, Part::Theme)?;
+        theme.write_entry(&config)?;
+        config.set(BASE, neutral_theme(&theme))?;
+
+        let config = self.bundle_config(&bundle.slug, Part::Builder)?;
+        builder.write_entry(&config)?;
+        config.set(BASE, neutral_builder(&builder))?;
+
+        self.bundle(&bundle.slug)
+    }
+
     pub fn rename(&self, slug: &str, name: &str) -> Result<Bundle, Error> {
         if self.is_system(slug)? {
             return Err(Error::SystemBundle(slug.to_owned()));

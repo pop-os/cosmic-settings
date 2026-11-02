@@ -384,6 +384,7 @@ recent-colors = Recent colors
 reset-to-default = Reset to default
 rgb = RGB
 theme-bundles-archive = Theme bundle
+theme-bundles-theme-file = Legacy theme file
 theme-bundles-dark = Dark theme
 theme-bundles-empty = No saved themes yet
 theme-bundles-import = Import theme
