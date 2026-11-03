@@ -609,8 +609,19 @@ impl Page {
             Message::ThemeModeUpdate(mode) => {
                 let was_dark = self.theme_manager.mode().is_dark;
                 let was_auto = self.theme_manager.mode().auto_switch;
+                let is_dark = mode.is_dark;
 
                 self.theme_manager.sync_mode(mode);
+                let mut active_id = None;
+                for id in self.mode_model.iter() {
+                    if self.mode_model.data::<bool>(id) == Some(&is_dark) {
+                        active_id = Some(id);
+                        break;
+                    }
+                }
+                if let Some(id) = active_id {
+                    self.mode_model.activate(id);
+                }
 
                 // If auto-switch flipped while the page is open, keep the UI in sync.
                 if was_dark != self.theme_manager.mode().is_dark
