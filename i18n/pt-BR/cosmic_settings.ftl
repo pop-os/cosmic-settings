@@ -129,7 +129,7 @@ accessibility = Acessibilidade
 hearing = Audição
     .mono = Reproduzir áudio estéreo como mono
 default = Padrão
-magnifier = Ampliador de tela
+magnifier = Lupa
     .controls =
         Ou use teclas de atalho: { $zoom_in ->
             [zero] { "" }
@@ -893,7 +893,7 @@ xdg-entry-date-time-keywords = COSMIC;Hora;Fuso;
 xdg-entry-desktop-comment = Plano de fundo, aparência, painel, dock, gerenciamento de janelas e configurações de espaços de trabalho
 xdg-entry-wallpaper = Plano de fundo
 xdg-entry-keyboard = Teclado
-xdg-entry-a11y-comment = Leitor de tela, ampliador de tela, alto contraste e filtros de cor
+xdg-entry-a11y-comment = Leitor de tela, lupa, alto contraste e filtros de cor
 xdg-entry-displays = Telas
 xdg-entry-network = Rede e conexão sem fio
 xdg-entry-date-time = Data e hora
