@@ -1483,7 +1483,6 @@ fn default_background(config: &Config) -> Option<cosmic_bg_config::Entry> {
 fn keep_theme_interface(theme: &mut Theme, live: &Theme) {
     theme.active_hint = live.active_hint;
     theme.spacing = live.spacing;
-    theme.corner_radii = live.corner_radii;
     theme.gaps = live.gaps;
     theme.frosted = live.frosted;
     theme.frosted_windows = live.frosted_windows;
@@ -1497,7 +1496,6 @@ fn keep_theme_interface(theme: &mut Theme, live: &Theme) {
 fn keep_builder_interface(builder: &mut ThemeBuilder, live: &ThemeBuilder) {
     builder.active_hint = live.active_hint;
     builder.spacing = live.spacing;
-    builder.corner_radii = live.corner_radii;
     builder.gaps = live.gaps;
     builder.frosted = live.frosted;
     builder.frosted_windows = live.frosted_windows;
@@ -1585,10 +1583,9 @@ fn any_version_keys(dir: &Path) -> Result<bool, Error> {
 }
 
 /// The keys that belong to the interface rather than to any look.
-const INTERFACE_KEYS: [&str; 11] = [
+const INTERFACE_KEYS: [&str; 10] = [
     "active_hint",
     "spacing",
-    "corner_radii",
     "gaps",
     "frosted",
     "frosted_windows",
@@ -1767,6 +1764,7 @@ fn write_theme_changes(config: &Config, old: &Theme, new: &Theme) -> Result<(), 
     changed!("icon_theme", &old.icon_theme, &new.icon_theme);
     changed!("font", &old.font, &new.font);
     changed!("mono_font", &old.mono_font, &new.mono_font);
+    changed!("corner_radii", old.corner_radii, new.corner_radii);
 
     tx.commit()?;
     Ok(())
@@ -1809,6 +1807,7 @@ fn write_builder_changes(
     changed!("icon_theme", &old.icon_theme, &new.icon_theme);
     changed!("font", &old.font, &new.font);
     changed!("mono_font", &old.mono_font, &new.mono_font);
+    changed!("corner_radii", old.corner_radii, new.corner_radii);
 
     tx.commit()?;
     Ok(())

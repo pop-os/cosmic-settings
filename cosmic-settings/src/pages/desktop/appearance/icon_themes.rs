@@ -127,15 +127,10 @@ pub async fn fetch() -> Message {
 
     let xdg_data_home = std::env::var("XDG_DATA_HOME")
         .ok()
-        .and_then(|value| {
-            if value.is_empty() {
-                None
-            } else {
-                Some(PathBuf::from(value))
-            }
-        })
-        .or_else(dirs::home_dir)
-        .map(|dir| dir.join(".local/share/icons"));
+        .filter(|value| !value.is_empty())
+        .map(PathBuf::from)
+        .or_else(|| dirs::home_dir().map(|dir| dir.join(".local/share")))
+        .map(|dir| dir.join("icons"));
 
     let xdg_data_dirs = std::env::var("XDG_DATA_DIRS").ok();
 
