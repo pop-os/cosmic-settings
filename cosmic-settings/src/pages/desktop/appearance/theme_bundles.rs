@@ -26,8 +26,8 @@ pub(crate) static SAVE_AS_INPUT: LazyLock<widget::Id> =
 pub(crate) static RENAME_INPUT: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("theme-bundle-rename-name"));
 
-const CARD_WIDTH: f32 = 218.0;
-const CARD_HEIGHT: f32 = 152.0;
+const CARD_WIDTH: f32 = 204.0;
+const CARD_HEIGHT: f32 = 138.0;
 
 const BAND_HEIGHT: f32 = 44.0;
 

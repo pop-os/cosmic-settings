@@ -1,6 +1,5 @@
 use cosmic::app::{ContextDrawer, context_drawer};
-use cosmic::config::CosmicTk;
-use cosmic::cosmic_config::{Config, ConfigSet};
+use cosmic::cosmic_config::ConfigSet;
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::core::{Color, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
@@ -31,10 +30,8 @@ pub struct Content {
     icon_fetch_handle: Option<cosmic::iced::task::Handle>,
 
     icon_theme_active: Option<usize>,
-    icon_global: bool,
     icon_themes: IconThemes,
     icon_handles: IconHandles,
-    tk_config: Option<Config>,
 
     comp_config: cosmic_config::Config,
     #[cfg(feature = "cosmic-comp-config")]
@@ -60,7 +57,6 @@ pub enum FontMessage {
 pub enum IconMessage {
     IconLoaded((IconThemes, IconHandles)),
     IconTheme(usize),
-    ApplyThemeGlobal(bool),
 }
 
 crate::cache_dynamic_lazy! {
@@ -119,12 +115,10 @@ impl From<&theme_manager::Manager> for Content {
             font_config: font_config::Model::from_theme(theme),
 
             icons_fetched: false,
-            icon_global: cosmic::config::apply_theme_global(),
             icon_fetch_handle: None,
             icon_theme_active: None,
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
-            tk_config: CosmicTk::config().ok(),
             comp_config,
             #[cfg(feature = "cosmic-comp-config")]
             appearance_conf,
@@ -249,16 +243,6 @@ impl Content {
                     }
                 }
             }
-            IconMessage::ApplyThemeGlobal(enabled) => {
-                if let Some(config) = self.tk_config.as_ref() {
-                    _ = config.set("apply_theme_global", enabled);
-                    self.icon_global = enabled;
-                } else {
-                    error!(
-                        "Failed to apply theme to GNOME config because the CosmicTK config does not exist."
-                    );
-                }
-            }
             IconMessage::IconLoaded((icon_themes, icon_handles)) => {
                 let active_icon_theme = cosmic::theme::active().cosmic().icon_theme.clone();
 
@@ -306,9 +290,12 @@ impl Content {
         Task::none()
     }
 
-    pub fn on_open(&mut self, context_view: &ContextView) -> Task<app::Message> {
+    pub fn on_open<F>(&mut self, context_view: &ContextView, wrap: F) -> Task<app::Message>
+    where
+        F: Fn(super::Message) -> crate::pages::Message + Send + 'static,
+    {
         match *context_view {
-            ContextView::IconsAndToolkit => {
+            ContextView::IconThemes => {
                 if self.icons_fetched {
                     return Task::none();
                 }
@@ -317,11 +304,13 @@ impl Content {
                 let (task, handle) = cosmic::task::future(icon_themes::fetch()).abortable();
                 self.icon_fetch_handle = Some(handle);
 
-                return task;
+                return task.map(wrap).map(crate::app::Message::PageMessage);
             }
             ContextView::MonospaceFont | ContextView::SystemFont => {
                 self.font_config.reset();
-                return task::message(super::Message::FocusFontInput);
+                return task::message(super::Message::FocusFontInput)
+                    .map(wrap)
+                    .map(crate::app::Message::PageMessage);
             }
             _ => {}
         }
@@ -495,8 +484,8 @@ impl Content {
             .title(fl!("monospace-font"))
             .header(self.font_config.search_input()),
 
-            ContextView::IconsAndToolkit => context_drawer(
-                self.icons_and_toolkit(),
+            ContextView::IconThemes => context_drawer(
+                self.icon_theme_choices(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             ),
 
@@ -508,53 +497,43 @@ impl Content {
         })
     }
 
-    pub fn icons_and_toolkit(&self) -> Element<'_, crate::pages::Message> {
+    pub fn icon_theme_choices<F>(&self, wrap: F) -> Element<'_, crate::pages::Message>
+    where
+        F: Fn(Message) -> crate::pages::Message + Clone + 'static,
+    {
         let Spacing {
             space_xxs,
             space_xs,
-            space_m,
             ..
         } = cosmic::theme::spacing();
 
         let active = self.icon_theme_active;
 
-        cosmic::iced::widget::column![
-            // Export theme choice
-            settings::section().add(
-                settings::item::builder(fl!("enable-export"))
-                    .description(fl!("enable-export", "desc"))
-                    .toggler(self.icon_global, |b| {
-                        Message::DrawerIcon(IconMessage::ApplyThemeGlobal(b))
-                    })
-            ),
-            // Icon theme previews
-            widget::column::with_children([
-                text::heading(&*ICON_THEME).into(),
-                flex_row(
-                    self.icon_themes
-                        .iter()
-                        .zip(self.icon_handles.iter())
-                        .enumerate()
-                        .map(|(i, (theme, handles))| {
-                            let selected = active.map(|j| i == j).unwrap_or_default();
-                            icon_themes::button(&theme.name, handles, i, selected, |id| {
-                                Message::DrawerIcon(IconMessage::IconTheme(id))
-                            })
+        widget::column::with_children([
+            text::heading(&*ICON_THEME).into(),
+            flex_row(
+                self.icon_themes
+                    .iter()
+                    .zip(self.icon_handles.iter())
+                    .enumerate()
+                    .map(|(i, (theme, handles))| {
+                        let selected = active.map(|j| i == j).unwrap_or_default();
+                        icon_themes::button(&theme.name, handles, i, selected, |id| {
+                            Message::DrawerIcon(IconMessage::IconTheme(id))
                         })
-                        .collect(),
-                )
-                .row_spacing(space_xs)
-                .column_spacing(space_xs)
-                .apply(container)
-                .center_x(Length::Fill)
-                .into()
-            ])
-            .spacing(space_xxs)
-        ]
-        .spacing(space_m)
+                    })
+                    .collect(),
+            )
+            .row_spacing(space_xs)
+            .column_spacing(space_xs)
+            .apply(container)
+            .center_x(Length::Fill)
+            .into(),
+        ])
+        .spacing(space_xxs)
         .width(Length::Fill)
         .apply(Element::from)
-        .map(crate::pages::Message::Appearance)
+        .map(wrap)
     }
 
     #[cfg(feature = "cosmic-comp-config")]

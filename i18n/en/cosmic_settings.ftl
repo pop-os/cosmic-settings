@@ -460,10 +460,11 @@ window-management-appearance = Window management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
-### Experimental
+### Fonts and icons
 
-experimental-settings = Experimental settings
-icons-and-toolkit = Icons and toolkit theming
+font-and-icons = Font and icons
+icons-theme = Icons theme
+toolkit-theming = Toolkit theming
 interface-font = System font
 monospace-font = Monospace font
 shadow-and-corners = Window shadow and corners

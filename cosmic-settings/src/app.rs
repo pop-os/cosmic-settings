@@ -31,7 +31,7 @@ use cosmic::iced::event::{self, PlatformSpecific};
 use cosmic::iced::{self, Length, Subscription, keyboard, window};
 use cosmic::prelude::*;
 use cosmic::widget::{
-    button, column, container, icon, id_container, nav_bar, row, scrollable, segmented_button,
+    button, column, container, flex_row, icon, id_container, nav_bar, scrollable, segmented_button,
     settings, text_input,
 };
 use cosmic::{Element, surface};
@@ -1119,16 +1119,17 @@ impl SettingsApp {
                 Message::Page(parent),
             );
 
-            let mut page_header_content: cosmic::iced::widget::Row<'_, Message, Theme> =
-                row::with_capacity(2)
-                    .align_y(iced::Alignment::End)
-                    .push(page_header);
+            let mut page_header_content = vec![page_header];
 
             if let Some(element) = page.header_view() {
-                page_header_content = page_header_content.push(element.map(Message::from));
+                page_header_content.push(element.map(Message::from));
             }
 
-            page_header_content.into()
+            flex_row(page_header_content)
+                .width(Length::Fill)
+                .align_items(iced::Alignment::End)
+                .justify_content(cosmic::widget::JustifyContent::SpaceBetween)
+                .into()
         } else {
             cosmic::widget::text::title3(&page_info.title).into()
         };

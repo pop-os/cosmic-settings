@@ -2,7 +2,7 @@ use cosmic::cctk::sctk::reexports::client::Proxy;
 use cosmic::cctk::sctk::reexports::client::backend::ObjectId;
 use cosmic::cctk::sctk::reexports::client::protocol::wl_output::WlOutput;
 use cosmic::cosmic_config::{self, CosmicConfigEntry};
-use cosmic::cosmic_theme::{Density, Roundness};
+use cosmic::cosmic_theme::Density;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{button, container, dropdown, row, settings, slider, space, text};
 use cosmic::{Element, Task, surface};
@@ -443,18 +443,6 @@ impl PageInner {
             return;
         };
 
-        let radius = theme.corner_radii;
-        let roundness: Roundness = radius.into();
-
-        if default.anchor_gap {
-            let radii = theme.corner_radii.radius_xl[0] as u32;
-            default.border_radius = radii;
-        } else if matches!(roundness, Roundness::Round) && !default.expand_to_edges {
-            default.border_radius = 12;
-        } else {
-            default.border_radius = 0;
-        }
-
         let spacing = theme.spacing;
         let density = Density::from(spacing);
         default.spacing = match density {
@@ -462,14 +450,6 @@ impl PageInner {
             Density::Standard => 0,
             Density::Spacious => 4,
         };
-
-        if self.panel_config.as_ref().is_some_and(|c| c.name == "Dock") {
-            default.padding = match roundness {
-                Roundness::Round => 4,
-                Roundness::SlightlyRound => 4,
-                Roundness::Square => 0,
-            };
-        }
     }
 
     #[allow(clippy::too_many_lines)]
@@ -485,20 +465,6 @@ impl PageInner {
                     .as_mut()
                     .zip(self.config_helper.as_ref())
                 {
-                    let theme = cosmic::theme::system_preference();
-                    let theme = theme.cosmic();
-                    let radius = theme.corner_radii;
-                    let roundness: Roundness = radius.into();
-
-                    if default.anchor_gap {
-                        let radii = theme.corner_radii.radius_xl[0] as u32;
-                        default.border_radius = radii;
-                    } else if matches!(roundness, Roundness::Round) && !default.expand_to_edges {
-                        default.border_radius = 12;
-                    } else {
-                        default.border_radius = 0;
-                    }
-
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
@@ -515,21 +481,13 @@ impl PageInner {
                 {
                     tracing::error!(?err, "Error fully resetting the panel config.");
                 }
-                // update the padding and spacing based on appearance
+                // update the spacing based on appearance
                 let theme = cosmic::theme::system_preference();
                 let theme = theme.cosmic();
-
-                let radius = theme.corner_radii;
-                let roundness: Roundness = radius.into();
-                crate::pages::desktop::appearance::Page::update_panel_radii(roundness);
 
                 let spacing = theme.spacing;
                 let density = Density::from(spacing);
                 crate::pages::desktop::appearance::Page::update_panel_spacing(density);
-
-                let radius = theme.corner_radii;
-                let roundness: Roundness = radius.into();
-                crate::pages::desktop::appearance::Page::update_dock_padding(roundness);
             }
             _ => {}
         };
@@ -577,17 +535,6 @@ impl PageInner {
                 } else {
                     _ = panel_config.set_margin(helper, 0);
                 }
-                let theme = cosmic::theme::system_preference();
-                let theme = theme.cosmic();
-                let radius = theme.corner_radii.radius_xl[0] as u32;
-                let new_radius = if enabled {
-                    radius
-                } else if !panel_config.expand_to_edges {
-                    radius.min(12)
-                } else {
-                    0
-                };
-                _ = panel_config.set_border_radius(helper, new_radius).unwrap();
             }
             Message::PanelSize(size) => {
                 self.size = size;
@@ -608,18 +555,6 @@ impl PageInner {
             }
             Message::ExtendToEdge(enabled) => {
                 _ = panel_config.set_expand_to_edges(helper, enabled);
-
-                let theme = cosmic::theme::system_preference();
-                let theme = theme.cosmic();
-                let radius = theme.corner_radii.radius_xl[0] as u32;
-                let new_radius = if panel_config.anchor_gap {
-                    radius
-                } else if !enabled {
-                    radius.min(12)
-                } else {
-                    0
-                };
-                _ = panel_config.set_border_radius(helper, new_radius).unwrap();
             }
             Message::OpacityRequest(opacity) => {
                 panel_config.opacity = opacity;

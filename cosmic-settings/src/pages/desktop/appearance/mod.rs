@@ -19,13 +19,13 @@ use cosmic::app::ContextDrawer;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
-use cosmic::cosmic_theme::{CornerRadii, Density, Roundness, ThemeBuilder, ThemeMode};
+use cosmic::cosmic_theme::{Density, Roundness, ThemeBuilder, ThemeMode};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::segmented_button::Model;
-use cosmic::widget::{segmented_button, settings, text};
+use cosmic::widget::{segmented_button, settings};
 use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
@@ -44,7 +44,7 @@ pub enum ContextView {
     #[cfg(feature = "cosmic-comp-config")]
     ShadowAndCorners,
     CustomAccent,
-    IconsAndToolkit,
+    IconThemes,
     InterfaceText,
     MonospaceFont,
     SystemFont,
@@ -56,7 +56,6 @@ pub struct Page {
     on_enter_handle: Option<cosmic::iced::task::Handle>,
     context_view: Option<ContextView>,
     drawer: drawer::Content,
-    roundness: Roundness,
     density: Density,
     mode_model: segmented_button::SingleSelectModel,
 
@@ -77,6 +76,7 @@ pub struct Page {
     rename: Option<theme_bundles::Rename>,
 
     tk_config: Option<Config>,
+    apply_theme_global: bool,
     day_time: bool,
 }
 
@@ -90,7 +90,6 @@ impl From<theme_manager::Manager> for Page {
     fn from(theme_manager: theme_manager::Manager) -> Self {
         let tk_config = CosmicTk::config().ok();
         let theme_mode = theme_manager.mode();
-        let theme_builder = theme_manager.builder().clone();
 
         let frosted = theme_manager.theme().frosted as u8;
         let glass = theme_manager.theme().alpha_map.guess_offset();
@@ -101,7 +100,6 @@ impl From<theme_manager::Manager> for Page {
             on_enter_handle: None,
             context_view: None,
             drawer: drawer::Content::from(&theme_manager),
-            roundness: theme_builder.corner_radii.into(),
             frosted_mode,
             density: cosmic::config::interface_density(),
             mode_model: Model::builder()
@@ -128,6 +126,7 @@ impl From<theme_manager::Manager> for Page {
             import: None,
             rename: None,
             tk_config,
+            apply_theme_global: cosmic::config::apply_theme_global(),
             day_time: true,
         }
     }
@@ -171,6 +170,7 @@ pub enum Message {
     DrawerCorners(drawer::CornerMessage),
     DrawerFont(drawer::FontMessage),
     DrawerIcon(drawer::IconMessage),
+    ApplyThemeGlobal(bool),
 
     FocusFontInput,
     GapSize(u32),
@@ -290,7 +290,8 @@ impl Page {
             | Message::SavedAs(_)
             | Message::DrawerFont(_)
             | Message::DrawerIcon(_)
-            | Message::FocusFontInput => {}
+            | Message::FocusFontInput
+            | Message::Roundness(_) => {}
 
             Message::RenameBundle(slug, name) => {
                 self.import = None;
@@ -459,7 +460,23 @@ impl Page {
                 tasks.push(cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
-                tasks.push(self.drawer.on_open(&context_view));
+                tasks.push(
+                    self.drawer
+                        .on_open(&context_view, crate::pages::Message::Appearance),
+                );
+            }
+
+            Message::ApplyThemeGlobal(enabled) => {
+                if let Some(config) = self.tk_config.as_ref() {
+                    if let Err(error) = config.set("apply_theme_global", enabled) {
+                        tracing::error!(?error, "failed to set GNOME theme export");
+                    }
+                    self.apply_theme_global = enabled;
+                } else {
+                    tracing::error!(
+                        "failed to apply theme to GNOME apps because the CosmicTk config is missing"
+                    );
+                }
             }
 
             Message::DrawerColor(u) => {
@@ -488,19 +505,6 @@ impl Page {
             }
             Message::GapSize(gap) => {
                 self.theme_manager.set_gap_size(gap);
-            }
-
-            Message::Roundness(r) => {
-                self.roundness = r;
-
-                let radii = self.roundness.into();
-                theme_staged = self.theme_manager.set_corner_radii(radii);
-
-                #[cfg(feature = "wayland")]
-                tokio::task::spawn(async move {
-                    Self::update_dock_padding(r);
-                    Self::update_panel_radii(r);
-                });
             }
 
             Message::Density(density) => {
@@ -536,7 +540,6 @@ impl Page {
                     ThemeBuilder::light()
                 };
 
-                self.roundness = builder.corner_radii.into();
                 self.density = Density::Standard;
 
                 self.theme_manager.set_active_hint(builder.active_hint);
@@ -552,14 +555,12 @@ impl Page {
                     _ = config.set("header_size", Density::Standard);
                 }
 
-                let r = self.roundness;
                 self.drawer.reset(&self.theme_manager);
                 self.drawer.sync_fonts(&self.theme_manager);
 
                 tasks.push(cosmic::task::future(async move {
                     #[cfg(feature = "wayland")]
                     {
-                        Self::update_panel_radii(r);
                         Self::update_panel_spacing(Density::Standard);
                     }
 
@@ -705,46 +706,6 @@ impl Page {
     }
 
     #[cfg(feature = "wayland")]
-    pub fn update_panel_radii(roundness: Roundness) {
-        let corner_radii: CornerRadii = roundness.into();
-        let radius = corner_radii.radius_xl[0] as u32;
-
-        for name in ["Panel", "Dock"] {
-            let Some((helper, mut config)) = Self::load_panel_config(name) else {
-                continue;
-            };
-
-            let new_radius = if config.anchor_gap {
-                radius
-            } else if !config.expand_to_edges {
-                radius.min(12)
-            } else {
-                0
-            };
-
-            if let Err(why) = config.set_border_radius(&helper, new_radius) {
-                tracing::error!(?why, "Error updating {name} corner radii");
-            }
-        }
-    }
-
-    #[cfg(feature = "wayland")]
-    pub fn update_dock_padding(roundness: Roundness) {
-        let Some((helper, mut config)) = Self::load_panel_config("Dock") else {
-            return;
-        };
-
-        let padding = match roundness {
-            Roundness::Round | Roundness::SlightlyRound => 4,
-            Roundness::Square => 0,
-        };
-
-        if let Err(why) = config.set_padding(&helper, padding) {
-            tracing::error!(?why, "Error updating dock padding");
-        }
-    }
-
-    #[cfg(feature = "wayland")]
     pub fn update_panel_spacing(density: Density) {
         let spacing: cosmic::cosmic_theme::Spacing = density.into();
         let space_none = spacing.space_none as u32;
@@ -803,7 +764,6 @@ impl Page {
     fn refresh_theme(&mut self) {
         let manager = theme_manager::Manager::default();
 
-        self.roundness = manager.builder().corner_radii.into();
         self.frosted = manager.theme().frosted as u8;
         self.glass = manager.theme().alpha_map.guess_offset();
         self.frosted_mode = frosted_mode_of(self.frosted, self.glass);
@@ -866,6 +826,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(interface_density()),
             sections.insert(frosted::section()),
             sections.insert(window_management()),
+            sections.insert(toolkit_theming()),
         ])
     }
 
@@ -1010,43 +971,19 @@ pub fn window_management() -> Section<crate::pages::Message> {
         })
 }
 
-pub fn experimental() -> Section<crate::pages::Message> {
-    crate::slab!(descriptions {
-        interface_font_txt = fl!("interface-font");
-        monospace_font_txt = fl!("monospace-font");
-        icons_and_toolkit_txt = fl!("icons-and-toolkit");
-    });
-
+pub fn toolkit_theming() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("experimental-settings"))
-        .descriptions(descriptions)
-        .view::<custom::Page>(move |_binder, page, section| {
-            let descriptions = &section.descriptions;
-
-            let system_font = crate::widget::go_next_with_item(
-                &descriptions[interface_font_txt],
-                text::body(page.drawer.current_font_family(&ContextView::SystemFont)),
-                Message::DrawerOpen(ContextView::SystemFont),
-            );
-
-            let mono_font = crate::widget::go_next_with_item(
-                &descriptions[monospace_font_txt],
-                text::body(page.drawer.current_font_family(&ContextView::MonospaceFont)),
-                Message::DrawerOpen(ContextView::MonospaceFont),
-            );
-
-            let icons_and_toolkit = crate::widget::go_next_item(
-                &descriptions[icons_and_toolkit_txt],
-                Message::DrawerOpen(ContextView::IconsAndToolkit),
-            );
-
-            let section = settings::section()
-                .title(&*section.title)
-                .add(system_font)
-                .add(mono_font)
-                .add(icons_and_toolkit);
-
-            section
+        .title(fl!("toolkit-theming"))
+        .view::<Page>(|_, page, section| {
+            settings::section()
+                .title(&section.title)
+                .add(
+                    settings::item::builder(fl!("enable-export"))
+                        .description(fl!("enable-export", "desc"))
+                        .toggler(page.apply_theme_global, |enabled| {
+                            Message::ApplyThemeGlobal(enabled)
+                        }),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })

@@ -7,7 +7,7 @@ use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::text_input::focus;
-use cosmic::widget::{button, container};
+use cosmic::widget::{button, container, settings, text};
 use cosmic::{Apply, Element, Task, task};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_theme_bundle_config::Mode;
@@ -94,7 +94,10 @@ impl Page {
                 tasks.push(cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
-                tasks.push(self.drawer.on_open(&context_view));
+                tasks.push(
+                    self.drawer
+                        .on_open(&context_view, crate::pages::Message::AppearanceTheme),
+                );
             }
 
             Message::DrawerColor(u) => {
@@ -150,17 +153,10 @@ impl Page {
 
             Message::Roundness(r) => {
                 self.roundness = r;
-
-                let radii = self.roundness.into();
-                theme_staged = self.theme_manager.set_corner_radii(radii);
-
-                #[cfg(feature = "wayland")]
-                if self.mode == theme_bundles::on_screen_mode() {
-                    tokio::task::spawn(async move {
-                        super::Page::update_dock_padding(r);
-                        super::Page::update_panel_radii(r);
-                    });
-                }
+                theme_staged = self
+                    .theme_manager
+                    .selected_customizer_mut()
+                    .set_corner_radii(r.into());
             }
 
             Message::Reset => {
@@ -349,7 +345,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(wallpaper::section()),
             sections.insert(colors_and_style::section()),
             sections.insert(style::section()),
-            sections.insert(super::experimental()),
+            sections.insert(font_and_icons()),
             sections.insert(export_action()),
         ])
     }
@@ -363,14 +359,10 @@ impl page::Page<crate::pages::Message> for Page {
             .on_press(crate::pages::Message::AppearanceTheme(Message::SaveAs));
 
         Some(
-            container(
-                cosmic::iced::widget::row![reset, save_as]
-                    .spacing(spacing.space_xs)
-                    .align_y(Alignment::Center),
-            )
-            .width(Length::Fill)
-            .align_x(Alignment::End)
-            .apply(Element::from),
+            cosmic::iced::widget::row![reset, save_as]
+                .spacing(spacing.space_xs)
+                .align_y(Alignment::End)
+                .into(),
         )
     }
 
@@ -403,6 +395,46 @@ impl page::Page<crate::pages::Message> for Page {
             cosmic::task::message(crate::pages::Message::AppearancePreview(None)),
         ])
     }
+}
+
+fn font_and_icons() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        interface_font_txt = fl!("interface-font");
+        monospace_font_txt = fl!("monospace-font");
+        icons_theme_txt = fl!("icons-theme");
+    });
+
+    Section::default()
+        .title(fl!("font-and-icons"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+
+            let system_font = crate::widget::go_next_with_item(
+                &descriptions[interface_font_txt],
+                text::body(page.drawer.current_font_family(&ContextView::SystemFont)),
+                Message::DrawerOpen(ContextView::SystemFont),
+            );
+
+            let mono_font = crate::widget::go_next_with_item(
+                &descriptions[monospace_font_txt],
+                text::body(page.drawer.current_font_family(&ContextView::MonospaceFont)),
+                Message::DrawerOpen(ContextView::MonospaceFont),
+            );
+
+            let icon_theme = crate::widget::go_next_item(
+                &descriptions[icons_theme_txt],
+                Message::DrawerOpen(ContextView::IconThemes),
+            );
+
+            settings::section()
+                .title(&*section.title)
+                .add(system_font)
+                .add(mono_font)
+                .add(icon_theme)
+                .apply(Element::from)
+                .map(crate::pages::Message::AppearanceTheme)
+        })
 }
 
 fn export_action() -> Section<crate::pages::Message> {

@@ -54,7 +54,7 @@ pub fn section() -> Section<crate::pages::Message> {
     let light_custom_style = from_name("illustration-appearance-light-custom").handle();
 
     Section::default()
-        .title(fl!("style"))
+        .title(fl!("style", "frosted-glass"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
