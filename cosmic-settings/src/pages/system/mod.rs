@@ -32,7 +32,12 @@ impl page::AutoBind<crate::pages::Message> for Page {
     ) -> page::Insert<crate::pages::Message> {
         #[cfg(feature = "page-users")]
         {
-            page = page.sub_page::<users::Page>();
+            static AVAIL: std::sync::LazyLock<bool> =
+                std::sync::LazyLock::new(|| zbus::block_on(has_accounts_service()));
+
+            if *AVAIL {
+                page = page.sub_page::<users::Page>();
+            }
         }
 
         #[cfg(feature = "page-about")]
@@ -42,4 +47,20 @@ impl page::AutoBind<crate::pages::Message> for Page {
 
         page
     }
+}
+
+#[cfg(feature = "page-users")]
+async fn has_accounts_service() -> bool {
+    let Ok(conn) = zbus::Connection::system().await else {
+        return false;
+    };
+    let Ok(dbus) = zbus::fdo::DBusProxy::new(&conn).await else {
+        return false;
+    };
+
+    dbus.name_has_owner(
+        zbus::names::WellKnownName::from_static_str_unchecked("org.freedesktop.Accounts").into(),
+    )
+    .await
+    .unwrap_or_default()
 }
