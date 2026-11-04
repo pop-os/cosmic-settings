@@ -29,6 +29,7 @@ Depends:
     accountsservice,
     cosmic-randr,
     cosmic-settings-daemon,
+    cosmic-theme-bundles,
     iso-codes,
     nm-connection-editor | network-manager-gnome,
     network-manager-openvpn,
