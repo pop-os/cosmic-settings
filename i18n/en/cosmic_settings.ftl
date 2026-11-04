@@ -516,6 +516,9 @@ super-key = Super key action
     .applications = Open Applications
     .none = None
 
+decoration-preference = Use system window headers when possible
+    .desc = Applications may use their own window headers in some cases
+
 edge-gravity = Floating windows gravitate to nearby edges
 
 window-controls = Window controls

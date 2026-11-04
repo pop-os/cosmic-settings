@@ -5,7 +5,7 @@ use cosmic::iced::Length;
 use cosmic::widget::{self, settings};
 use cosmic::{Apply, Element, surface};
 
-use cosmic_comp_config::CosmicCompConfig;
+use cosmic_comp_config::{CosmicCompConfig, DecorationPreference};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
 use cosmic_settings_page::{self as page, Section, section};
@@ -25,6 +25,7 @@ pub enum Message {
     ShowMinimizeButton(bool),
     SetEdgeSnapThreshold(u32),
     Surface(surface::Action<crate::app::Message>),
+    SetDecorationPreference(DecorationPreference),
 }
 
 pub struct Page {
@@ -37,6 +38,7 @@ pub struct Page {
     cursor_follows_focus: bool,
     show_active_hint: bool,
     edge_snap_threshold: u32,
+    decoration_preference: DecorationPreference,
 }
 
 impl Default for Page {
@@ -86,6 +88,15 @@ impl Default for Page {
             })
             .unwrap_or(0);
 
+        let decoration_preference = comp_config
+            .get("decoration_preference")
+            .inspect_err(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'decoration_preference'")
+                }
+            })
+            .unwrap_or(DecorationPreference::ServerSide);
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -101,6 +112,7 @@ impl Default for Page {
             cursor_follows_focus,
             show_active_hint,
             edge_snap_threshold,
+            decoration_preference,
         }
     }
 }
@@ -193,6 +205,15 @@ impl Page {
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
             }
+            Message::SetDecorationPreference(preference) => {
+                self.decoration_preference = preference;
+                if let Err(err) = self
+                    .comp_config
+                    .set("decoration_preference", self.decoration_preference)
+                {
+                    tracing::error!(?err, "Failed to set config 'decoration_preference'");
+                }
+            }
         };
         cosmic::iced::Task::none()
     }
@@ -231,6 +252,8 @@ pub fn window_management() -> Section<crate::pages::Message> {
         _applications = fl!("super-key", "applications");
         _none = fl!("super-key", "none");
         edge_gravity = fl!("edge-gravity");
+        decoration_preference = fl!("decoration-preference");
+        decoration_preference_desc = fl!("decoration-preference", "desc");
     });
 
     Section::default()
@@ -259,6 +282,20 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         .toggler(page.edge_snap_threshold != 0, |is_enabled| {
                             Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
                         }),
+                )
+                .add(
+                    settings::item::builder(&descriptions[decoration_preference])
+                        .description(&descriptions[decoration_preference_desc])
+                        .toggler(
+                            page.decoration_preference == DecorationPreference::ServerSide,
+                            |is_enabled| {
+                                Message::SetDecorationPreference(if is_enabled {
+                                    DecorationPreference::ServerSide
+                                } else {
+                                    DecorationPreference::ClientSide
+                                })
+                            },
+                        ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
