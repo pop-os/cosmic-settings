@@ -22,6 +22,7 @@ use tracing::error;
 crate::cache_dynamic_lazy! {
     static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
     static SHOW_WEEKDAY: String = fl!("time-format", "show-weekday");
+    static SHOW_WEEK: String = fl!("time-format", "show-week");
     static SHOW_SECONDS: String = fl!("time-format", "show-seconds");
     static SHOW_DATE: String = fl!("time-format", "date");}
 
@@ -39,6 +40,7 @@ pub struct Page {
     military_time: bool,
     show_seconds: bool,
     show_weekday: bool,
+    show_week_number: bool,
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
     timezone_context: bool,
@@ -87,6 +89,16 @@ impl Default for Page {
                 false
             });
 
+        let show_week_number = cosmic_applet_config
+            .get("show_week_number")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'show_week_number'");
+                }
+
+                false
+            });
+
         let first_day_of_week = cosmic_applet_config
             .get("first_day_of_week")
             .unwrap_or_else(|err| {
@@ -118,6 +130,7 @@ impl Default for Page {
             military_time,
             show_seconds,
             show_weekday,
+            show_week_number,
             ntp_enabled: false,
             show_date_in_top_panel,
             timezone: None,
@@ -247,6 +260,15 @@ impl Page {
 
                 if let Err(err) = self.cosmic_applet_config.set("show_weekday", enable) {
                     error!(?err, "Failed to set config 'show_weekday'");
+                }
+            }
+
+            Message::ShowWeekNumber(enable) => {
+                self.show_week_number = enable;
+                self.update_local_time();
+
+                if let Err(err) = self.cosmic_applet_config.set("show_week_number", enable) {
+                    error!(?err, "Failed to set config 'show_week_number'");
                 }
             }
 
@@ -393,6 +415,10 @@ impl Page {
                 .toggler(self.show_weekday, Message::ShowWeekday),
         )
         .add(
+            settings::item::builder(&*SHOW_WEEK)
+                .toggler(self.show_week_number, Message::ShowWeekNumber),
+        )
+        .add(
             settings::item::builder(&*SHOW_SECONDS)
                         .toggler(self.show_seconds, Message::ShowSeconds));
 
@@ -416,6 +442,7 @@ pub enum Message {
     MilitaryTime(bool),
     ShowSeconds(bool),
     ShowWeekday(bool),
+    ShowWeekNumber(bool),
     None,
     FirstDayOfWeek(usize),
     Refresh(Info),

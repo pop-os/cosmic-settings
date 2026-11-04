@@ -980,6 +980,7 @@ time-format = Date & time format
     .twenty-four = 24-hour time
     .show-seconds = Seconds
     .show-weekday = Day of week
+    .show-week = Week number
     .first = First day of week
     .date = Date
     .friday = Friday
