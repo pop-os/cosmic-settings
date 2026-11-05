@@ -24,7 +24,7 @@ pub enum Message {
     ShowMaximizeButton(bool),
     ShowMinimizeButton(bool),
     SetEdgeSnapThreshold(u32),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 pub struct Page {

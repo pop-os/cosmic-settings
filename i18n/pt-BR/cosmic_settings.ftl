@@ -124,6 +124,8 @@ accessibility = Acessibilidade
     .high-contrast = Modo de alto contraste
     .invert-colors = Inverter cores
     .color-filters = Filtros de cor
+    .shake-cursor = Agite o ponteiro para encontrá-lo
+    .shake-cursor-desc = Agite rapidamente o mouse para ampliar temporariamente o ponteiro
 hearing = Audição
     .mono = Reproduzir áudio estéreo como mono
 default = Padrão
@@ -178,7 +180,7 @@ colors = Cores
 dialog-add = Adicionar
 fill = Preencher
 fit-to-screen = Ajustar à tela
-open-new-folder = Abrir Nova Pasta
+open-new-folder = Abrir nova pasta
 recent-folders = Pastas recentes
 x-minutes =
     { $number } { $number ->
@@ -260,7 +262,7 @@ window-management-appearance = Gerenciamento de Janelas
 ### Experimental
 
 experimental-settings = Configurações Experimentais
-icons-and-toolkit = Tema de ícones e toolkit
+icons-and-toolkit = Ícones e temas de toolkit
 interface-font = Fonte do sistema
 monospace-font = Fonte monoespaçada
 
@@ -426,8 +428,9 @@ amplification = Amplificação
 sound-alerts = Alertas
     .volume = Volume dos alertas
     .sound = Som dos alertas
-sound-applications = Aplicações
-    .desc = Volume e configurações das aplicações
+sound-applications = Aplicativos
+    .desc = Volumes e configurações de aplicativo
+    .none = Nenhum aplicativo está usando som
 
 ## Power
 
@@ -713,9 +716,10 @@ time-zone = Fuso horário
     .auto-info = Requer um serviço de localização e acesso à Internet
 time-format = Formato de data e hora
     .twenty-four = Formato de 24 horas
-    .show-seconds = Mostrar segundos
+    .show-seconds = Segundos
+    .show-weekday = Dia da semana
     .first = Primeiro dia da semana
-    .show-date = Mostrar a data no miniaplicativo de hora
+    .date = Data
     .friday = Sexta-feira
     .saturday = Sábado
     .sunday = Domingo
@@ -948,3 +952,23 @@ bluetooth-display-passkey = Emparelhamento Bluetooth
     .description = Por favor, digite a seguinte chave em { $device }, depois pressione Enter
 bluetooth-display-pin = Emparelhamento Bluetooth
     .description = Por favor, digite o seguinte PIN em { $device }, depois pressione Enter
+rename = Renomear
+bluetooth-rename-device = Renomear dispositivo
+mobility = Mobilidade
+on-screen-keyboard = Teclado virtual
+    .always-show = Sempre exibir o teclado virtual
+    .icon-on-panel = Ícone no painel
+    .show-on-gamepad-shortcut = Exibir o teclado virtual com um controle de jogo pressionando os botões Iniciar e Selecionar/Voltar simultaneamente.
+    .show-on-text-input = Exibir o teclado virtual ao selecionar um campo de texto
+date-time-applet-settings-title = Miniaplicativo de data e hora
+date-time-applet-settings-label = Configurações do miniaplicativo de data e hora
+xdg-entry-drawing-tablet = Mesa digitalizadora
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablet;Desenho;Sensibilidade;
+drawing-tablet = Mesa digitalizadora
+    .no-devices-detected = Nenhuma mesa digitalizadora ou caneta detectada
+    .map-to-display = Mapear para a tela
+    .not-set = Não definido
+    .enabled = Habilitado
+xdg-entry-drawing-tablet-comment = Mapeamento da tela
+tap-and-drag = Tocar e arrastar
+drag-lock = Bloqueio do arrasto

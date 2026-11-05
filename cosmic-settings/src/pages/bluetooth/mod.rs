@@ -12,13 +12,15 @@ use futures::channel::oneshot;
 use futures::{SinkExt, StreamExt};
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
 
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
 use crate::service_manager::ServiceManagerHandle;
+
+static BLUETOOTH_PAGE_LABEL: LazyLock<String> = LazyLock::new(|| fl!("bluetooth"));
 
 enum Dialog {
     RequestConfirmation {
@@ -34,6 +36,10 @@ enum Dialog {
     DisplayPinCode {
         device: String,
         pincode: String,
+    },
+    RenameDevice {
+        path: OwnedObjectPath,
+        name: String,
     },
 }
 
@@ -171,6 +177,19 @@ impl page::Page<crate::pages::Message> for Page {
         page::Info::new("bluetooth", "bluetooth-symbolic")
             .title(fl!("bluetooth"))
             .description(fl!("xdg-entry-bluetooth-comment"))
+    }
+
+    fn header(&self) -> Option<Element<'_, crate::pages::Message>> {
+        if self.model.adapters.len() > 1 {
+            let (_, adapter) = self.model.get_selected_adapter()?;
+            return Some(crate::widget::sub_page_header(
+                &adapter.alias,
+                BLUETOOTH_PAGE_LABEL.as_str(),
+                Message::SelectAdapter(None).into(),
+            ));
+        }
+
+        None
     }
 
     fn content(
@@ -338,6 +357,29 @@ impl page::Page<crate::pages::Message> for Page {
 
                 Some(dialog)
             }
+
+            Dialog::RenameDevice { name, .. } => {
+                let is_valid = is_valid_bluetooth_alias(name);
+                let input = widget::text_input("", name)
+                    .on_input(|value| Message::RenameDeviceInput(value))
+                    .on_submit(|_| Message::RenameDeviceConfirm);
+
+                let rename_button = widget::button::suggested(fl!("rename"))
+                    .on_press_maybe(is_valid.then_some(Message::RenameDeviceConfirm));
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::RenameDeviceCancel);
+
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-rename-device"))
+                    .control(input)
+                    .primary_action(rename_button)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
         }
     }
 }
@@ -354,6 +396,10 @@ pub enum Message {
     PinConfirm,
     PopupDevice(Option<OwnedObjectPath>),
     PopupSetting(bool),
+    RenameDevice(OwnedObjectPath),
+    RenameDeviceInput(String),
+    RenameDeviceConfirm,
+    RenameDeviceCancel,
     SelectAdapter(Option<OwnedObjectPath>),
     ServiceActivate,
     ServiceEnable,
@@ -392,6 +438,30 @@ impl From<Event> for Message {
 }
 
 impl Page {
+    fn update_heading(&mut self) {
+        self.heading = if let Some((_, adapter)) = self.model.get_selected_adapter() {
+            fl!(
+                "bluetooth",
+                "status",
+                aliases = format!("“{}”", adapter.alias)
+            )
+        } else {
+            fl!(
+                "bluetooth",
+                "status",
+                aliases = self
+                    .model
+                    .adapters
+                    .values()
+                    .map(|adapter| format!("“{}”", adapter.alias))
+                    .collect::<HashSet<String>>()
+                    .into_iter()
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            )
+        };
+    }
+
     pub fn update(&mut self, message: Message) -> cosmic::Task<crate::Message> {
         let span = tracing::span!(tracing::Level::INFO, "bluetooth::update");
         let _span = span.enter();
@@ -437,28 +507,7 @@ impl Page {
 
                 Event::SetAdapters(adapters) => {
                     let select_adapter = self.model.set_adapters(adapters);
-
-                    if let Some((_, adapter)) = self.model.get_selected_adapter() {
-                        self.heading = fl!(
-                            "bluetooth",
-                            "status",
-                            aliases = format!("“{}”", adapter.alias)
-                        );
-                    } else {
-                        self.heading = fl!(
-                            "bluetooth",
-                            "status",
-                            aliases = self
-                                .model
-                                .adapters
-                                .values()
-                                .map(|adapter| format!("“{}”", adapter.alias))
-                                .collect::<HashSet<String>>()
-                                .into_iter()
-                                .collect::<Vec<String>>()
-                                .join(", ")
-                        );
-                    }
+                    self.update_heading();
 
                     if let Some(adapter) = select_adapter {
                         return cosmic::task::message(Message::SelectAdapter(Some(adapter)));
@@ -609,8 +658,25 @@ impl Page {
                             self.dialog = None;
                         }
 
+                        bluez_zbus::agent1::Message::AuthorizeService {
+                            device, response, ..
+                        } => {
+                            let Some(connection) = self.connection.clone() else {
+                                return Task::none();
+                            };
+
+                            return cosmic::task::future(async move {
+                                _ = response.send(is_paired(connection, device).await);
+                                Event::Ok
+                            });
+                        }
+
                         _ => (),
                     }
+                }
+
+                Event::DeviceRenameFailed(path) => {
+                    tracing::warn!("Failed to rename device {path}");
                 }
             },
 
@@ -741,6 +807,7 @@ impl Page {
             Message::SelectAdapter(adapter_maybe) => {
                 tracing::debug!("Adapter selected: {adapter_maybe:?}");
                 self.model.selected_adapter = adapter_maybe;
+                self.update_heading();
                 self.model.update_status();
                 let Some(connection) = self.connection.as_ref() else {
                     tracing::error!("No DBus connection ready");
@@ -814,6 +881,42 @@ impl Page {
                     }
                 } else {
                     tracing::warn!("No DBus connection ready");
+                }
+            }
+
+            Message::RenameDevice(path) => {
+                self.model.popup_device = None;
+                let name = self
+                    .model
+                    .devices
+                    .get(&path)
+                    .map_or_else(String::new, |d| d.alias_or_addr().to_owned());
+                self.dialog = Some(Dialog::RenameDevice { path, name });
+            }
+
+            Message::RenameDeviceInput(new_name) => {
+                if let Some(Dialog::RenameDevice { name, .. }) = &mut self.dialog {
+                    *name = new_name;
+                }
+            }
+
+            Message::RenameDeviceCancel => {
+                if matches!(self.dialog, Some(Dialog::RenameDevice { .. })) {
+                    self.dialog = None;
+                }
+            }
+
+            Message::RenameDeviceConfirm => {
+                if let Some(Dialog::RenameDevice { path, name }) = self.dialog.take() {
+                    if let Some(connection) = self.connection.clone() {
+                        return cosmic::task::future(rename_device(
+                            connection,
+                            path,
+                            name.trim().into(),
+                        ));
+                    } else {
+                        tracing::warn!("No DBus connection ready");
+                    }
                 }
             }
 
@@ -915,6 +1018,11 @@ fn status() -> Section<crate::pages::Message> {
         })
 }
 
+fn is_valid_bluetooth_alias(name: &str) -> bool {
+    let trimmed = name.trim();
+    !trimmed.is_empty() && trimmed.len() <= 248
+}
+
 fn popup_button(message: Option<Message>, text: &str) -> Element<'_, Message> {
     let spacing = theme::spacing();
     widget::text::body(text)
@@ -935,6 +1043,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
         device_connect = fl!("bluetooth", "connect");
         device_disconnect = fl!("bluetooth", "disconnect");
         device_forget = fl!("bluetooth", "forget");
+        device_rename = fl!("rename");
     });
 
     Section::default()
@@ -972,13 +1081,17 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         .position(widget::popover::Position::Bottom)
                         .on_close(Message::PopupDevice(None))
                         .popup(
-                            widget::column::with_capacity(2)
+                            widget::column::with_capacity(3)
                                 .push_maybe(device.is_connected().then(|| {
                                     popup_button(
                                         Some(Message::DisconnectDevice(path.clone())),
                                         &descriptions[device_disconnect],
                                     )
                                 }))
+                                .push(popup_button(
+                                    Some(Message::RenameDevice(path.clone())),
+                                    &descriptions[device_rename],
+                                ))
                                 .push_maybe(device.paired.then(|| {
                                     popup_button(
                                         Some(Message::ForgetDevice(path.clone())),
@@ -1158,6 +1271,51 @@ impl Page {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use cosmic_settings_page::Page as _;
+
+    fn adapter(path: &str, alias: &str) -> (OwnedObjectPath, Adapter) {
+        (
+            OwnedObjectPath::try_from(path).unwrap(),
+            Adapter {
+                alias: alias.to_owned(),
+                ..Adapter::default()
+            },
+        )
+    }
+
+    fn page_with_two_adapters() -> Page {
+        let mut page = Page::default();
+        let adapters = [
+            adapter("/org/bluez/hci0", "Adapter 0"),
+            adapter("/org/bluez/hci1", "Adapter 1"),
+        ]
+        .into_iter()
+        .collect();
+        let _task = page.update(Message::BluetoothEvent(Event::SetAdapters(adapters)));
+        page
+    }
+
+    #[test]
+    fn bluetooth_header_is_absent_at_adapter_chooser() {
+        let page = page_with_two_adapters();
+
+        assert!(page.header().is_none());
+    }
+
+    #[test]
+    fn bluetooth_header_tracks_adapter_selection_and_clearing() {
+        let mut page = page_with_two_adapters();
+        let selected = OwnedObjectPath::try_from("/org/bluez/hci1").unwrap();
+
+        let _task = page.update(Message::SelectAdapter(Some(selected)));
+        assert!(page.header().is_some());
+        assert!(page.heading.contains("Adapter 1"));
+
+        let _task = page.update(Message::SelectAdapter(None));
+        assert!(page.header().is_none());
+        assert!(page.heading.contains("Adapter 0"));
+        assert!(page.heading.contains("Adapter 1"));
+    }
 
     #[test]
     fn test_dbus_service_unknown_with_installed_service_queries_manager() {

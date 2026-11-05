@@ -21,6 +21,7 @@ pub enum Event {
     DBusError(zbus::Error),
     DBusServiceUnknown,
     DeviceFailed(OwnedObjectPath),
+    DeviceRenameFailed(OwnedObjectPath),
     Ok,
     NameHasNoOwner,
     RemovedAdapter(OwnedObjectPath),

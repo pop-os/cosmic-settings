@@ -27,7 +27,7 @@ xdg-entry-input-comment = Nastavení klávesnice a myši
 xdg-entry-keyboard = Klávesnice
 xdg-entry-keyboard-comment = Vstupní zdroje, přepínání, vkládání speciálních znaků, zkratky
 xdg-entry-mouse = Myš
-xdg-entry-mouse-comment = Rychlost myši, zrychlení, přirozené rolování
+xdg-entry-mouse-comment = Rychlost myši, zrychlení, přirozené posouvání
 xdg-entry-network = Síť a Wi-Fi
 xdg-entry-network-comment = Správa síťových připojení
 xdg-entry-notifications = Oznámení
@@ -86,10 +86,10 @@ dock = Dok
 ## Desktop: Panel
 
 panel = Panel
-panel-behavior-and-position = Chování a pozice
+panel-behavior-and-position = Chování a umístění
     .autohide = Automaticky skrýt panel
     .dock-autohide = Automaticky skrýt dok
-    .position = Pozice na obrazovce
+    .position = Umístění na obrazovce
     .display = Zobrazit na obrazovce
 panel-top = Nahoře
 panel-bottom = Dole
@@ -186,10 +186,11 @@ time-zone = Časové pásmo
     .auto = Automatické časové pásmo
     .auto-info = Vyžaduje službu polohy a internet
 time-format = Formát data a času
-    .twenty-four = 24 hodinový čas
-    .show-seconds = Zobrazit sekundy
-    .first = První den v týdnu
-    .show-date = Zobrazit datum v appletu pro čas
+    .twenty-four = 24hodinový čas
+    .show-seconds = Sekundy
+    .show-weekday = Den v týdnu
+    .first = První den týdne
+    .date = Datum
     .friday = Pátek
     .saturday = Sobota
     .sunday = Neděle
@@ -215,7 +216,8 @@ sound-alerts = Upozornění
     .volume = Hlasitost upozornění
     .sound = Zvuk pro upozornění
 sound-applications = Aplikace
-    .desc = Hlasitosti aplikací a nastavení
+    .desc = Hlasitosti a nastavení aplikací
+    .none = Žádné aplikace nepoužívají zvuk
 
 ## System
 
@@ -255,16 +257,16 @@ users = Uživatelé
 ## Input
 
 acceleration-desc = Automaticky upravuje citlivost snímání podle rychlosti
-primary-button = Hlavní tlačítko
+primary-button = Primární tlačítko
     .desc = Nastavuje pořadí fyzických tlačítek
     .left = Levé
     .right = Pravé
-scrolling = Rolování
-    .two-finger = Rolovat dvěma prsty
-    .edge = Rolovat jedním prstem podél okraje
-    .speed = Rychlost rolování
-    .natural = Přirozené rolování
-    .natural-desc = Roluje obsah místo zobrazení
+scrolling = Posouvání obsahu
+    .two-finger = Posouvat dvěma prsty
+    .edge = Posouvat jedním prstem podél okraje
+    .speed = Rychlost posouvání
+    .natural = Přirozené posouvání
+    .natural-desc = Při posouvání se pohybuje obsah, nikoli zobrazení
 
 ## Input: Keyboard
 
@@ -369,8 +371,10 @@ accessibility = Přístupnost
     .unavailable = Nedostupné
     .screen-reader = Čtečka obrazovky
     .high-contrast = Vysoký kontrast
-    .invert-colors = Převrátit barvy
+    .invert-colors = Inverze barev
     .color-filters = Barevné filtry
+    .shake-cursor = Nalezení ukazatele zatřesením
+    .shake-cursor-desc = Rychlým zatřesením myší se ukazatel dočasně zvětší
 hearing = Sluch
     .mono = Přehrávat stereo zvuk jako mono
 default = Výchozí
@@ -462,13 +466,13 @@ container-background = Pozadí kontejneru
 control-tint = Odstín ovládacích prvků
     .desc = Používá se pro pozadí standardních tlačítek, vyhledávacích polí, textových vstupů a podobných komponent
 frosted = Efekt ledového skla na systémovém rozhraní
-    .desc = Použije rozmazané pozadí pro panel, dok, applety, spouštěč a knihovnu aplikací
+    .desc = Použít rozmazané pozadí pro panel, dok, applety, spouštěč a knihovnu aplikací
 enable-export = Použít aktuální motiv v aplikacích GNOME
     .desc = Ne všechny toolkity podporují automatické přepínání. Aplikace, které nejsou postaveny na COSMIC toolkitu mohou vyžadovat restart po změně motivu.
 password-mismatch = Heslo a jeho potvrzení se musí shodovat
 invalid-username = Neplatné uživatelské jméno
 icon-theme = Motiv ikon
-    .desc = Použije jinou sadu ikon pro aplikace
+    .desc = Použít jinou sadu ikon pro aplikace
 monospace-font = Písmo s pevnou šířkou
 window-management = Správa oken
 window-tiling = Dlaždicový režim oken
@@ -487,10 +491,10 @@ super-key = Akce klávesy Super
     .applications = Otevřít aplikace
     .none = Žádná
 edge-gravity = Plovoucí okna se přichytávají k blízkým okrajům
-focus-navigation = Navigace zaměření
-    .focus-follows-cursor = Zaměření následuje kurzor
-    .focus-follows-cursor-delay = Zaměření následuje kurzor - zpoždění v ms
-    .cursor-follows-focus = Kurzor následuje zaměření
+focus-navigation = Aktivace oken
+    .focus-follows-cursor = Přesunutí kurzoru na okno způsobí jeho aktivaci
+    .focus-follows-cursor-delay = Přesunutí kurzoru na okno způsobí jeho aktivaci - zpoždění v ms
+    .cursor-follows-focus = Aktivace okna způsobí přesunutí kurzoru na něj
 workspaces-overview-thumbnails = Miniatury v přehledu pracovních ploch
     .show-number = Zobrazit číslo pracovní plochy
     .show-name = Zobrazit název pracovní plochy
@@ -516,22 +520,22 @@ magnifier = Lupa
                 { "" }
                 { $zoom_out } pro oddálení,
         }
-        Super + rolování kolečkem myši
-    .scroll_controls = Povolit přiblížení s myší nebo touchpadem pomocí Super + rolování
+        Super + posouvání kolečkem myši
+    .scroll_controls = Povolit přiblížení s myší nebo touchpadem pomocí Super + posouvání
     .show_overlay = Zobrazit překrytí lupy
     .increment = Krok přiblížení
     .signin = Spustit lupu při přihlášení
-    .applet = Lupu lze přepnout v appletu na panelu
-    .movement = Pohyb přiblíženého zobrazení
+    .applet = Lupu lze přepnout (zap/vyp) v nabídce zobrazené po kliknutí na applet přímo v panelu
+    .movement = Pohyb přiblížené oblasti
     .continuous = Neustále s ukazatelem
     .onedge = Když ukazatel dosáhne okraje
     .centered = Udržovat ukazatele ve středu obrazovky
 color-filter = Typ barevného filtru
     .unknown = Neznámý filtr aktivní
     .greyscale = Stupně šedi
-    .deuteranopia = Zeleno/Červená (oslabení zelené, Deuteranopie)
-    .protanopia = Červeno/Zelená (oslabení červené, Protanopie)
-    .tritanopia = Modro/Žlutá (oslabení modré, Tritanopie)
+    .deuteranopia = Zelená/červená (oslabené vnímání zelené, deuteranopie)
+    .protanopia = Červená/zelená (oslabené vnímání červené, protanopie)
+    .tritanopia = Modrá/žlutá (oslabené vnímání modré, tritanopie)
 text-tint = Odstín textu rozhraní
     .desc = Používá se k odvození barev textu rozhraní, které mají dostatečný kontrast na různých površích
 experimental-settings = Experimentální nastavení
@@ -552,13 +556,13 @@ style = Styl
     .square = Hranatý
     .frosted-glass = Efekt ledového skla
     .frosted-system-interface = Rozhraní systému
-    .frosted-system-interface-desc = Použije efekt ledového skla na spouštěč, knihovnu aplikací, přehled pracovních ploch a ovládací prvky na obrazovce
+    .frosted-system-interface-desc = Použít efekt ledového skla pro spouštěč, knihovnu aplikací, přehled pracovních ploch a ovládací prvky na obrazovce
     .frosted-windows = Okna
-    .frosted-windows-desc = Použije efekt ledového skla na okna a dialogy
+    .frosted-windows-desc = Použít efekt ledového skla pro okna a dialogy
     .frosted-panels = Panely
-    .frosted-panels-desc = Použije efekt ledového skla na dok a panel
+    .frosted-panels-desc = Použít efekt ledového skla pro dok a panel
     .frosted-applets = Applety
-    .frosted-applets-desc = Použije efekt ledového skla na nabídky appletů v doku a na panelu
+    .frosted-applets-desc = Použít efekt ledového skla pro nabídky appletů na panelu a doku
     .frosted-thickness = Tloušťka ledu
     .less = menší
     .more = větší
@@ -700,13 +704,13 @@ custom-shortcuts = Vlastní zkratky
     .context = Přidat vlastní zkratku
     .none = Žádné vlastní zkratky
 nav-shortcuts = Navigace
-    .prev-output = Zaměřit předchozí výstup
-    .next-output = Zaměřit následující výstup
-    .last-workspace = Zaměřit poslední pracovní plochu
-    .prev-workspace = Zaměřit předchozí pracovní plochu
-    .next-workspace = Zaměřit následující pracovní plochu
+    .prev-output = Aktivovat předchozí obrazovku
+    .next-output = Aktivovat následující obrazovku
+    .last-workspace = Aktivovat poslední pracovní plochu
+    .prev-workspace = Aktivovat předchozí pracovní plochu
+    .next-workspace = Aktivovat následující pracovní plochu
     .focus =
-        Zaměřit okno { $direction ->
+        Aktivovat okno { $direction ->
            *[down] dole
             [in] uvnitř
             [left] vlevo
@@ -715,7 +719,7 @@ nav-shortcuts = Navigace
             [up] nahoře
         }
     .output =
-        Přepnout na výstup { $direction ->
+        Přepnout na obrazovku { $direction ->
            *[down] dole
             [left] vlevo
             [right] vpravo
@@ -805,8 +809,8 @@ system-shortcut = Systém
 replace-shortcut-dialog = Nahradit zkratku?
     .desc = { $shortcut } je již používána { $name }. Pokud ji nahradíte, { $name } bude zakázána.
 click-behavior = Chování kliknutí
-    .click-finger = Pravé kliknutí dvěma prsty a střední tlačítko třemi prsty
-    .button-areas = Pravé kliknutí v pravém dolním rohu a střední tlačítko uprostřed dolní části
+    .click-finger = Sekundární kliknutí dvěma prsty a prostřední kliknutí třemi prsty
+    .button-areas = Sekundární kliknutí v pravém dolním rohu a prostřední kliknutí uprostřed dolního okraje
 pinch-to-zoom = Přiblížení gestem
     .desc = Použijte dva prsty k přiblížení obsahu v aplikacích, které to podporují
 tap-to-click = Kliknout klepnutím
@@ -888,7 +892,7 @@ workspaces-overview = Přehled pracovních ploch
     .applications = Otevřít aplikace
 xdg-entry-notifications-keywords = COSMIC;Oznámení;Zámek;Zamykání;Zamykací;
 xdg-entry-touchpad = Touchpad
-xdg-entry-mouse-keywords = COSMIC;Myš;Zrychlení;Rolování;
+xdg-entry-mouse-keywords = COSMIC;Myš;Zrychlení;Posouvání;Rolování;
 xdg-entry-startup-apps-keywords = COSMIC;Automatické;Spuštění;Spouštění;Start;Aplikace;
 xdg-entry-wired-keywords = COSMIC;Drátové;LAN;Síť;Připojení;
 xdg-entry-appearance-keywords = COSMIC;Zvýraznění;Barva;Barvy;Akcent;Ikona;Ikony;Font;Písmo;Písma;Témata;Motivy;
@@ -930,3 +934,23 @@ bluetooth-display-passkey = Párování Bluetooth
     .description = Zadejte prosím následující párovací kód na zařízení { $device } a poté stiskněte Enter
 bluetooth-display-pin = Párování Bluetooth
     .description = Zadejte prosím následující PIN na zařízení { $device } a poté stiskněte Enter
+rename = Přejmenovat
+bluetooth-rename-device = Přejmenovat zařízení
+mobility = Pohyb
+on-screen-keyboard = Klávesnice na obrazovce
+    .always-show = Zobrazovat vždy
+    .icon-on-panel = Ikona na panelu
+    .show-on-gamepad-shortcut = Zobrazit pomocí herního ovladače současným stisknutím tlačítek Start a Select/Back
+    .show-on-text-input = Zobrazit při výběru textového pole
+date-time-applet-settings-title = Applet pro datum a čas
+date-time-applet-settings-label = Nastavení appletu pro datum a čas
+xdg-entry-drawing-tablet = Grafický tablet
+xdg-entry-drawing-tablet-comment = Přiřazení k obrazovce
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablet;Kreslení;Citlivost;
+drawing-tablet = Grafický tablet
+    .no-devices-detected = Nenalezeny žádné grafické tablety ani zařízení s perem
+    .map-to-display = Přiřadit k obrazovce
+    .not-set = Nenastaveno
+    .enabled = Povoleno
+drag-lock = Uzamknout na moment přetahování
+tap-and-drag = Táhnout klepnutím

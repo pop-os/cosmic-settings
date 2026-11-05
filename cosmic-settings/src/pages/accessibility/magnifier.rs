@@ -42,7 +42,7 @@ pub enum Message {
     SetIncrement(usize),
     SetSignin(bool),
     SetMovement(ZoomMovement),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl Default for Page {

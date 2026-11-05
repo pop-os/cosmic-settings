@@ -61,6 +61,10 @@ xdg-entry-mouse = Mouse
 xdg-entry-mouse-comment = Mouse speed, acceleration, and natural scrolling
 xdg-entry-mouse-keywords = COSMIC;Mouse;Acceleration;Scrolling;
 
+xdg-entry-drawing-tablet = Drawing tablet
+xdg-entry-drawing-tablet-comment = Display mapping
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablet;Drawing;Sensitivity;
+
 xdg-entry-network = Network & Wireless
 xdg-entry-network-comment = Manage network connections
 xdg-entry-network-keywords = COSMIC;Network;Wireless;WiFi;VPN;
@@ -233,6 +237,7 @@ online-accounts = Online accounts
 activate = Activate
 confirm = Confirm
 enable = Enable
+rename = Rename
 
 bluetooth = Bluetooth
     .status = This system is visible as { $aliases } while Bluetooth settings are open.
@@ -259,6 +264,8 @@ bluetooth-display-passkey = Bluetooth Pairing
 
 bluetooth-display-pin = Bluetooth Pairing
     .description = Please type the following PIN on { $device }, then press Enter
+
+bluetooth-rename-device = Rename Device
 
 bluetooth-available = Nearby devices
 
@@ -308,6 +315,14 @@ color-filter = Color filter type
     .deuteranopia = Green/Red (green weakness, Deuteranopia)
     .protanopia = Red/Green (red weakness, Protanopia)
     .tritanopia = Blue/Yellow (blue weakness, Tritanopia)
+
+mobility = Mobility
+
+on-screen-keyboard = On-screen keyboard
+    .always-show = Always show on-screen-keyboard
+    .icon-on-panel = Icon on panel
+    .show-on-gamepad-shortcut = Show on-screen keyboard with a gamepad by pressing the Start and Select/Back buttons at the same time
+    .show-on-text-input = Show on-screen keyboard when selecting a text field
 
 ## Desktop
 
@@ -416,7 +431,7 @@ style = Style
     .less = less
     .more = more
     .glass-opacity = Glass opacity
-    
+
 interface-density = Interface density
     .comfortable = Comfortable
     .compact = Compact
@@ -918,6 +933,10 @@ pinch-to-zoom = Pinch to zoom
 tap-to-click = Tap to click
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click
 
+tap-and-drag = Tap and drag
+
+drag-lock = Drag lock
+
 touchpad = Touchpad
     .acceleration = Enable touchpad acceleration
     .speed = Touchpad speed
@@ -939,6 +958,14 @@ switch-between-windows = Switch between windows
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
 
+## Input: Tablet
+
+drawing-tablet = Drawing tablet
+    .no-devices-detected = No drawing tablets or pen devices detected
+    .map-to-display = Map to display
+    .not-set = Not Set
+    .enabled = Enabled
+
 ## Time & language
 
 time = Time & language
@@ -953,13 +980,17 @@ time-zone = Time zone
 
 time-format = Date & time format
     .twenty-four = 24-hour time
-    .show-seconds = Show seconds
+    .show-seconds = Seconds
+    .show-weekday = Day of week
     .first = First day of week
-    .show-date = Show date in the time applet
+    .date = Date
     .friday = Friday
     .saturday = Saturday
     .sunday = Sunday
     .monday = Monday
+
+date-time-applet-settings-title = Date & time applet
+date-time-applet-settings-label = Date & time applet settings
 
 time-region = Region & language
 

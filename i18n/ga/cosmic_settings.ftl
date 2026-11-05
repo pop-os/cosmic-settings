@@ -124,6 +124,8 @@ accessibility = Inrochtaineacht
     .high-contrast = Mód codarsnachta ard
     .invert-colors = Inbhéartaigh dathanna
     .color-filters = Scagairí dathanna
+    .shake-cursor = Croith an pointeoir chun é a aimsiú
+    .shake-cursor-desc = Croith an luch go tapa chun an pointeoir a mhéadú go sealadach
 hearing = Éisteacht
     .mono = Seinn fuaim steireo mar mhonó
 default = Réamhshocrú
@@ -194,7 +196,7 @@ never = Riamh
 
 ## Desktop: Appearance
 
-appearance = Dealramh
+appearance = Cuma
 accent-color = Dath béime
 app-background = Cúlra fuinneoige
 auto = Uath
@@ -426,6 +428,7 @@ sound-alerts = Foláirimh
     .sound = Fuaime foláirimh
 sound-applications = Feidhmchláir
     .desc = Toirt agus socruithe feidhmchlár
+    .none = Níl aon fheidhmchlár ag úsáid fuaime
 
 ## Power
 
@@ -712,8 +715,9 @@ time-zone = Crios ama
 time-format = Formáid dáta & ama
     .twenty-four = am 24 uair an chloig
     .show-seconds = Taispeáin soicindí
+    .show-weekday = Lá den tseachtain
     .first = An chéad lá den tseachtain
-    .show-date = Taispeáin an dáta san feidhmchláirín ama
+    .date = Dáta
     .friday = Aoine
     .saturday = Satharn
     .sunday = Domhnach
@@ -948,3 +952,23 @@ bluetooth-display-passkey = Péireáil Bluetooth
     .description = Clóscríobh an eochair phas seo a leanas ar { $device }, ansin brúigh Iontráil
 bluetooth-display-pin = Péireáil Bluetooth
     .description = Clóscríobh an PIN seo a leanas ar { $device }, ansin brúigh Iontráil
+rename = Athainmnigh
+bluetooth-rename-device = Athainmnigh an gléas
+mobility = Soghluaisteacht
+on-screen-keyboard = Méarchlár ar an scáileán
+    .always-show = Taispeáin an méarchlár ar an scáileán i gcónaí
+    .icon-on-panel = Deilbhín ar an bpainéal
+    .show-on-gamepad-shortcut = Taispeáin an méarchlár ar an scáileán le rialtóir cluiche trí na cnaipí Start agus Select/Back a bhrú ag an am céanna
+    .show-on-text-input = Taispeáin an méarchlár ar an scáileán nuair a roghnaítear réimse téacs
+date-time-applet-settings-title = Feidhmchláirín dáta agus ama
+date-time-applet-settings-label = Socruithe an fheidhmchláirín dáta agus ama
+xdg-entry-drawing-tablet = Táibléad líníochta
+xdg-entry-drawing-tablet-comment = Mapáil taispeána
+xdg-entry-drawing-tablet-keywords = COSMIC;Táibléad;Líníocht;Íogaireacht;
+drawing-tablet = Táibléad líníochta
+    .no-devices-detected = Níor aimsíodh aon táibléad líníochta ná aon ghléas peann
+    .map-to-display = Mapáil chuig an scáileán
+    .not-set = Gan socrú
+    .enabled = Cumasaithe
+tap-and-drag = Tapáil agus tarraing
+drag-lock = Glasáil tarraingthe

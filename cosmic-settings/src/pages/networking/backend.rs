@@ -14,8 +14,8 @@ use nmrs::agent::{SecretAgent, SecretAgentFlags, SecretRequest, SecretResponder,
 use nmrs::raw::zbus;
 use nmrs::raw::zvariant::{Dict, OwnedObjectPath, OwnedValue, Str, Value};
 use nmrs::{
-    ActiveConnection, ConnectType, ConnectionOptions, EapOptions, NetworkEvent, NetworkManager,
-    SavedConnection, SettingsSummary, WifiKeyMgmt, WifiSecurity,
+    ActiveConnection, ConnectByUuidConfig, ConnectType, ConnectionOptions, EapOptions,
+    NetworkEvent, NetworkManager, SavedConnection, SettingsSummary, WifiKeyMgmt, WifiSecurity,
 };
 use secure_string::SecureString;
 use tokio::sync::oneshot;
@@ -620,7 +620,10 @@ async fn handle_request(nm: &NetworkManager, req: Request) -> Event {
         )
         .await
         .is_ok(),
-        Request::ActivateVpn(uuid) => nm.connect_vpn_by_uuid(uuid).await.is_ok(),
+        Request::ActivateVpn(uuid) => nm
+            .connect_by_uuid(uuid, ConnectByUuidConfig::default())
+            .await
+            .is_ok(),
         Request::Deactivate(uuid) => deactivate_by_uuid(nm, uuid).await.is_ok(),
         Request::Disconnect(ssid) => disconnect_wifi_by_ssid(nm, ssid).await.is_ok(),
         Request::Forget(ssid) => nm.forget(ssid).await.is_ok(),
@@ -907,7 +910,7 @@ async fn disconnect_wifi_by_ssid(nm: &NetworkManager, ssid: &str) -> Result<(), 
 }
 
 async fn deactivate_by_uuid(nm: &NetworkManager, uuid: &str) -> Result<(), Error> {
-    if nm.disconnect_vpn_by_uuid(uuid).await.is_ok() {
+    if nm.disconnect_by_uuid(uuid).await.is_ok() {
         return Ok(());
     }
 

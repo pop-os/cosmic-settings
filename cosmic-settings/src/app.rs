@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::PageCommands;
+#[cfg(feature = "page-input")]
+use crate::{KeyboardCommands, ShortcutsCommands};
 use crate::config::Config;
 #[cfg(feature = "page-accessibility")]
 use crate::pages::accessibility;
@@ -63,6 +65,7 @@ pub struct SettingsApp {
     pages: page::Binder<crate::pages::Message>,
     search_active: bool,
     search_id: cosmic::widget::Id,
+    search_scroll_id: cosmic::iced::id::Id,
     search_input: String,
     search_selections: Vec<(page::Entity, section::Entity)>,
     context_title: Option<String>,
@@ -77,6 +80,8 @@ impl SettingsApp {
             PageCommands::AccessibilityMagnifier => {
                 self.pages.page_id::<accessibility::magnifier::Page>()
             }
+            #[cfg(feature = "page-accessibility")]
+            PageCommands::AccessibilityOsk => self.pages.page_id::<accessibility::osk::Page>(),
             #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance { command: _ } => {
@@ -99,7 +104,15 @@ impl SettingsApp {
             #[cfg(feature = "page-input")]
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             #[cfg(feature = "page-input")]
-            PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            PageCommands::Keyboard { command } => match command {
+                None => self.pages.page_id::<input::keyboard::Page>(),
+                Some(KeyboardCommands::Shortcuts { command: None }) => {
+                    self.pages.page_id::<input::keyboard::shortcuts::Page>()
+                }
+                Some(KeyboardCommands::Shortcuts {
+                    command: Some(ShortcutsCommands::Custom),
+                }) => self.pages.page_id::<input::keyboard::shortcuts::custom::Page>(),
+            },
             #[cfg(feature = "page-legacy-applications")]
             PageCommands::LegacyApplications => self
                 .pages
@@ -173,7 +186,7 @@ pub enum Message {
     SearchSubmit,
     SetTheme(cosmic::theme::Theme),
     SetWindowTitle,
-    Surface(surface::Action),
+    Surface(surface::Action<Message>),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -205,6 +218,7 @@ impl cosmic::Application for SettingsApp {
             pages: page::Binder::default(),
             search_active: false,
             search_id: cosmic::widget::Id::unique(),
+            search_scroll_id: cosmic::iced::id::Id::new("COSMIC_search_results_scrollable"),
             search_input: String::new(),
             search_selections: Vec::default(),
             context_title: None,
@@ -417,6 +431,12 @@ impl cosmic::Application for SettingsApp {
                         return page.update(self.active_page, message).map(Into::into);
                     }
                 }
+                #[cfg(feature = "page-accessibility")]
+                crate::pages::Message::AccessibilityOsk(message) => {
+                    if let Some(page) = self.pages.page_mut::<accessibility::osk::Page>() {
+                        return page.update(self.active_page, message).map(Into::into);
+                    }
+                }
                 #[cfg(feature = "page-input")]
                 crate::pages::Message::AccessibilityShortcuts(message) => {
                     if let Some(page) = self
@@ -496,6 +516,13 @@ impl cosmic::Application for SettingsApp {
                 #[cfg(feature = "page-input")]
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-input")]
+                crate::pages::Message::DrawingTablet(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::drawing_tablet::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -858,9 +885,7 @@ impl cosmic::Application for SettingsApp {
                 tracing::error!(error, "error occurred");
             }
             Message::Surface(a) => {
-                return cosmic::task::message(cosmic::Action::Cosmic(
-                    cosmic::app::Action::Surface(a),
-                ));
+                return cosmic::task::message(cosmic::Action::Surface(a));
             }
         }
 
@@ -1208,6 +1233,7 @@ impl SettingsApp {
 
         self.page_container(settings::view_column(sections))
             .apply(scrollable)
+            .apply(|w| id_container(w, self.search_scroll_id.clone()))
             .into()
     }
 

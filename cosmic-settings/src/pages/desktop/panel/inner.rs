@@ -431,7 +431,7 @@ pub enum Message {
     PanelConfig(Box<CosmicPanelConfig>),
     ResetPanel,
     FullReset,
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl PageInner {

@@ -60,6 +60,23 @@ pub enum AppearanceCommands {
     },
 }
 
+#[cfg(feature = "page-input")]
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum KeyboardCommands {
+    /// Keyboard Shortcuts settings page
+    Shortcuts {
+        #[command(subcommand)]
+        command: Option<ShortcutsCommands>,
+    },
+}
+
+#[cfg(feature = "page-input")]
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum ShortcutsCommands {
+    /// Custom Shortcuts settings page
+    Custom,
+}
+
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
 pub enum PageCommands {
     /// Accessibility settings page
@@ -68,6 +85,9 @@ pub enum PageCommands {
     /// Accessibility Magnifier settings page
     #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier,
+    /// Accessibility OSK settings page
+    #[cfg(feature = "page-accessibility")]
+    AccessibilityOsk,
     /// About settings page
     #[cfg(feature = "page-about")]
     About,
@@ -103,7 +123,10 @@ pub enum PageCommands {
     Input,
     /// Keyboard settings page
     #[cfg(feature = "page-input")]
-    Keyboard,
+    Keyboard {
+        #[command(subcommand)]
+        command: Option<KeyboardCommands>,
+    },
     /// Legacy Applications settings page
     #[cfg(feature = "page-legacy-applications")]
     LegacyApplications,

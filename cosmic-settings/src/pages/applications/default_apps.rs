@@ -48,7 +48,7 @@ pub enum Category {
 pub enum Message {
     SetDefault(Category, usize),
     Update(Arc<CachedMimeApps>),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::app::Message {

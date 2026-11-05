@@ -124,6 +124,8 @@ accessibility = 無障礙功能
     .high-contrast = 高對比模式
     .invert-colors = 反轉顏色
     .color-filters = 色彩濾鏡
+    .shake-cursor = 晃動指標以能找到所在
+    .shake-cursor-desc = 快速晃動游標來暫時性地放大指標
 hearing = 聽覺
     .mono = 將立體聲播放為單聲道
 default = 預設
@@ -371,19 +373,19 @@ display = 顯示器
     .resolution = 解析度
     .scale = 縮放
     .additional-scale-options = 其他縮放選項
-mirroring = 投影
-    .id = 正在投影 { $id }
-    .dont = 不要投影
-    .mirror = 投影 { $display }
+mirroring = 鏡射
+    .id = 鏡射 { $id }
+    .dont = 不要鏡射
+    .mirror = 鏡射 { $display }
     .project =
         投影至 { $display ->
-            [all] 全部的螢幕
+            [all] 全部顯示器
            *[other] { $display }
         }
     .project-count =
-        投影了 { $count } 個 { $count ->
-            [1] 螢幕
-           *[other] 螢幕
+        投影 { $count } 個其他 { $count ->
+            [1] 顯示器
+           *[other] 顯示器
         }
 night-light = 夜間模式
     .auto = 自動（日落至日出）
@@ -426,6 +428,7 @@ sound-alerts = 提示音
     .sound = 提示音音效
 sound-applications = 應用程式
     .desc = 應用程式音量與設定
+    .none = 無應用程式使用音效
 
 ## Power
 
@@ -712,9 +715,10 @@ time-zone = 時區
     .auto-info = 需要定位服務與網際網路存取
 time-format = 日期與時間格式
     .twenty-four = 24 小時制
-    .show-seconds = 顯示秒數
-    .first = 每週第一天
-    .show-date = 在時間小程式中顯示日期
+    .show-seconds = 秒數
+    .show-weekday = 星期幾
+    .first = 每週的第一天
+    .date = 日期
     .friday = 星期五
     .saturday = 星期六
     .sunday = 星期日
@@ -826,7 +830,7 @@ full-name = 全名
 invalid-username = 無效的使用者名稱
 password-mismatch = 密碼與確認密碼必須相符
 save = 儲存
-xdg-entry-dock-comment = 可選應用程式和小程式的工具列
+xdg-entry-dock-comment = 可選擇應用程式和小程式的工具列
 xdg-entry-dock = Dock
 xdg-entry-displays-keywords = COSMIC;顯示器;螢幕;
 xdg-entry-displays-comment = 管理顯示器設定
@@ -904,7 +908,7 @@ xdg-entry-wallpaper-comment = 背景圖片、顏色及投影片選項
 xdg-entry-wireless = Wi-Fi
 xdg-entry-workspaces-keywords = COSMIC;工作區;方向;總覽;螢幕;
 xdg-entry-system-comment = 系統資訊、帳號及韌體更新
-xdg-entry-x11-applications-comment = X11 視窗系統應用程式縮放大小、主要顯示螢幕和整體快速鍵
+xdg-entry-x11-applications-comment = X11 視窗系統應用程式縮放大小、主要顯示器和整體快速鍵
 xdg-entry-wallpaper-keywords = COSMIC;背景圖片;背景;投影片;
 xdg-entry-users-keywords = COSMIC;使用者;帳戶;
 xdg-entry-vpn-keywords = COSMIC;VPN;網路;連接;OpenVPN;OpenConnect;
@@ -948,3 +952,23 @@ bluetooth-display-passkey = 藍牙配對
     .description = 請在 { $device } 上輸入密金鑰，然後按 Enter 鍵
 bluetooth-display-pin = 藍牙配對
     .description = 請在 { $device } 上輸入 PIN 碼，然後按 Enter 鍵
+rename = 重新命名
+bluetooth-rename-device = 重新命名裝置
+mobility = 機動性
+on-screen-keyboard = 螢幕鍵盤
+    .always-show = 始終顯示螢幕鍵盤
+    .icon-on-panel = 面板上的圖示
+    .show-on-gamepad-shortcut = 使用遊戲手把時，同時按下「開始」和「選擇／返回」按鈕，即可顯示螢幕鍵盤
+    .show-on-text-input = 選擇文字欄位時顯示螢幕鍵盤
+date-time-applet-settings-title = 日期與時間小程式
+date-time-applet-settings-label = 日期與時間小程式設定
+xdg-entry-drawing-tablet = 繪圖板
+xdg-entry-drawing-tablet-comment = 顯示映射
+xdg-entry-drawing-tablet-keywords = COSMIC;繪圖板;繪圖;靈敏度;
+tap-and-drag = 點擊並拖曳
+drag-lock = 拖曳鎖定
+drawing-tablet = 繪圖板
+    .no-devices-detected = 未偵測到繪圖板或觸控筆裝置
+    .map-to-display = 映射至顯示器
+    .not-set = 未設定
+    .enabled = 已啟用

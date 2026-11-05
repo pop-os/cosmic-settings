@@ -45,6 +45,7 @@ This document provides a regression testing checklist for COSMIC Settings and th
 ### Displays
 
 - [ ] Plug in a second display. Displays can be rearranged via dragging.
+- [ ] Display mirroring works.
 
 ### Sound
 

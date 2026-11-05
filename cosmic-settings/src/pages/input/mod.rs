@@ -11,6 +11,7 @@ use cosmic_comp_config::input::{
 use cosmic_settings_page as page;
 use tracing::error;
 
+pub mod drawing_tablet;
 pub mod keyboard;
 pub mod mouse;
 pub mod touchpad;
@@ -27,6 +28,8 @@ pub enum Message {
     SetScrollFactor(f64, bool),
     SetScrollMethod(Option<ScrollMethod>, bool),
     TapToClick(bool),
+    TapAndDrag(bool),
+    DragLock(bool),
 }
 
 pub struct Page {
@@ -175,6 +178,32 @@ impl Page {
                         .enabled = enabled;
                 });
             }
+
+            Message::TapAndDrag(enabled) => {
+                self.update_input(true, |conf| {
+                    conf.tap_config
+                        .get_or_insert(TapConfig {
+                            enabled: true,
+                            button_map: Some(TapButtonMap::LeftRightMiddle),
+                            drag: true,
+                            drag_lock: false,
+                        })
+                        .drag = enabled;
+                });
+            }
+
+            Message::DragLock(enabled) => {
+                self.update_input(true, |conf| {
+                    conf.tap_config
+                        .get_or_insert(TapConfig {
+                            enabled: true,
+                            button_map: Some(TapButtonMap::LeftRightMiddle),
+                            drag: true,
+                            drag_lock: false,
+                        })
+                        .drag_lock = enabled;
+                });
+            }
         }
 
         Task::none()
@@ -192,7 +221,10 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        let insert = page.sub_page::<keyboard::Page>().sub_page::<mouse::Page>();
+        let insert = page
+            .sub_page::<keyboard::Page>()
+            .sub_page::<mouse::Page>()
+            .sub_page::<drawing_tablet::Page>();
 
         if system_has_touchpad() {
             insert.sub_page::<touchpad::Page>()

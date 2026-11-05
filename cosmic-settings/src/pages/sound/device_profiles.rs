@@ -19,7 +19,7 @@ pub enum Message {
     /// Set the profile of a sound device.
     SetProfile(u32, u32),
     /// Surface Action
-    Surface(cosmic::surface::Action),
+    Surface(cosmic::surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::pages::Message {

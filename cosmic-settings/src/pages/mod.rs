@@ -31,6 +31,8 @@ pub enum Message {
     Accessibility(accessibility::Message),
     #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier(accessibility::magnifier::Message),
+    #[cfg(feature = "page-accessibility")]
+    AccessibilityOsk(accessibility::osk::Message),
     #[cfg(feature = "page-input")]
     AccessibilityShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-about")]
@@ -61,6 +63,8 @@ pub enum Message {
     },
     #[cfg(feature = "page-input")]
     Input(input::Message),
+    #[cfg(feature = "page-input")]
+    DrawingTablet(input::drawing_tablet::Message),
     #[cfg(feature = "page-input")]
     Keyboard(input::keyboard::Message),
     #[cfg(feature = "page-input")]

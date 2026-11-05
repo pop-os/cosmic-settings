@@ -39,7 +39,7 @@ pub enum Message {
     /// Request to change the input volume.
     SetSourceVolume(u32),
     /// Surface Action
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
     /// Toggle the mute status of the output.
     ToggleSinkMute,
     /// Toggle the mute status of the input output.
