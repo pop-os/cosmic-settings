@@ -7,7 +7,7 @@ rust-version.workspace = true
 publish = true
 
 [dependencies]
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols" }
+cosmic-protocols.workspace = true
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 num-derive = "0.4.2"
 num-traits = "0.2.19"
