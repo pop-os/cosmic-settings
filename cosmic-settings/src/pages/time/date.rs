@@ -16,7 +16,7 @@ use icu::datetime::{DateTimeFormatter, DateTimeFormatterPreferences, fieldsets};
 use icu::locale::Locale;
 use icu::locale::preferences::extensions::unicode::keywords::HourCycle;
 use slotmap::{Key, SlotMap};
-pub use timedate_zbus::TimeDateProxy;
+pub use timedate1_zbus::TimeDateProxy;
 use tracing::error;
 
 crate::cache_dynamic_lazy! {

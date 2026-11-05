@@ -6,7 +6,7 @@ pub mod device {
     use iced_futures::Subscription;
     use std::fmt::Debug;
     use std::hash::Hash;
-    use upower_dbus::{BatteryType, DeviceProxy, UPowerProxy};
+    use upower_zbus::{BatteryType, DeviceProxy, UPowerProxy};
 
     pub fn device_subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
         id: I,
@@ -37,10 +37,11 @@ pub mod device {
         let devices = upower.enumerate_devices().await?;
         let mut has_battery = false;
         for device in devices {
-            let Ok(d) = DeviceProxy::builder(upower.inner().connection()).path(device) else {
-                continue;
-            };
-            let Ok(d) = d.build().await else {
+            let Ok(d) = DeviceProxy::builder(upower.inner().connection())
+                .path(device)
+                .build()
+                .await
+            else {
                 continue;
             };
             if d.type_().await == Ok(BatteryType::Battery)
@@ -102,7 +103,7 @@ pub mod kbdbacklight {
     use std::hash::Hash;
     use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
     use tokio_stream::wrappers::UnboundedReceiverStream;
-    use upower_dbus::{BrightnessChanged, KbdBacklightProxy};
+    use upower_zbus::{BrightnessChanged, KbdBacklightProxy};
 
     pub fn kbd_backlight_subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
         id: I,
