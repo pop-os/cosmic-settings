@@ -6,7 +6,6 @@ use crate::Event;
 use std::sync::Arc;
 
 use cosmic_bluez_zbus::agent_manager1::AgentManager1Proxy;
-use futures::future::Either;
 use futures::{SinkExt, StreamExt};
 use zbus::ObjectPath;
 
@@ -48,8 +47,9 @@ pub async fn watch(
     tracing::debug!("registered");
 
     loop {
-        match futures::future::select(receiver.next(), owners.next()).await {
-            Either::Left((Some(msg), _)) => {
+        futures::select! {
+            msg = receiver.next() => {
+                let Some(msg) = msg else { break };
                 tracing::debug!(?msg, "agent message received");
 
                 if tx.send(Event::Agent(Arc::new(msg))).await.is_err() {
@@ -57,7 +57,8 @@ pub async fn watch(
                 }
             }
 
-            Either::Right((Some(signal), _)) => {
+            signal = owners.next() => {
+                let Some(signal) = signal else { break };
                 if signal.args().is_ok_and(|args| args.new_owner().is_some()) {
                     tracing::debug!("registering agent again");
                     if let Err(why) = register(&bluez, &agent_path).await {
@@ -65,8 +66,6 @@ pub async fn watch(
                     }
                 }
             }
-
-            Either::Left((None, _)) | Either::Right((None, _)) => break,
         }
     }
 
