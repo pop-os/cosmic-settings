@@ -471,7 +471,7 @@ impl Content {
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("interface-font"))
-            .header(self.font_config.search_input()),
+            .header(self.font_config.search_input().map(wrap.clone())),
 
             ContextView::MonospaceFont => context_drawer(
                 self.font_config
@@ -482,7 +482,7 @@ impl Content {
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("monospace-font"))
-            .header(self.font_config.search_input()),
+            .header(self.font_config.search_input().map(wrap.clone())),
 
             ContextView::IconThemes => context_drawer(
                 self.icon_theme_choices(wrap.clone()),

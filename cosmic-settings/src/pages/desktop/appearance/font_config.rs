@@ -171,7 +171,7 @@ impl Model {
         Task::none()
     }
 
-    pub fn search_input(&self) -> Element<'_, crate::pages::Message> {
+    pub fn search_input(&self) -> Element<'_, Message> {
         widget::search_input("", &self.font_search)
             .on_input(|input| Message::DrawerFont(drawer::FontMessage::Search(input)))
             .on_clear(Message::DrawerFont(drawer::FontMessage::Search(
@@ -179,7 +179,6 @@ impl Model {
             )))
             .id(FONT_SEARCH.clone())
             .apply(Element::from)
-            .map(crate::pages::Message::Appearance)
     }
 
     pub fn selection_context(
