@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use zbus::zvariant::OwnedObjectPath;
+use zbus::OwnedObjectPath;
 
 mod adapter;
 pub mod agent;
@@ -17,7 +17,7 @@ pub use device::*;
 pub enum Event {
     AddedAdapter(OwnedObjectPath, Adapter),
     AddedDevice(OwnedObjectPath, Device),
-    Agent(Arc<bluez_zbus::agent1::Message>),
+    Agent(Arc<cosmic_bluez_zbus::agent1::Message>),
     DBusError(zbus::Error),
     DBusServiceUnknown,
     DeviceFailed(OwnedObjectPath),

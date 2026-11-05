@@ -1,13 +1,13 @@
 use crate::pages::bluetooth;
-use std::{any::TypeId, pin::Pin};
+use std::any::TypeId;
+use std::pin::Pin;
 
 use bluez_zbus::BluetoothDevice;
-use cosmic::iced::{
-    self,
-    futures::{SinkExt, StreamExt},
-};
-use futures::{channel::mpsc, stream::FusedStream};
-use zbus::zvariant::OwnedObjectPath;
+use cosmic::iced::futures::{SinkExt, StreamExt};
+use cosmic::iced::{self};
+use futures::channel::mpsc;
+use futures::stream::FusedStream;
+use zbus::OwnedObjectPath;
 
 enum DevicePropertyWatcherTask {
     Add(OwnedObjectPath),

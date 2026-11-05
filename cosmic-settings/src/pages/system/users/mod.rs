@@ -920,13 +920,13 @@ fn user_list() -> Section<crate::pages::Message> {
 
 async fn check_authorization(conn: &zbus::Connection) -> anyhow::Result<()> {
     let proxy = zbus_polkit::policykit1::AuthorityProxy::new(conn).await?;
-    let subject = zbus_polkit::policykit1::Subject::new_for_owner(std::process::id(), None, None)?;
+    let subject = zbus_polkit::policykit1::Subject::new_for_pid(std::process::id(), None, None)?;
     proxy
         .check_authorization(
             &subject,
             USERS_ADMIN_POLKIT_POLICY_ID,
             &HashMap::new(),
-            CheckAuthorizationFlags::AllowUserInteraction.into(),
+            CheckAuthorizationFlags::ALLOW_USER_INTERACTION,
             "",
         )
         .await?;

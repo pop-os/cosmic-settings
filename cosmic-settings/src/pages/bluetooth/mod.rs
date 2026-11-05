@@ -14,7 +14,7 @@ use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
-use zbus::zvariant::OwnedObjectPath;
+use zbus::OwnedObjectPath;
 
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
@@ -599,11 +599,14 @@ impl Page {
                     };
 
                     match message {
-                        bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
+                        cosmic_bluez_zbus::agent1::Message::RequestAuthorization {
+                            response,
+                            ..
+                        } => {
                             _ = response.send(true);
                         }
 
-                        bluez_zbus::agent1::Message::RequestConfirmation {
+                        cosmic_bluez_zbus::agent1::Message::RequestConfirmation {
                             device,
                             passkey,
                             response,
@@ -620,7 +623,7 @@ impl Page {
                             });
                         }
 
-                        bluez_zbus::agent1::Message::DisplayPasskey {
+                        cosmic_bluez_zbus::agent1::Message::DisplayPasskey {
                             device,
                             passkey,
                             entered,
@@ -637,7 +640,7 @@ impl Page {
                             });
                         }
 
-                        bluez_zbus::agent1::Message::DisplayPinCode { device, pincode } => {
+                        cosmic_bluez_zbus::agent1::Message::DisplayPinCode { device, pincode } => {
                             let device = self.model.devices.get(&device).map_or_else(
                                 || device.to_string(),
                                 |device| device.alias_or_addr().to_owned(),
@@ -646,20 +649,22 @@ impl Page {
                             self.dialog = Some(Dialog::DisplayPinCode { device, pincode });
                         }
 
-                        bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
+                        cosmic_bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
                             _ = response.send(None);
                         }
 
-                        bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
+                        cosmic_bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
                             _ = response.send(None);
                         }
 
-                        bluez_zbus::agent1::Message::Cancel => {
+                        cosmic_bluez_zbus::agent1::Message::Cancel => {
                             self.dialog = None;
                         }
 
-                        bluez_zbus::agent1::Message::AuthorizeService {
-                            device, response, ..
+                        cosmic_bluez_zbus::agent1::Message::AuthorizeService {
+                            device,
+                            response,
+                            ..
                         } => {
                             let Some(connection) = self.connection.clone() else {
                                 return Task::none();

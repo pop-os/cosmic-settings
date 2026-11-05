@@ -6,13 +6,13 @@ use crate::Event;
 use std::sync::Arc;
 
 use futures::{SinkExt, StreamExt};
-use zbus::zvariant::ObjectPath;
+use zbus::ObjectPath;
 
 const AGENT_PATH: &str = "/org/bluez/agent/cosmic_settings";
 
 pub async fn unregister(connection: zbus::Connection) -> zbus::Result<()> {
     let agent_path = ObjectPath::from_static_str_unchecked(AGENT_PATH);
-    let bluez = bluez_zbus::agent_manager1::AgentManager1Proxy::new(&connection).await?;
+    let bluez = cosmic_bluez_zbus::agent_manager1::AgentManager1Proxy::new(&connection).await?;
     bluez.unregister_agent(&agent_path).await
 }
 
@@ -23,7 +23,7 @@ pub async fn watch(
     let span = tracing::span!(tracing::Level::INFO, "bluetooth::agent::watch");
     let _span = span.enter();
 
-    let (agent, mut receiver) = bluez_zbus::agent1::create();
+    let (agent, mut receiver) = cosmic_bluez_zbus::agent1::create();
 
     let agent_path = ObjectPath::from_static_str_unchecked(AGENT_PATH);
 
@@ -33,14 +33,14 @@ pub async fn watch(
 
     tracing::debug!("connecting to bluez agent manager");
 
-    let bluez = bluez_zbus::agent_manager1::AgentManager1Proxy::new(&connection).await?;
+    let bluez = cosmic_bluez_zbus::agent_manager1::AgentManager1Proxy::new(&connection).await?;
 
     tracing::debug!("registering agent");
 
     bluez
         .register_agent(
             &agent_path,
-            <&'static str>::from(bluez_zbus::agent1::Capability::KeyboardDisplay),
+            <&'static str>::from(cosmic_bluez_zbus::agent1::Capability::KeyboardDisplay),
         )
         .await?;
 

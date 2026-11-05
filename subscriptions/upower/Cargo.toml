@@ -12,5 +12,5 @@ iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 log = "0.4.33"
 tokio = "1.53.1"
 tokio-stream = "0.1.19"
-upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-zbus = "5.18.0"
+upower-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
+zbus = "6.0"
