@@ -18,7 +18,7 @@ use slotmap::SlotMap;
 use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
-use upower_dbus::DeviceProxy;
+use upower_zbus::DeviceProxy;
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60),

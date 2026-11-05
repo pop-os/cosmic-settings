@@ -24,7 +24,7 @@ pub trait PowerProfiles {
     #[zbus(property)]
     fn active_profile_holds(
         &self,
-    ) -> zbus::Result<Vec<std::collections::HashMap<String, zbus::zvariant::OwnedValue>>>;
+    ) -> zbus::Result<Vec<std::collections::HashMap<String, zbus::OwnedVariant>>>;
 
     #[zbus(property)]
     fn performance_degraded(&self) -> zbus::Result<String>;
@@ -33,9 +33,7 @@ pub trait PowerProfiles {
     fn performance_inhibited(&self) -> zbus::Result<String>;
 
     #[zbus(property)]
-    fn profiles(
-        &self,
-    ) -> zbus::Result<Vec<std::collections::HashMap<String, zbus::zvariant::OwnedValue>>>;
+    fn profiles(&self) -> zbus::Result<Vec<std::collections::HashMap<String, zbus::OwnedVariant>>>;
 
     #[zbus(property)]
     fn version(&self) -> zbus::Result<String>;

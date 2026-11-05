@@ -653,7 +653,7 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
 
     let registry = locale::Registry::new().wrap_err("failed to get locale registry")?;
 
-    let system_locales: BTreeMap<String, SystemLocale> = locale1::locale1Proxy::new(&conn)
+    let system_locales: BTreeMap<String, SystemLocale> = locale1_zbus::locale1Proxy::new(&conn)
         .await
         .wrap_err("locale1 proxy connect error")?
         .locale()
@@ -848,7 +848,7 @@ pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
         .await
         .wrap_err("failed to connect to system D-Bus")?;
 
-    let proxy = locale1::locale1Proxy::new(&conn)
+    let proxy = locale1_zbus::locale1Proxy::new(&conn)
         .await
         .wrap_err("failed to create locale1 D-Bus proxy")?;
 

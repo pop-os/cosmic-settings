@@ -11,4 +11,4 @@ iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 log = "0.4.33"
 tokio = "1.53.1"
 tokio-stream = "0.1.19"
-zbus = "5.18.0"
+zbus = "6.0"

@@ -6,7 +6,7 @@ use futures::join;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
-use zbus::zvariant::OwnedObjectPath;
+use zbus::OwnedObjectPath;
 
 const DEFAILT_DEVICE_ICON: &str = "bluetooth-symbolic";
 
@@ -42,7 +42,7 @@ pub struct Device {
 }
 
 impl Device {
-    pub async fn from_device(proxy: &bluez_zbus::BluetoothDevice<'_>) -> zbus::Result<Self> {
+    pub async fn from_device(proxy: &cosmic_bluez_zbus::BluetoothDevice<'_>) -> zbus::Result<Self> {
         let (address, adapter, alias) = join!(
             proxy.device.address(),
             proxy.device.adapter(),
@@ -160,28 +160,26 @@ pub enum DeviceUpdate {
 }
 
 impl DeviceUpdate {
-    pub fn from_update(update: HashMap<&'_ str, zbus::zvariant::Value<'_>>) -> Vec<Self> {
+    pub fn from_update(update: HashMap<&'_ str, zbus::Variant<'_>>) -> Vec<Self> {
         update
             .into_iter()
             .filter_map(|(key, value)| {
                 match (key, value) {
-                    ("Alias", zbus::zvariant::Value::Str(value)) => {
+                    ("Alias", zbus::Variant::Str(value)) => {
                         Some(DeviceUpdate::Alias(Some(value.into())))
                     }
-                    ("Connected", zbus::zvariant::Value::Bool(value)) => {
+                    ("Connected", zbus::Variant::Bool(value)) => {
                         Some(DeviceUpdate::Enabled(if value {
                             Active::Enabled
                         } else {
                             Active::Disabled
                         }))
                     }
-                    ("Paired", zbus::zvariant::Value::Bool(value)) => {
-                        Some(DeviceUpdate::Paired(value))
-                    }
-                    ("Icon", zbus::zvariant::Value::Str(value)) => {
+                    ("Paired", zbus::Variant::Bool(value)) => Some(DeviceUpdate::Paired(value)),
+                    ("Icon", zbus::Variant::Str(value)) => {
                         Some(DeviceUpdate::Icon(device_type_to_icon(&value)))
                     }
-                    ("Percentage", zbus::zvariant::Value::U8(percentage)) => {
+                    ("Percentage", zbus::Variant::U8(percentage)) => {
                         Some(DeviceUpdate::Battery(Some(percentage.to_string())))
                     }
                     // Battery
@@ -196,7 +194,7 @@ impl DeviceUpdate {
 }
 
 pub async fn is_paired(connection: zbus::Connection, device_path: OwnedObjectPath) -> bool {
-    match bluez_zbus::get_device(&connection, device_path).await {
+    match cosmic_bluez_zbus::get_device(&connection, device_path).await {
         Ok(proxy) => proxy.device.paired().await.unwrap_or(false),
         Err(_) => false,
     }
@@ -206,7 +204,7 @@ pub async fn disconnect_device(
     connection: zbus::Connection,
     device_path: OwnedObjectPath,
 ) -> Event {
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let proxy = match cosmic_bluez_zbus::get_device(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
@@ -236,7 +234,7 @@ pub async fn disconnect_device(
 }
 
 pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Event {
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let proxy = match cosmic_bluez_zbus::get_device(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
@@ -270,7 +268,7 @@ pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObje
 pub async fn forget_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Event {
     let mut result: zbus::Result<()> = Ok(());
 
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let proxy = match cosmic_bluez_zbus::get_device(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
@@ -286,7 +284,7 @@ pub async fn forget_device(connection: zbus::Connection, device_path: OwnedObjec
         Ok(adapter_path) => adapter_path,
     };
 
-    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
+    let adapter = match cosmic_bluez_zbus::get_adapter(&connection, adapter_path).await {
         Err(why) => {
             tracing::error!("Unable to get the adapter: {why}");
             return Event::DeviceFailed(device_path);
@@ -324,7 +322,7 @@ pub async fn rename_device(
     device_path: OwnedObjectPath,
     name: String,
 ) -> Event {
-    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let proxy = match cosmic_bluez_zbus::get_device(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Event::DeviceFailed(device_path);
@@ -350,7 +348,7 @@ pub async fn get_devices(connection: zbus::Connection, adapter_path: OwnedObject
     // TODO error handling
     let result: zbus::Result<HashMap<OwnedObjectPath, Device>> = async {
         futures::future::join_all(
-            bluez_zbus::get_devices(&connection, Some(&adapter_path))
+            cosmic_bluez_zbus::get_devices(&connection, Some(&adapter_path))
                 .await?
                 .into_iter()
                 .map(

@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic_dbus_a11y::*;
+use a11y_zbus::*;
 use futures::{self, SinkExt, StreamExt};
 use iced_futures::{Subscription, stream};
 use std::fmt::Debug;

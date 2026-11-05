@@ -1,9 +1,8 @@
 use futures::future::join_all;
 use futures::{FutureExt, Stream, StreamExt};
 use jiff::{Span, SpanRelativeTo, SpanRound, ToSpan, Unit};
-use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
-use zbus::Connection;
-use zbus::zvariant::ObjectPath;
+use upower_zbus::{BatteryState, BatteryType, DeviceProxy, UPowerProxy};
+use zbus::{Connection, ObjectPath};
 
 mod ppdaemon;
 mod s76powerdaemon;
@@ -247,7 +246,7 @@ pub struct ConnectedDevice {
     pub proxy: Option<DeviceProxy<'static>>,
 }
 
-pub async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
+pub async fn get_device_proxy<'a>() -> Result<DeviceProxy<'a>, zbus::Error> {
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
@@ -256,13 +255,13 @@ pub async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus
         }
     };
 
-    match upower_dbus::UPowerProxy::new(&connection).await {
+    match UPowerProxy::new(&connection).await {
         Ok(p) => p.get_display_device().await,
         Err(e) => Err(e),
     }
 }
 
-async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zbus::Error> {
+async fn enumerate_devices<'a>() -> Result<Vec<DeviceProxy<'a>>, zbus::Error> {
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
@@ -271,7 +270,7 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
         }
     };
 
-    let devices = upower_dbus::UPowerProxy::new(&connection)
+    let devices = UPowerProxy::new(&connection)
         .await?
         .enumerate_devices()
         .await?;
@@ -474,7 +473,7 @@ impl ConnectedDevice {
     pub async fn device_removed_stream(
         connection: &'_ Connection,
     ) -> Result<impl Stream<Item = String> + '_, zbus::Error> {
-        let proxy = upower_dbus::UPowerProxy::new(connection).await?;
+        let proxy = UPowerProxy::new(connection).await?;
         let stream = proxy.receive_device_removed().await?;
 
         let transformed_stream = stream.filter_map(move |device_removed| async move {
@@ -494,7 +493,7 @@ impl ConnectedDevice {
     pub async fn device_added_stream(
         connection: &'_ Connection,
     ) -> Result<impl futures::Stream<Item = ConnectedDevice> + '_, zbus::Error> {
-        let proxy = upower_dbus::UPowerProxy::new(connection).await?;
+        let proxy = UPowerProxy::new(connection).await?;
         let stream = proxy.receive_device_added().await?;
 
         let transformed_stream = stream.filter_map(move |device_added| async move {
