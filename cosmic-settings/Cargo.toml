@@ -54,7 +54,7 @@ itoa = "1.0.18"
 libcosmic.workspace = true
 iced_winit.workspace = true
 locale1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-pop-system-updater-zbus = { git = "https://github.com/pop-os/system-updater", branch = "updates", optional = true }
+pop-system-updater-zbus = { git = "https://github.com/pop-os/system-updater", optional = true }
 sysinfo = { version = "=0.38.0", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = [
     "tokio",

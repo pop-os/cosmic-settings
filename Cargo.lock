@@ -1218,7 +1218,7 @@ checksum = "fe6d2e5af09e8c8ad56c969f2157a3d4238cebc7c55f0a517728c38f7b200f81"
 dependencies = [
  "serde",
  "termcolor",
- "unicode-width",
+ "unicode-width 0.2.3",
 ]
 
 [[package]]
@@ -1489,7 +1489,7 @@ source = "git+https://github.com/pop-os/cosmic-mime-apps#8fc81e8857e46c018ea21ab
 dependencies = [
  "freedesktop-desktop-entry",
  "futures-util",
- "mime 0.3.17",
+ "mime 0.3.18",
  "quick-xml 0.38.4",
  "tokio",
  "xdg",
@@ -1611,7 +1611,7 @@ dependencies = [
  "libcosmic",
  "locale1-zbus",
  "locales-rs",
- "mime 0.3.17",
+ "mime 0.3.18",
  "nmrs",
  "notify",
  "num-traits",
@@ -4518,9 +4518,9 @@ dependencies = [
 
 [[package]]
 name = "kamadak-exif"
-version = "0.6.1"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1130d80c7374efad55a117d715a3af9368f0fa7a2c54573afc15a188cd984837"
+checksum = "8772c92c0f41c4a672cbdee6728253e5ae8fcc1c5eb5c6c676579565684bbf68"
 dependencies = [
  "mutate_once",
 ]
@@ -4670,7 +4670,7 @@ dependencies = [
  "jiff",
  "libc",
  "log",
- "mime 0.3.17",
+ "mime 0.3.18",
  "palette",
  "phf 0.14.0",
  "ron 0.12.3",
@@ -4990,7 +4990,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f98efec8807c63c752b5bd61f862c165c115b0a35685bdcfd9238c7aeb592b7"
 dependencies = [
  "cfg-if",
- "unicode-width",
+ "unicode-width 0.1.14",
 ]
 
 [[package]]
@@ -5003,9 +5003,9 @@ dependencies = [
 
 [[package]]
 name = "mime"
-version = "0.3.17"
+version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
+checksum = "d5848f5a9e8117cf94f2f90faac24a87ff81600ff8628c1e3deaab572e76bfa1"
 
 [[package]]
 name = "mime_guess"
@@ -5013,7 +5013,7 @@ version = "2.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7c44f8e672c00fe5308fa235f821cb4198414e1c77935c1ab6948d3fd78550e"
 dependencies = [
- "mime 0.3.17",
+ "mime 0.3.18",
  "unicase",
 ]
 
@@ -5914,7 +5914,7 @@ dependencies = [
 [[package]]
 name = "pop-system-updater-zbus"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/system-updater?branch=updates#f7dce274169bce9a9c97efe139c385d24fe8ccf4"
+source = "git+https://github.com/pop-os/system-updater#546d8a3f11e052f88d7ecfaa4a9b844beb4f8a6d"
 dependencies = [
  "ron 0.12.3",
  "serde",
@@ -7802,6 +7802,12 @@ name = "unicode-width"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
+
+[[package]]
+name = "unicode-width"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca718471876992059f251e33aafc334346ada08042b7661dd1fe313a9bced557"
 
 [[package]]
 name = "upower-zbus"
