@@ -3,8 +3,7 @@
 use std::collections::HashMap;
 
 use cosmic::cosmic_config::{ConfigGet, ConfigSet};
-use cosmic::iced::Subscription;
-use cosmic::iced::stream;
+use cosmic::iced::{Subscription, stream};
 use cosmic::widget::{dropdown, settings};
 use cosmic::{Apply, Element, Task};
 use cosmic_comp_config::input::{DeviceState, InputConfig};
@@ -210,7 +209,8 @@ impl page::Page<crate::pages::Message> for Page {
                                 return;
                             };
 
-                            let Ok(mut async_fd) = tokio::io::unix::AsyncFd::new(socket) else {
+                            let socket_res = unsafe { tokio::io::unix::AsyncFd::register(socket) };
+                            let Ok(mut async_fd) = socket_res else {
                                 return;
                             };
 
@@ -269,7 +269,8 @@ impl page::Page<crate::pages::Message> for Page {
                                 return;
                             };
 
-                            let Ok(mut async_fd) = tokio::io::unix::AsyncFd::new(socket) else {
+                            let socket_res = unsafe { tokio::io::unix::AsyncFd::register(socket) };
+                            let Ok(mut async_fd) = socket_res else {
                                 return;
                             };
 

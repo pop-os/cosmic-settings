@@ -326,7 +326,8 @@ impl page::Page<crate::pages::Message> for Page {
                     return;
                 };
 
-                let Ok(mut async_fd) = tokio::io::unix::AsyncFd::new(socket) else {
+                let socket_res = unsafe { tokio::io::unix::AsyncFd::register(socket) };
+                let Ok(mut async_fd) = socket_res else {
                     return;
                 };
 
