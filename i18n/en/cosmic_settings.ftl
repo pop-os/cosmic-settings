@@ -1109,3 +1109,26 @@ full-name = Full name
 invalid-username = Invalid username
 password-mismatch = Password and confirmation must match
 save = Save
+
+## System: Updates
+
+frequency-daily = Daily
+frequency-weekly = Weekly
+frequency-monthly = Monthly
+time-am = AM
+time-friday = Friday
+time-hour = Hour
+time-minute = Minute
+time-monday = Monday
+time-pm = PM
+time-saturday = Saturday
+time-sunday = Sunday
+time-thursday = Thursday
+time-tuesday = Tuesday
+time-wednesday = Wednesday
+time-weekdays = Weekdays
+
+system-and-app-updates = System & application updates
+    .schedule = Automatic update schedule
+    .automatic-toggle = Enable automatic updates
+    .notifications-toggle = Update notifications
