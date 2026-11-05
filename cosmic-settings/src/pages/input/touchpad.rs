@@ -184,10 +184,8 @@ fn click_behavior() -> Section<crate::pages::Message> {
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[tap_to_click]).toggler(
-                        tap_enabled,
-                        Message::TapToClick,
-                    ),
+                    settings::item::builder(&descriptions[tap_to_click])
+                        .toggler(tap_enabled, Message::TapToClick),
                 )
                 .add_maybe(if tap_enabled {
                     Some(
