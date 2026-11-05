@@ -95,6 +95,8 @@ pub enum Message {
     #[cfg(feature = "page-sound")]
     SoundDeviceProfiles(sound::device_profiles::Message),
     StartupApps(applications::startup_apps::Message),
+    #[cfg(feature = "pop-os")]
+    Updates(system::os_updates::Message),
     #[cfg(feature = "page-users")]
     User(system::users::Message),
     #[cfg(feature = "page-input")]

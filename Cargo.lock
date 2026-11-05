@@ -1615,6 +1615,7 @@ dependencies = [
  "nmrs",
  "notify",
  "num-traits",
+ "pop-system-updater-zbus",
  "pwhash",
  "regex",
  "ron 0.12.3",
@@ -5908,6 +5909,19 @@ dependencies = [
  "pin-project-lite",
  "rustix 1.1.6",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "pop-system-updater-zbus"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/system-updater?branch=updates#f7dce274169bce9a9c97efe139c385d24fe8ccf4"
+dependencies = [
+ "ron 0.12.3",
+ "serde",
+ "serde_repr",
+ "tokio",
+ "tracing",
+ "zbus 6.2.1",
 ]
 
 [[package]]

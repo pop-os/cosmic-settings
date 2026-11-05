@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::PageCommands;
-#[cfg(feature = "page-input")]
-use crate::{KeyboardCommands, ShortcutsCommands};
 use crate::config::Config;
 #[cfg(feature = "page-accessibility")]
 use crate::pages::accessibility;
@@ -23,6 +21,8 @@ use crate::pages::sound;
 use crate::pages::{self, applications, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
+#[cfg(feature = "page-input")]
+use crate::{KeyboardCommands, ShortcutsCommands};
 use cosmic::app::context_drawer::ContextDrawer;
 use cosmic::app::{Core, Task};
 #[cfg(feature = "wayland")]
@@ -111,7 +111,9 @@ impl SettingsApp {
                 }
                 Some(KeyboardCommands::Shortcuts {
                     command: Some(ShortcutsCommands::Custom),
-                }) => self.pages.page_id::<input::keyboard::shortcuts::custom::Page>(),
+                }) => self
+                    .pages
+                    .page_id::<input::keyboard::shortcuts::custom::Page>(),
             },
             #[cfg(feature = "page-legacy-applications")]
             PageCommands::LegacyApplications => self
@@ -138,6 +140,8 @@ impl SettingsApp {
             PageCommands::Time => self.pages.page_id::<time::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
+            #[cfg(feature = "pop-os")]
+            PageCommands::OsUpdates => self.pages.page_id::<system::os_updates::Page>(),
             #[cfg(feature = "page-users")]
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
             #[cfg(feature = "page-networking")]
@@ -621,6 +625,13 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::StartupApps(message) => {
                     if let Some(page) = self.pages.page_mut::<applications::startup_apps::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "pop-os")]
+                crate::pages::Message::Updates(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::os_updates::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
