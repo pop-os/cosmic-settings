@@ -300,7 +300,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                             page.input_touchpad
                                 .scroll_config
                                 .as_ref()
-                                .is_some_and(|conf| conf.natural_scroll.unwrap_or(false)),
+                                .is_some_and(|conf| conf.natural_scroll.unwrap_or(true)),
                             |enabled| Message::SetNaturalScroll(enabled, true),
                         ),
                 )
