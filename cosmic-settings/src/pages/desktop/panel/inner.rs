@@ -24,6 +24,7 @@ pub struct PageInner {
     pub opacity_changing: bool,
     pub size: PanelSize,
     pub outputs: Vec<String>,
+    pub autohide_modes: Vec<String>,
     pub anchors: Vec<String>,
     pub backgrounds: Vec<String>,
     pub(crate) container_config: Option<CosmicPanelContainerConfig>,
@@ -42,6 +43,11 @@ impl Default for PageInner {
             opacity_changing: false,
             size: PanelSize::M,
             outputs: vec![fl!("all-displays")],
+            autohide_modes: vec![
+                fl!("panel-behavior-and-position", "autohide-off"),
+                fl!("panel-behavior-and-position", "autohide-on-overlap"),
+                fl!("panel-behavior-and-position", "autohide-always"),
+            ],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
                 Anchor(PanelAnchor::Right).to_string(),
@@ -116,10 +122,21 @@ pub(crate) fn behavior_and_position<
             };
             settings::section()
                 .title(&section.title)
-                .add(
-                    settings::item::builder(&descriptions[autohide_label])
-                        .toggler(panel_config.autohide_enabled(), Message::AutoHidePanel),
-                )
+                .add(settings::item(
+                    &descriptions[autohide_label],
+                    dropdown::popup_dropdown(
+                        page.autohide_modes.as_slice(),
+                        Some(match panel_config.autohide {
+                            AutoHide::Never => 0,
+                            AutoHide::OnOverlap => 1,
+                            AutoHide::Always => 2,
+                        }),
+                        Message::AutoHidePanel,
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        move |a| crate::app::Message::PageMessage(msg_map(a)),
+                    ),
+                ))
                 .add(settings::item(
                     &descriptions[position],
                     dropdown::popup_dropdown(
@@ -416,7 +433,7 @@ impl From<Appearance> for CosmicPanelBackground {
 #[derive(Clone, Debug)]
 pub enum Message {
     // panel messages
-    AutoHidePanel(bool),
+    AutoHidePanel(usize),
     PanelAnchor(usize),
     Output(usize),
     AnchorGap(bool),
@@ -539,13 +556,12 @@ impl PageInner {
         };
 
         match message {
-            Message::AutoHidePanel(enabled) => {
-                if enabled {
-                    _ = panel_config.set_exclusive_zone(helper, false);
-                    _ = panel_config.set_autohide(helper, AutoHide::OnOverlap);
-                } else {
-                    _ = panel_config.set_exclusive_zone(helper, true);
-                    _ = panel_config.set_autohide(helper, AutoHide::Never);
+            Message::AutoHidePanel(i) => {
+                if let Some(mode) =
+                    [AutoHide::Never, AutoHide::OnOverlap, AutoHide::Always].get(i).copied()
+                {
+                    _ = panel_config.set_exclusive_zone(helper, matches!(mode, AutoHide::Never));
+                    _ = panel_config.set_autohide(helper, mode);
                 }
             }
             Message::PanelAnchor(i) => {
