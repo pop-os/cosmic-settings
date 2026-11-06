@@ -37,7 +37,6 @@ features = [
     "qr_code",
 ]
 git = "https://github.com/pop-os/libcosmic"
-branch = "bundles"
 
 [workspace.dependencies.ron]
 version = "0.8"
@@ -51,15 +50,12 @@ version = "2"
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
-branch = "bundles"
 
 [workspace.dependencies.cosmic-theme]
 git = "https://github.com/pop-os/libcosmic"
-branch = "bundles"
 
 [workspace.dependencies.cosmic-bg-config]
 git = "https://github.com/pop-os/cosmic-bg"
-branch = "bundles"
 
 [workspace.dependencies.cosmic-comp-config]
 git = "https://github.com/pop-os/cosmic-comp"
@@ -106,18 +102,18 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # [patch.'https://github.com/pop-os/cosmic-bg']
 # cosmic-bg-config = { path = "../cosmic-bg/config" }
 
-[patch."https://github.com/pop-os/libcosmic"]
-cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-iced_tiny_skia = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-iced_core = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-iced_debug = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-iced_graphics = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-iced_program = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
-build_helpers = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# [patch."https://github.com/pop-os/libcosmic"]
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_tiny_skia = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_core = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_debug = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_graphics = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_program = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# build_helpers = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
 
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
