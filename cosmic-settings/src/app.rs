@@ -1128,7 +1128,7 @@ impl SettingsApp {
             flex_row(page_header_content)
                 .width(Length::Fill)
                 .align_items(iced::Alignment::End)
-                .justify_content(cosmic::widget::JustifyContent::SpaceBetween)
+                .justify_content(cosmic::widget::JustifyContent::SPACE_BETWEEN)
                 .into()
         } else {
             cosmic::widget::text::title3(&page_info.title).into()
