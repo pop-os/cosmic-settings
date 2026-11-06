@@ -104,6 +104,8 @@ impl Page {
 
             Message::SetProfile(id, index) => {
                 if let Some(client) = self.client.clone() {
+                    // `block_on` does not yield to another UI update, so this borrow cannot be reentered.
+                    #[allow(clippy::await_holding_refcell_ref)]
                     block_on(async move {
                         _ = client.borrow_mut().conn.set_profile(id, index, true).await;
                     });
