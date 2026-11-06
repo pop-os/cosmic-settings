@@ -183,7 +183,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-drawing-tablet-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         Task::none()
     }
 

@@ -58,7 +58,7 @@ pub struct Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         self.amplification_sink = Config::new(AUDIO_CONFIG, 1)
             .ok()
             .and_then(|config| config.get::<bool>(AMPLIFICATION_SINK).ok())

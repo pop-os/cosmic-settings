@@ -194,7 +194,7 @@ impl Page {
 
                     if self.replace_dialog.is_empty() {
                         self.add_shortcut = Default::default();
-                        _ = self.model.on_enter();
+                        _ = self.model.on_load();
                     }
                 }
             }
@@ -203,7 +203,7 @@ impl Page {
                 _ = self.replace_dialog.pop();
                 if self.replace_dialog.is_empty() {
                     self.add_shortcut = Default::default();
-                    _ = self.model.on_enter();
+                    _ = self.model.on_load();
                 }
             }
 
@@ -219,7 +219,10 @@ impl Page {
                 let name_id = self.name_id.clone();
                 self.add_shortcut.enable();
                 return Task::batch(vec![
-                    cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity)),
+                    cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                        self.entity,
+                        None,
+                    )),
                     // XX hack: wait a bit before focusing the input to avoid it being ignored before it exists
                     cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(10)).await;
@@ -274,7 +277,7 @@ impl Page {
                                 ]);
                             }
                             self.add_shortcut(binding, false);
-                            _ = self.model.on_enter();
+                            _ = self.model.on_load();
 
                             return Task::batch(vec![
                                 widget::text_input::focus(widget::Id::unique()),
@@ -282,7 +285,7 @@ impl Page {
                             ]);
                         } else if old.alt || old.ctrl || old.shift {
                             self.add_shortcut = Default::default();
-                            _ = self.model.on_enter();
+                            _ = self.model.on_load();
 
                             return Task::batch(vec![
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
@@ -359,7 +362,7 @@ impl Page {
                         ]);
                     }
                     self.add_shortcut(binding, false);
-                    _ = self.model.on_enter();
+                    _ = self.model.on_load();
 
                     return Task::batch(vec![
                         widget::text_input::focus(widget::Id::unique()),
@@ -574,9 +577,9 @@ impl page::Page<crate::pages::Message> for Page {
         Task::none()
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         self.add_shortcut = Default::default();
-        _ = self.model.on_enter();
+        _ = self.model.on_load();
         Task::none()
     }
 

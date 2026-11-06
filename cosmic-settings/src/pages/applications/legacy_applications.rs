@@ -98,7 +98,7 @@ impl page::Page<crate::pages::Message> for Page {
         .description(fl!("xdg-entry-x11-applications-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         let mut tasks = Vec::new();
 
         tasks.push(cosmic::task::future(on_enter()));

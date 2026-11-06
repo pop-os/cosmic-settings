@@ -54,7 +54,7 @@ pub struct Page {
     entity: page::Entity,
     battery: Battery,
     connected_devices: Vec<ConnectedDevice>,
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    on_load_handle: Option<cosmic::iced::task::Handle>,
     screen_off_labels: Vec<String>,
     suspend_labels: Vec<String>,
     idle_config: Config,
@@ -72,7 +72,7 @@ impl Default for Page {
             entity: Default::default(),
             battery: Default::default(),
             connected_devices: Vec::new(),
-            on_enter_handle: None,
+            on_load_handle: None,
             screen_off_labels: SCREEN_OFF_TIMES
                 .iter()
                 .copied()
@@ -202,7 +202,7 @@ impl page::Page<crate::pages::Message> for Page {
         iced::Subscription::batch(std::iter::once(system_battery).chain(device_batteries))
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         let futures: Vec<Task<Message>> = vec![
             cosmic::Task::future(async move {
                 let battery = Battery::update_battery().await;
@@ -284,12 +284,12 @@ impl page::Page<crate::pages::Message> for Page {
             .map(crate::pages::Message::Power)
             .abortable();
 
-        self.on_enter_handle = Some(handle);
+        self.on_load_handle = Some(handle);
         task
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 

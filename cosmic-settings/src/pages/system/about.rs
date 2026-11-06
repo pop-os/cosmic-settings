@@ -37,7 +37,7 @@ pub struct Page {
     editing_device_name: bool,
     hostname_input: String,
     info: Info,
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    on_load_handle: Option<cosmic::iced::task::Handle>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -64,19 +64,19 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-about-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         let (task, handle) = Task::future(async move {
             let info = Info::load().await;
             crate::pages::Message::About(Message::Info(Box::new(info)))
         })
         .abortable();
 
-        self.on_enter_handle = Some(handle);
+        self.on_load_handle = Some(handle);
         task
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 

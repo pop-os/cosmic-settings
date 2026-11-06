@@ -42,6 +42,7 @@ pub struct Page {
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
     timezone_context: bool,
+    timezone_search_id: widget::Id,
     date_time_applet_context: bool,
     local_time: Option<DateTime<Gregorian>>,
     timezone: Option<usize>,
@@ -122,6 +123,7 @@ impl Default for Page {
             show_date_in_top_panel,
             timezone: None,
             timezone_context: false,
+            timezone_search_id: widget::Id::unique(),
             date_time_applet_context: false,
             timezone_list: Vec::new(),
             timezone_search: String::new(),
@@ -151,7 +153,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-date-time-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         cosmic::Task::future(async move {
             let client = match zbus::Connection::system().await {
                 Ok(client) => client,
@@ -186,6 +188,7 @@ impl page::Page<crate::pages::Message> for Page {
         if self.timezone_context {
             let search = widget::search_input("", &self.timezone_search)
                 .on_input(Message::TimezoneSearch)
+                .id(self.timezone_search_id.clone())
                 .on_clear(Message::TimezoneSearch(String::new()))
                 .apply(Element::from)
                 .map(crate::pages::Message::DateAndTime);
@@ -219,8 +222,12 @@ impl Page {
         match message {
             Message::TimezoneContext => {
                 self.timezone_search.clear();
+                self.date_time_applet_context = false;
                 self.timezone_context = true;
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    Some(self.timezone_search_id.clone()),
+                ));
             }
 
             Message::MilitaryTime(enable) => {
@@ -259,8 +266,12 @@ impl Page {
             }
 
             Message::DateAndTimeContext => {
+                self.timezone_context = false;
                 self.date_time_applet_context = true;
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    None,
+                ));
             }
 
             Message::ShowDate(enable) => {

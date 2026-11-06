@@ -101,7 +101,7 @@ impl Default for Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         match Config::new(AUDIO_CONFIG, 1) {
             Ok(config) => {
                 self.amplification_sink = config.get::<bool>(AMPLIFICATION_SINK).unwrap_or(true);
