@@ -230,12 +230,12 @@ fn update_theme(key: &str, font: FontConfig) {
     };
     if let Ok(config) = config {
         _ = config.set(key, font);
-        if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
-            if let Err(error) = store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(
+        if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+            && let Err(error) = store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(
                 theme.is_dark,
-            )) {
-                tracing::warn!(?error, "failed to sync the active theme bundle");
-            }
+            ))
+        {
+            tracing::warn!(?error, "failed to sync the active theme bundle");
         }
     }
 }

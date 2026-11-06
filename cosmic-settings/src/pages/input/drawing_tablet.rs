@@ -63,7 +63,7 @@ pub fn get_connected_tablets() -> HashMap<String, Vec<udev::Device>> {
             let physical_device_id = get_physical_device_id(&device);
 
             let device_name = device.property_value("NAME");
-            if !device_name.is_some() {
+            if device_name.is_none() {
                 continue;
             }
 
@@ -90,8 +90,8 @@ pub fn get_physical_device_id(device: &udev::Device) -> String {
     device.syspath().to_string_lossy().into_owned()
 }
 
-pub fn get_pen_interface(devices: &Vec<udev::Device>) -> Option<&udev::Device> {
-    devices.into_iter().find(|device| {
+pub fn get_pen_interface(devices: &[udev::Device]) -> Option<&udev::Device> {
+    devices.iter().find(|device| {
         let is_tablet = device
             .property_value("ID_INPUT_TABLET")
             .is_some_and(|v| v == "1");
@@ -162,12 +162,12 @@ impl page::Page<crate::pages::Message> for Page {
             } else {
                 let mut sections_column = Vec::new();
                 for tablet in page.connected_tablets.values() {
-                    if let Some(pen_interface) = get_pen_interface(tablet) {
-                        if let Some(pen_name) = pen_interface.property_value("NAME") {
-                            let tablet_device_name =
-                                pen_name.to_string_lossy().trim_matches('"').to_owned();
-                            sections_column.push(tablet_settings_ui(tablet_device_name, page));
-                        }
+                    if let Some(pen_interface) = get_pen_interface(tablet)
+                        && let Some(pen_name) = pen_interface.property_value("NAME")
+                    {
+                        let tablet_device_name =
+                            pen_name.to_string_lossy().trim_matches('"').to_owned();
+                        sections_column.push(tablet_settings_ui(tablet_device_name, page));
                     }
                 }
                 settings::view_column(sections_column).apply(Element::from)
@@ -228,10 +228,8 @@ impl page::Page<crate::pages::Message> for Page {
                                         }
                                     });
 
-                                    if *input_event_occurred {
-                                        if tx.send(()).await.is_err() {
-                                            break;
-                                        }
+                                    if *input_event_occurred && tx.send(()).await.is_err() {
+                                        break;
                                     }
                                 }
                                 tokio::time::sleep(std::time::Duration::from_secs(1)).await;
@@ -283,10 +281,8 @@ impl page::Page<crate::pages::Message> for Page {
                                         *drm_hotplug_occurred = true;
                                     });
 
-                                    if *drm_hotplug_occurred {
-                                        if tx.send(()).await.is_err() {
-                                            break;
-                                        }
+                                    if *drm_hotplug_occurred && tx.send(()).await.is_err() {
+                                        break;
                                     }
                                 }
                                 tokio::time::sleep(std::time::Duration::from_secs(1)).await;
@@ -360,9 +356,8 @@ fn tablet_settings_ui(
     let mut section_ui = settings::section().title(tablet_device_name.clone());
     let tablet_config = page.saved_input_devices.get(&tablet_device_name);
 
-    let enabled = tablet_config.map_or(false, |c| {
-        c.state == cosmic_comp_config::input::DeviceState::Enabled
-    });
+    let enabled =
+        tablet_config.is_some_and(|c| c.state == cosmic_comp_config::input::DeviceState::Enabled);
     let tablet_name = tablet_device_name.clone();
     let device_state_toggler = settings::item::builder(fl!("drawing-tablet", "enabled"))
         .toggler(enabled, {
@@ -372,10 +367,10 @@ fn tablet_settings_ui(
 
     if enabled {
         let mut display_names = page.connected_displays.clone();
-        if let Some(preexisting_output) = tablet_config.and_then(|c| c.map_to_output.as_ref()) {
-            if !display_names.contains(preexisting_output) {
-                display_names.push(preexisting_output.clone());
-            }
+        if let Some(preexisting_output) = tablet_config.and_then(|c| c.map_to_output.as_ref())
+            && !display_names.contains(preexisting_output)
+        {
+            display_names.push(preexisting_output.clone());
         }
 
         let selected_dropdown_index = tablet_config

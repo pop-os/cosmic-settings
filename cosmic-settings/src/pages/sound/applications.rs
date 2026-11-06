@@ -435,7 +435,7 @@ pub fn view() -> Section<crate::pages::Message> {
                     widget::slider(0.0..=2.0, playback.balance.unwrap_or(1.0), move |balance| {
                         Message::SetBalance(node_id, balance)
                     })
-                    .step(0.01)
+                    .step(0.01_f32)
                     .breakpoints(&[1.0]),
                 )
                 .push(horizontal_space().width(8.))
