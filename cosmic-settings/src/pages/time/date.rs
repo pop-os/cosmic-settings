@@ -23,6 +23,7 @@ crate::cache_dynamic_lazy! {
 static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
 static SHOW_WEEKDAY: String = fl!("time-format", "show-weekday");
 static SHOW_SECONDS: String = fl!("time-format", "show-seconds");
+static SHOW_CN_CALENDAR: String = fl!("time-format", "show-cn-calendar");
 static SHOW_DATE: String = fl!("time-format", "date");}
 
 #[derive(Debug, Clone)]
@@ -38,6 +39,7 @@ pub struct Page {
     first_day_of_week: usize,
     military_time: bool,
     show_seconds: bool,
+    show_cn_calendar: bool,
     show_weekday: bool,
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
@@ -77,6 +79,15 @@ impl Default for Page {
                 false
             });
 
+        let show_cn_calendar = cosmic_applet_config
+            .get("show_cn_canledar")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'show_cn_canledar'");
+                }
+
+                false
+            });
         let show_weekday = cosmic_applet_config
             .get("show_weekday")
             .unwrap_or_else(|err| {
@@ -117,6 +128,7 @@ impl Default for Page {
             local_time: None,
             military_time,
             show_seconds,
+            show_cn_calendar,
             show_weekday,
             ntp_enabled: false,
             show_date_in_top_panel,
@@ -238,6 +250,15 @@ impl Page {
 
                 if let Err(err) = self.cosmic_applet_config.set("show_seconds", enable) {
                     error!(?err, "Failed to set config 'show_seconds'");
+                }
+            }
+
+            Message::ShowCnCalendar(enable) => {
+                self.show_cn_calendar = enable;
+                self.update_local_time();
+
+                if let Err(err) = self.cosmic_applet_config.set("show_cn_calendar", enable) {
+                    error!(?err, "Failed to set config 'show_cn_calendar'");
                 }
             }
 
@@ -396,6 +417,9 @@ impl Page {
             .add(
                 settings::item::builder(&*SHOW_SECONDS)
                     .toggler(self.show_seconds, Message::ShowSeconds),
+            ).add(
+                settings::item::builder(&*SHOW_CN_CALENDAR)
+                    .toggler(self.show_cn_calendar, Message::ShowCnCalendar),
             );
 
         list.apply(Element::from)
@@ -418,6 +442,7 @@ pub enum Message {
     MilitaryTime(bool),
     ShowSeconds(bool),
     ShowWeekday(bool),
+    ShowCnCalendar(bool),
     None,
     FirstDayOfWeek(usize),
     Refresh(Info),

@@ -777,6 +777,7 @@ time-format = 日期与时间格式
     .twenty-four = 24 小时制
     .show-seconds = 秒数
     .show-weekday = 星期
+    .show-cn-calendar = 农历
     .first = 每周第一天
     .date = 日期
     .friday = 星期五
