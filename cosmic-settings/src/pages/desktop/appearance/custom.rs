@@ -64,8 +64,16 @@ impl Page {
     }
 
     fn preview_theme(&self) -> cosmic::theme::Theme {
-        let theme = self.theme_manager.builder().clone().build();
+        let mut theme = self.theme_manager.builder().clone().build();
+        // TODO remove me later after the fix has been in for a bit.
+        theme
+            .icon_theme
+            .clone_from(&self.theme_manager.theme().icon_theme);
         cosmic::theme::Theme::custom(std::sync::Arc::new(theme))
+    }
+
+    fn is_active_mode(&self) -> bool {
+        self.mode.is_dark() == theme_bundles::on_screen_mode().is_dark()
     }
 
     fn preview(&self) -> crate::pages::Message {
@@ -95,8 +103,11 @@ impl Page {
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
                 tasks.push(
-                    self.drawer
-                        .on_open(&context_view, crate::pages::Message::AppearanceTheme),
+                    self.drawer.on_open(
+                        &context_view,
+                        &self.theme_manager,
+                        crate::pages::Message::AppearanceTheme,
+                    ),
                 );
             }
 
@@ -228,12 +239,34 @@ impl Page {
             },
 
             Message::DrawerFont(message) => {
-                tasks.push(self.drawer.update_font(message, self.context_view.as_ref()));
+                let font_selected = matches!(&message, drawer::FontMessage::Select(_));
+                let active = font_selected && self.context_view.is_some() && self.is_active_mode();
+
+                tasks.push(self.drawer.update_font(
+                    message,
+                    self.context_view.as_ref(),
+                    &mut self.theme_manager,
+                ));
+
+                if active {
+                    theme_changed = true;
+                }
             }
 
             Message::DrawerIcon(message) => {
+                let icon_selected = matches!(&message, drawer::IconMessage::IconTheme(_));
+                let active = icon_selected && self.context_view.is_some() && self.is_active_mode();
+
                 if let Some(context_view) = self.context_view.as_ref() {
-                    tasks.push(self.drawer.update_icon(message, context_view));
+                    tasks.push(self.drawer.update_icon(
+                        message,
+                        context_view,
+                        &mut self.theme_manager,
+                    ));
+                }
+
+                if active {
+                    theme_changed = true;
                 }
             }
 
