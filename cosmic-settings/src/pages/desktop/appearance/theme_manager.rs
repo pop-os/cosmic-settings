@@ -1,8 +1,8 @@
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{Srgb, Srgba};
 use cosmic::cosmic_theme::{
-    AlphaMap, BlurStrength, CornerRadii, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID, Spacing,
-    Theme, ThemeBuilder, ThemeMode,
+    AlphaMap, BlurStrength, CornerRadii, DARK_THEME_BUILDER_ID, FontConfig, LIGHT_THEME_BUILDER_ID,
+    Spacing, Theme, ThemeBuilder, ThemeMode,
 };
 use cosmic::iced::core::Color;
 
@@ -378,6 +378,24 @@ impl Manager {
         if let Some(config) = self.mode.1.as_ref() {
             _ = config.set::<bool>("auto_switch", enabled);
         }
+    }
+
+    pub fn set_mono_font(&mut self, mono_font: FontConfig) {
+        let selected_customizer = self.selected_customizer_mut();
+        selected_customizer.builder.0.mono_font = mono_font.clone();
+        selected_customizer.theme.0.mono_font = mono_font.clone();
+    }
+
+    pub fn set_font(&mut self, font: FontConfig) {
+        let selected_customizer = self.selected_customizer_mut();
+        selected_customizer.builder.0.font = font.clone();
+        selected_customizer.theme.0.font = font.clone();
+    }
+
+    pub fn set_icon_theme(&mut self, icon_theme: String) {
+        let selected_customizer = self.selected_customizer_mut();
+        selected_customizer.builder.0.icon_theme = icon_theme.clone();
+        selected_customizer.theme.0.icon_theme = icon_theme;
     }
 
     // TODO: Make it rollback if the first operation succeeds and the second

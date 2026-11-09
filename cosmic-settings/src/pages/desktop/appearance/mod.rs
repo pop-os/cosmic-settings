@@ -461,8 +461,11 @@ impl Page {
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
                 tasks.push(
-                    self.drawer
-                        .on_open(&context_view, crate::pages::Message::Appearance),
+                    self.drawer.on_open(
+                        &context_view,
+                        &self.theme_manager,
+                        crate::pages::Message::Appearance,
+                    ),
                 );
             }
 
