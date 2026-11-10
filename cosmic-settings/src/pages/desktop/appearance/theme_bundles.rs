@@ -213,7 +213,6 @@ fn live_card(store: &Store, mode: Mode) -> Card {
         preview: preview(
             store.live_config(Part::Background, mode).ok(),
             theme.bg_color(),
-            false,
         ),
     }
 }
@@ -482,11 +481,6 @@ fn card(store: &Store, bundle: &Bundle, system: bool, on_screen: bool, mode: Mod
     let live = on_screen;
     let background = if live {
         store.live_config(Part::Background, mode).ok()
-    } else if system {
-        store
-            .system_config(&bundle.slug, Part::Background)
-            .or_else(|_| store.bundle_config(&bundle.slug, Part::Background))
-            .ok()
     } else {
         store.bundle_config(&bundle.slug, Part::Background).ok()
     };
@@ -498,7 +492,7 @@ fn card(store: &Store, bundle: &Bundle, system: bool, on_screen: bool, mode: Mod
         background: theme.bg_color().into(),
         on_background: theme.on_bg_color().into(),
         accent: theme.accent_color().into(),
-        preview: preview(background, theme.bg_color(), !live),
+        preview: preview(background, theme.bg_color()),
     }
 }
 
@@ -514,7 +508,7 @@ fn read_theme(config: &Config) -> Theme {
     }
 }
 
-fn preview(config: Option<Config>, fallback: Srgba, prefer_base: bool) -> Preview {
+fn preview(config: Option<Config>, fallback: Srgba) -> Preview {
     let source = config.and_then(|config| {
         let same_on_all = config
             .get::<bool>(cosmic_bg_config::SAME_ON_ALL)
@@ -530,22 +524,11 @@ fn preview(config: Option<Config>, fallback: Srgba, prefer_base: bool) -> Previe
             return Some(entry.source);
         }
 
-        let entry = if prefer_base {
-            config
-                .get::<cosmic_bg_config::Entry>("base")
-                .ok()
-                .or_else(|| {
-                    config
-                        .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
-                        .ok()
-                })
-        } else {
-            config
-                .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
-                .ok()
-                .or_else(|| config.get::<cosmic_bg_config::Entry>("base").ok())
-        };
-        entry.map(|entry| entry.source)
+        config
+            .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
+            .ok()
+            .or_else(|| config.get::<cosmic_bg_config::Entry>("base").ok())
+            .map(|entry| entry.source)
     });
 
     match source {
