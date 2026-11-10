@@ -1,19 +1,20 @@
-use cosmic::iced_core::{Alignment, Length, text::Wrapping};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{button, container, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
-use slab::Slab;
 
-use super::{Message, Page, Roundness};
+use super::custom::Page;
+use super::{Message, Roundness};
 
 #[allow(clippy::too_many_lines)]
 pub fn section() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let round = descriptions.insert(fl!("style", "round"));
-    let slightly_round = descriptions.insert(fl!("style", "slightly-round"));
-    let square = descriptions.insert(fl!("style", "square"));
+    crate::slab!(descriptions {
+        round = fl!("style", "round");
+        slightly_round = fl!("style", "slightly-round");
+        square = fl!("style", "square");
+    });
 
     let dark_round_style = from_name("illustration-appearance-dark-style-round").handle();
     let light_round_style = from_name("illustration-appearance-light-style-round").handle();
@@ -138,6 +139,6 @@ pub fn section() -> Section<crate::pages::Message> {
                     .center_x(Length::Fill),
                 )
                 .apply(Element::from)
-                .map(crate::pages::Message::Appearance)
+                .map(crate::pages::Message::AppearanceTheme)
         })
 }

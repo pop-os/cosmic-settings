@@ -1,26 +1,24 @@
-use cosmic::{
-    Task,
-    cosmic_theme::{CosmicPalette, ThemeBuilder},
-    iced_core::text::Wrapping,
-    surface,
-    theme::CosmicTheme,
-    widget::{dropdown, settings, text, toggler},
-};
+use cosmic::cosmic_theme::{CosmicPalette, ThemeBuilder};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::stream;
+use cosmic::theme::CosmicTheme;
+use cosmic::widget::{dropdown, settings, text};
+use cosmic::{Apply, Element, Task, surface};
+use cosmic_comp_config::CosmicCompConfig;
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
 use cosmic_settings_a11y_manager_subscription as cosmic_a11y_manager;
-use cosmic_settings_accessibility_subscription::{
-    DBusRequest, DBusUpdate, subscription as a11y_subscription,
-};
+use cosmic_settings_accessibility_subscription as a11y_bus;
 use cosmic_settings_daemon_config::CosmicSettingsDaemonConfig;
-use cosmic_settings_page::{
-    self as page, Insert,
-    section::{self, Section},
-};
+use cosmic_settings_page::section::{self, Section};
+use cosmic_settings_page::{self as page, Insert};
+use futures::SinkExt;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
 
 pub mod magnifier;
+pub mod osk;
+
 pub use cosmic_a11y_manager::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -39,13 +37,23 @@ pub struct Page {
     high_contrast: Option<bool>,
     daemon_config: CosmicSettingsDaemonConfig,
     daemon_helper: cosmic_config::Config,
-    dbus_sender: Option<UnboundedSender<DBusRequest>>,
+    dbus_sender: Option<UnboundedSender<a11y_bus::Request>>,
     reader_enabled: bool,
+    comp_config: CosmicCompConfig,
+    comp_helper: cosmic_config::Config,
 }
 
 impl Default for Page {
     fn default() -> Self {
         let daemon_helper = CosmicSettingsDaemonConfig::config().unwrap();
+        let comp_helper = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let comp_config =
+            CosmicCompConfig::get_entry(&comp_helper).unwrap_or_else(|(errs, config)| {
+                for err in errs {
+                    tracing::warn!(?err, "error while reading cosmic-comp config");
+                }
+                config
+            });
         Page {
             dbus_sender: None,
             entity: page::Entity::default(),
@@ -70,24 +78,27 @@ impl Default for Page {
                 .unwrap_or_default(),
             daemon_helper,
             reader_enabled: false,
+            comp_config,
+            comp_helper,
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    A11yBus(a11y_bus::Response),
     Event(cosmic_a11y_manager::AccessibilityEvent),
+    HighContrast(bool),
     ProtocolUnavailable,
     Return,
-    HighContrast(bool),
-    SystemTheme(Box<cosmic::cosmic_theme::Theme>),
-    SetScreenInverted(bool),
+    ScreenReaderEnabled(bool),
+    SetCursorShakeToFind(bool),
     SetScreenFilterActive(bool),
     SetScreenFilterSelection(ColorFilter),
-    Surface(surface::Action),
+    SetScreenInverted(bool),
     SetSoundMono(bool),
-    DBusUpdate(DBusUpdate),
-    ScreenReaderEnabled(bool),
+    Surface(surface::Action<crate::app::Message>),
+    SystemTheme(Box<cosmic::cosmic_theme::Theme>),
 }
 
 impl From<Message> for crate::pages::Message {
@@ -119,7 +130,11 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, page::Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(vision()), sections.insert(hearing())])
+        Some(vec![
+            sections.insert(vision()),
+            sections.insert(hearing()),
+            sections.insert(mobility()),
+        ])
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
@@ -128,18 +143,19 @@ impl page::Page<crate::pages::Message> for Page {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
-                    return cosmic::Task::stream(async_fn_stream::fn_stream(
-                        |emitter| async move {
+                    return cosmic::Task::stream(stream::channel(
+                        1,
+                        |mut sender: futures::channel::mpsc::Sender<super::Message>| async move {
                             while let Some(event) = rx.recv().await {
-                                let _ = emitter
-                                    .emit(crate::pages::Message::Accessibility(Message::Event(
+                                let _ = sender
+                                    .send(crate::pages::Message::Accessibility(Message::Event(
                                         event,
                                     )))
                                     .await;
                             }
 
-                            let _ = emitter
-                                .emit(crate::pages::Message::Accessibility(
+                            let _ = sender
+                                .send(crate::pages::Message::Accessibility(
                                     Message::ProtocolUnavailable,
                                 ))
                                 .await;
@@ -169,13 +185,13 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         _core: &cosmic::Core,
     ) -> cosmic::iced::Subscription<crate::pages::Message> {
-        a11y_subscription().map(|m| super::Message::Accessibility(Message::DBusUpdate(m)))
+        a11y_bus::subscription().map(|m| super::Message::Accessibility(Message::A11yBus(m)))
     }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: Insert<crate::pages::Message>) -> Insert<crate::pages::Message> {
-        page.sub_page::<magnifier::Page>()
+        page.sub_page::<magnifier::Page>().sub_page::<osk::Page>()
     }
 }
 
@@ -191,6 +207,8 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         invert_colors = fl!("accessibility", "invert-colors");
         color_filters = fl!("accessibility", "color-filters");
         color_filter_type = fl!("color-filter");
+        shake_cursor = fl!("accessibility", "shake-cursor");
+        shake_cursor_desc = fl!("accessibility", "shake-cursor-desc");
     });
 
     Section::default()
@@ -198,6 +216,22 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |binder, page, section| {
             let descriptions = &section.descriptions;
+
+            let (magnifier_entity, _magnifier_info) = binder
+                .info
+                .iter()
+                .find(|(_, v)| v.id == "accessibility_magnifier")
+                .expect("magnifier page not found");
+
+            let status_text = if page.wayland_available.is_some() {
+                if page.magnifier_state {
+                    &descriptions[on]
+                } else {
+                    &descriptions[off]
+                }
+            } else {
+                &descriptions[unavailable]
+            };
 
             settings::section()
                 .title(&section.title)
@@ -209,31 +243,13 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         },
                     ),
                 )
-                .add({
-                    let (magnifier_entity, _magnifier_info) = binder
-                        .info
-                        .iter()
-                        .find(|(_, v)| v.id == "accessibility_magnifier")
-                        .expect("magnifier page not found");
-
-                    let status_text = if page.wayland_available.is_some() {
-                        if page.magnifier_state {
-                            &descriptions[on]
-                        } else {
-                            &descriptions[off]
-                        }
-                    } else {
-                        &descriptions[unavailable]
-                    };
-
-                    crate::widget::go_next_with_item(
-                        &descriptions[magnifier],
-                        text::body(status_text).wrapping(Wrapping::Word),
-                        page.wayland_available
-                            .is_some()
-                            .then_some(crate::pages::Message::Page(magnifier_entity)),
-                    )
-                })
+                .add(crate::widget::go_next_with_item(
+                    &descriptions[magnifier],
+                    text::body(status_text).wrapping(Wrapping::Word),
+                    page.wayland_available
+                        .is_some()
+                        .then_some(crate::pages::Message::Page(magnifier_entity)),
+                ))
                 .add(
                     settings::item::builder(&descriptions[high_contrast])
                         .toggler(page.theme.is_high_contrast, |enable| {
@@ -241,21 +257,19 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         }),
                 )
                 .add(
-                    settings::item::builder(&descriptions[invert_colors]).control(
-                        toggler(page.screen_inverted).on_toggle_maybe(
-                            page.wayland_available
-                                .is_some_and(|ver| ver >= 2)
-                                .then_some(|set| Message::SetScreenInverted(set).into()),
-                        ),
+                    settings::item::builder(&descriptions[invert_colors]).toggler_maybe(
+                        page.screen_inverted,
+                        page.wayland_available
+                            .is_some_and(|ver| ver >= 2)
+                            .then_some(|set| Message::SetScreenInverted(set).into()),
                     ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[color_filters]).control(
-                        toggler(page.screen_filter_active).on_toggle_maybe(
-                            page.wayland_available
-                                .is_some_and(|ver| ver >= 2)
-                                .then_some(|set| Message::SetScreenFilterActive(set).into()),
-                        ),
+                    settings::item::builder(&descriptions[color_filters]).toggler_maybe(
+                        page.screen_filter_active,
+                        page.wayland_available
+                            .is_some_and(|ver| ver >= 2)
+                            .then_some(|set| Message::SetScreenFilterActive(set).into()),
                     ),
                 )
                 .add({
@@ -284,6 +298,13 @@ pub fn vision() -> section::Section<crate::pages::Message> {
 
                     settings::item::builder(&descriptions[color_filter_type]).control(dropdown)
                 })
+                .add(
+                    settings::item::builder(&descriptions[shake_cursor])
+                        .description(&descriptions[shake_cursor_desc])
+                        .toggler(page.comp_config.cursor_shake_to_find, |enabled| {
+                            Message::SetCursorShakeToFind(enabled).into()
+                        }),
+                )
                 .into()
         })
 }
@@ -303,12 +324,38 @@ pub fn hearing() -> section::Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 .add(
-                    cosmic::Element::from(
-                        settings::item::builder(&descriptions[mono])
-                            .toggler(page.daemon_config.mono_sound, Message::SetSoundMono),
-                    )
-                    .map(crate::pages::Message::Accessibility),
+                    settings::item::builder(&descriptions[mono])
+                        .toggler(page.daemon_config.mono_sound, Message::SetSoundMono),
                 )
+                .apply(Element::from)
+                .map(crate::pages::Message::Accessibility)
+        })
+}
+
+pub fn mobility() -> section::Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        mobility = fl!("mobility");
+        on_screen_keyboard = fl!("on-screen-keyboard");
+    });
+
+    Section::default()
+        .title(&descriptions[mobility])
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _, section| {
+            let descriptions = &section.descriptions;
+
+            let (osk_entity, _osk_info) = binder
+                .info
+                .iter()
+                .find(|(_, v)| v.id == "accessibility_osk")
+                .expect("osk page not found");
+
+            settings::section()
+                .title(&section.title)
+                .add(crate::widget::go_next_item(
+                    &descriptions[on_screen_keyboard],
+                    crate::pages::Message::Page(osk_entity),
+                ))
                 .into()
         })
 }
@@ -426,6 +473,14 @@ impl Page {
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
             }
+            Message::SetCursorShakeToFind(enabled) => {
+                if let Err(err) = self
+                    .comp_config
+                    .set_cursor_shake_to_find(&self.comp_helper, enabled)
+                {
+                    tracing::error!(?err, "failed to set cursor_shake_to_find");
+                }
+            }
             Message::SetSoundMono(active) => {
                 if let Err(err) = self
                     .daemon_config
@@ -434,16 +489,17 @@ impl Page {
                     tracing::error!("{err:?}");
                 }
             }
-            Message::DBusUpdate(update) => match update {
-                DBusUpdate::Error(err) => {
+            Message::A11yBus(update) => match update {
+                a11y_bus::Response::Error(err) => {
                     tracing::error!("{err}");
                     let _ = self.dbus_sender.take();
                     self.reader_enabled = false;
                 }
-                DBusUpdate::Status(enabled) => {
+                a11y_bus::Response::ScreenReader(enabled) => {
                     self.reader_enabled = enabled;
                 }
-                DBusUpdate::Init(enabled, tx) => {
+                a11y_bus::Response::IsEnabled(_) => (),
+                a11y_bus::Response::Init(enabled, tx) => {
                     self.reader_enabled = enabled;
                     self.dbus_sender = Some(tx);
                 }
@@ -451,7 +507,7 @@ impl Page {
             Message::ScreenReaderEnabled(enabled) => {
                 if let Some(tx) = &self.dbus_sender {
                     self.reader_enabled = enabled;
-                    let _ = tx.send(DBusRequest::Status(enabled));
+                    let _ = tx.send(a11y_bus::Request::ScreenReader(enabled));
                 } else {
                     self.reader_enabled = false;
                 }

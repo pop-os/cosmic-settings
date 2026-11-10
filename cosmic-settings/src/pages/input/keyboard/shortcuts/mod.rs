@@ -5,6 +5,7 @@ mod common;
 
 pub use common::{Model, ShortcutBinding, ShortcutMessage, ShortcutModel};
 
+pub mod accessibility;
 pub mod custom;
 pub mod manage_windows;
 pub mod move_window;
@@ -14,16 +15,16 @@ pub mod tiling;
 
 use cosmic::app::ContextDrawer;
 use cosmic::iced::Length;
-use cosmic::widget::{self, icon, settings, text};
-use cosmic::{Apply, Element, Task, theme};
+use cosmic::widget::list::ListButton;
+use cosmic::widget::{self, settings, text};
+use cosmic::{Apply, Element, Task};
 use cosmic_config::ConfigGet;
 use cosmic_settings_config::Binding;
 use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
 };
 use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;
 use shortcuts::action::System as SystemAction;
 use slab::Slab;
@@ -42,6 +43,7 @@ pub struct Page {
 
 #[derive(Default)]
 struct Modified {
+    accessibility: u16,
     manage_windows: u16,
     move_windows: u16,
     nav: u16,
@@ -51,6 +53,7 @@ struct Modified {
 }
 
 struct SubPages {
+    accessibility: page::Entity,
     custom: page::Entity,
     manage_window: page::Entity,
     move_window: page::Entity,
@@ -77,6 +80,7 @@ pub enum Message {
 
 #[derive(Clone, Copy, Debug)]
 pub enum Category {
+    Accessibility,
     Custom,
     ManageWindow,
     MoveWindow,
@@ -94,6 +98,7 @@ impl Default for Page {
             search_model: Model::default(),
             shortcuts_context: None,
             sub_pages: SubPages {
+                accessibility: page::Entity::null(),
                 custom: page::Entity::null(),
                 manage_window: page::Entity::null(),
                 move_window: page::Entity::null(),
@@ -174,6 +179,10 @@ impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::Category(category) => match category {
+                Category::Accessibility => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.accessibility))
+                }
+
                 Category::Custom => {
                     cosmic::task::message(crate::app::Message::Page(self.sub_pages.custom))
                 }
@@ -213,11 +222,13 @@ impl Page {
         self.search.localized = SecondaryMap::new();
         self.search.input = String::new();
         self.search_model.on_clear();
-        self.modified.custom = 0;
+        self.modified.accessibility = 0;
         self.modified.manage_windows = 0;
         self.modified.move_windows = 0;
         self.modified.nav = 0;
         self.modified.system = 0;
+        self.modified.window_tiling = 0;
+        self.modified.custom = 0;
     }
 
     fn reload_search(&mut self) {
@@ -240,6 +251,7 @@ impl Page {
                 }
 
                 match action_category(custom_action) {
+                    Some(Category::Accessibility) => self.modified.accessibility += 1,
                     Some(Category::ManageWindow) => self.modified.manage_windows += 1,
                     Some(Category::MoveWindow) => self.modified.move_windows += 1,
                     Some(Category::Nav) => self.modified.nav += 1,
@@ -261,6 +273,7 @@ impl Page {
                 };
 
                 match action_category(action) {
+                    Some(Category::Accessibility) => self.modified.accessibility += 1,
                     Some(Category::ManageWindow) => self.modified.manage_windows += 1,
                     Some(Category::MoveWindow) => self.modified.move_windows += 1,
                     Some(Category::Nav) => self.modified.nav += 1,
@@ -297,6 +310,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         mut page: cosmic_settings_page::Insert<crate::pages::Message>,
     ) -> cosmic_settings_page::Insert<crate::pages::Message> {
+        let accessibility = page.sub_page_with_id::<accessibility::Page>();
         let custom = page.sub_page_with_id::<custom::Page>();
         let manage_window = page.sub_page_with_id::<manage_windows::Page>();
         let move_window = page.sub_page_with_id::<move_window::Page>();
@@ -305,6 +319,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
         let window_tiling = page.sub_page_with_id::<tiling::Page>();
 
         let model = page.model.page_mut::<Page>().unwrap();
+        model.sub_pages.accessibility = accessibility;
         model.sub_pages.custom = custom;
         model.sub_pages.manage_window = manage_window;
         model.sub_pages.move_window = move_window;
@@ -392,35 +407,41 @@ impl Search {
                 self.localized[*id].to_lowercase().contains(&input)
                     || shortcut_search_actions.contains(action)
             })
-            .fold(Slab::new(), |mut slab, (_, action)| {
-                slab.insert(ShortcutModel::new(
-                    &self.defaults,
-                    &self.shortcuts,
-                    action.clone(),
-                ));
+            .fold(
+                Slab::with_capacity(self.actions.len()),
+                |mut slab, (_, action)| {
+                    if !slab.iter().any(|(_, model)| &model.action == action) {
+                        slab.insert(ShortcutModel::new(
+                            &self.defaults,
+                            &self.shortcuts,
+                            action.clone(),
+                        ));
+                    }
 
-                slab
-            })
+                    slab
+                },
+            )
     }
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let custom_label = descriptions.insert(fl!("custom"));
-    let manage_window_label = descriptions.insert(fl!("manage-windows"));
-    let move_window_label = descriptions.insert(fl!("move-windows"));
-    let nav_label = descriptions.insert(fl!("nav-shortcuts"));
-    let system_label = descriptions.insert(fl!("system-shortcut"));
-    let window_tiling_label = descriptions.insert(fl!("window-tiling"));
+    crate::slab!(descriptions {
+        accessibility = fl!("accessibility");
+        custom_label = fl!("custom");
+        manage_window_label = fl!("manage-windows");
+        move_window_label = fl!("move-windows");
+        nav_label = fl!("nav-shortcuts");
+        system_label = fl!("system-shortcut");
+        window_tiling_label = fl!("window-tiling");
+    });
 
     Section::default()
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            let search = widget::search_input(fl!("type-to-search"), &page.search.input)
-                .width(314)
+            let search = widget::search_input("", &page.search.input)
+                .width(314.)
                 .on_clear(Message::Search(String::new()))
                 .on_input(Message::Search)
                 .apply(widget::container)
@@ -430,6 +451,11 @@ fn shortcuts() -> Section<crate::pages::Message> {
             // If the search input is not empty, show the category view, else the search results.
             let content = if page.search.input.is_empty() {
                 settings::section()
+                    .add(category_item(
+                        Category::Accessibility,
+                        &descriptions[accessibility],
+                        page.modified.accessibility,
+                    ))
                     .add(category_item(
                         Category::ManageWindow,
                         &descriptions[manage_window_label],
@@ -475,31 +501,18 @@ fn shortcuts() -> Section<crate::pages::Message> {
 }
 
 /// Display a category as a list item
-fn category_item(category: Category, name: &str, modified: u16) -> Element<'_, Message> {
-    let icon = icon::from_name("go-next-symbolic").size(16);
-
-    let control = if modified == 0 {
-        Element::from(icon)
-    } else {
-        widget::row()
-            .push(text::body(fl!("modified", count = modified)))
-            .push(icon)
-            .into()
-    };
-
-    settings::item::builder(name)
-        .control(control)
-        .spacing(16)
-        .apply(widget::container)
-        .class(theme::Container::List)
-        .apply(widget::button::custom)
-        .class(theme::Button::Transparent)
-        .on_press(Message::Category(category))
-        .into()
+fn category_item(category: Category, name: &str, modified: u16) -> ListButton<'_, Message> {
+    crate::widget::go_next_with_item(
+        name,
+        (modified > 0).then(|| text::body(fl!("modified", count = modified)).apply(Element::from)),
+        Message::Category(category),
+    )
 }
 
 fn action_category(action: &Action) -> Option<Category> {
-    Some(if manage_windows::actions().contains(action) {
+    Some(if accessibility::actions().contains(action) {
+        Category::Accessibility
+    } else if manage_windows::actions().contains(action) {
         Category::ManageWindow
     } else if move_window::actions().contains(action) {
         Category::MoveWindow
@@ -507,6 +520,8 @@ fn action_category(action: &Action) -> Option<Category> {
         Category::Nav
     } else if system::actions().contains(action) {
         Category::System
+    } else if tiling::actions().contains(action) {
+        Category::WindowTiling
     } else {
         return None;
     })
@@ -576,7 +591,9 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::PlayPause),
         Action::System(SystemAction::PlayNext),
         Action::System(SystemAction::PlayPrev),
+        Action::System(SystemAction::ScreenReader),
         Action::System(SystemAction::Screenshot),
+        Action::System(SystemAction::Suspend),
         Action::System(SystemAction::Terminal),
         Action::System(SystemAction::TouchpadToggle),
         Action::System(SystemAction::VolumeLower),
@@ -713,6 +730,8 @@ fn localize_action(action: &Action) -> String {
             SystemAction::PlayPrev => fl!("system-shortcut", "play-prev"),
             SystemAction::PowerOff => fl!("system-shortcut", "poweroff"),
             SystemAction::Screenshot => fl!("system-shortcut", "screenshot"),
+            SystemAction::Suspend => fl!("system-shortcut", "suspend"),
+            SystemAction::ScreenReader => fl!("accessibility", "screen-reader"),
             SystemAction::Terminal => fl!("system-shortcut", "terminal"),
             SystemAction::TouchpadToggle => fl!("system-shortcut", "touchpad-toggle"),
             SystemAction::VolumeLower => fl!("system-shortcut", "volume-lower"),

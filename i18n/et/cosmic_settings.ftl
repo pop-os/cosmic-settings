@@ -11,7 +11,6 @@ network-and-wireless = Traadiga ja traadita võrgud
 no-networks = Ühtegi võrku ei leidu.
 export = Ekspordi
 import = Impordi
-profile = Profiil
 cancel = Katkesta
 close = Sulge
 add = Lisa
@@ -87,13 +86,6 @@ remove-connection-dialog = Kas soovid ühendusprofiili eemaldada?
     .vpn-description = Kui tahad seda VPN-võrku hiljem kasutada, siis pead uuesti salasõna sisestama.
     .wired-description = Kui tahad seda võrku hiljem kasutada, siis pead profiili uuesti looma.
 app = COSMICu seadistused
-connections-and-profiles =
-    { $variant ->
-        [wired] Traadiga
-        [wifi] WiFi
-        [vpn] VPN-i
-       *[other] Muud
-    } ühendust ja ühendusprofiili.
 add-network = Lisa võrk
     .profile = Lisa võrguprofiil
 color-picker = Värvivalija

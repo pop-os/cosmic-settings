@@ -1,21 +1,22 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{collections::BTreeSet, sync::Arc};
+use std::collections::BTreeSet;
+use std::sync::Arc;
 
 use anyhow::Context;
-use cosmic::{
-    Apply, Element, Task,
-    iced::{Alignment, Length},
-    iced_core::text::Wrapping,
-    widget::{self, icon},
-};
-use cosmic_dbus_networkmanager::interface::enums::DeviceState;
-use cosmic_settings_network_manager_subscription::{
-    self as network_manager, NetworkManagerState, current_networks::ActiveConnectionInfo,
-};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::{self, icon};
+use cosmic::{Apply, Element, Task};
 use cosmic_settings_page::{self as page, Section, section};
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
+
+use super::backend as network_manager;
+use super::backend::NetworkManagerState;
+use super::backend::current_networks::ActiveConnectionInfo;
+use super::backend::devices::DeviceState;
 
 pub type ConnectionId = Arc<str>;
 
@@ -33,8 +34,8 @@ pub enum Message {
     Error(String),
     /// An update from the network manager daemon
     NetworkManager(network_manager::Event),
-    /// Successfully connected to the system dbus.
-    NetworkManagerConnect(zbus::Connection),
+    /// Successfully connected to NetworkManager.
+    NetworkManagerConnect(nmrs::NetworkManager),
     /// Refresh devices and their connection profiles
     Refresh,
     /// Create a dialog to ask for confirmation of removal.
@@ -92,7 +93,7 @@ pub struct Page {
 
 #[derive(Debug)]
 pub struct NmState {
-    conn: zbus::Connection,
+    conn: nmrs::NetworkManager,
     sender: futures::channel::mpsc::UnboundedSender<network_manager::Request>,
     active_conns: Vec<ActiveConnectionInfo>,
     devices: Vec<Arc<network_manager::devices::DeviceInfo>>,
@@ -108,7 +109,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("wired", "preferences-wired-symbolic")
             .title(fl!("wired"))
-            .description(fl!("connections-and-profiles", variant = "wired"))
+            .description(fl!("xdg-entry-wired-comment"))
     }
 
     fn content(
@@ -155,9 +156,9 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::task::future(async move {
-                zbus::Connection::system()
+                nmrs::NetworkManager::new()
                     .await
-                    .context("failed to create system dbus connection")
+                    .context("failed to connect to NetworkManager")
                     .map_or_else(
                         |why| Message::Error(why.to_string()),
                         Message::NetworkManagerConnect,
@@ -357,31 +358,28 @@ impl Page {
         Task::none()
     }
 
-    fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
+    fn connect(&mut self, conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
-                let (tx, mut rx) = futures::channel::mpsc::channel(1);
+            let (canceller, task) =
+                crate::utils::forward_event_loop(move |mut sender| async move {
+                    let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
-                let watchers = std::pin::pin!(async move {
-                    futures::join!(
-                        network_manager::watch(conn.clone(), tx.clone()),
-                        network_manager::active_conns::watch(conn.clone(), tx.clone()),
-                        network_manager::devices::watch(conn, true, tx)
-                    )
+                    let watchers = std::pin::pin!(async move {
+                        network_manager::watch(conn, tx).await;
+                    });
+
+                    let forwarder = std::pin::pin!(async move {
+                        while let Some(message) = rx.next().await {
+                            _ = sender
+                                .send(crate::pages::Message::Wired(Message::NetworkManager(
+                                    message,
+                                )))
+                                .await;
+                        }
+                    });
+
+                    futures::future::select(watchers, forwarder).await;
                 });
-
-                let forwarder = std::pin::pin!(async move {
-                    while let Some(message) = rx.next().await {
-                        _ = emitter
-                            .emit(crate::pages::Message::Wired(Message::NetworkManager(
-                                message,
-                            )))
-                            .await;
-                    }
-                });
-
-                futures::future::select(watchers, forwarder).await;
-            });
 
             self.nm_task = Some(canceller);
             return task.map(crate::app::Message::from);
@@ -447,9 +445,10 @@ impl Page {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn device_view<'a>(
         &'a self,
-        spacing: &cosmic::cosmic_theme::Spacing,
+        spacing: cosmic::cosmic_theme::Spacing,
         nm_state: &'a NmState,
         connect_txt: &'a str,
         connected_txt: &'a str,
@@ -509,8 +508,8 @@ impl Page {
                         widget::popover(view_more_button.on_press(Message::ViewMore(None)))
                             .position(widget::popover::Position::Bottom)
                             .on_close(Message::ViewMore(None))
-                            .popup({
-                                widget::column()
+                            .popup(
+                                widget::column::with_capacity(3)
                                     .push_maybe(is_connected.then(|| {
                                         popup_button(
                                             Message::Deactivate(connection.uuid.clone()),
@@ -529,9 +528,9 @@ impl Page {
                                     }))
                                     .width(Length::Fixed(200.0))
                                     .apply(widget::container)
-                                    .padding(spacing.space_xxxs)
-                                    .class(cosmic::style::Container::Dialog)
-                            })
+                                    .padding(cosmic::theme::spacing().space_xxs)
+                                    .class(cosmic::theme::Container::Dropdown),
+                            )
                             .apply(|e| Some(Element::from(e)))
                     } else {
                         view_more_button
@@ -547,7 +546,7 @@ impl Page {
 
                     let widget = widget::settings::item_row(vec![
                         identifier.into(),
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                         controls.into(),
                     ]);
 
@@ -573,11 +572,10 @@ fn devices_view() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let Some(ref nm_state) = page.nm_state else {
-                return cosmic::widget::column().into();
+                return cosmic::widget::space().into();
             };
 
-            let theme = cosmic::theme::active();
-            let spacing = &theme.cosmic().spacing;
+            let spacing = cosmic::theme::spacing();
 
             let mut view = widget::column::with_capacity(4);
 
@@ -611,19 +609,18 @@ fn devices_view() -> Section<crate::pages::Message> {
 }
 
 fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
-    let theme = cosmic::theme::active();
-    let theme = theme.cosmic();
+    let spacing = cosmic::theme::spacing();
     widget::text::body(text)
         .align_y(Alignment::Center)
         .apply(widget::button::custom)
-        .padding([theme.space_xxxs(), theme.space_xs()])
+        .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
         .class(cosmic::theme::Button::MenuItem)
         .on_press(message)
         .into()
 }
 
-fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
+fn update_state(conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
@@ -632,7 +629,7 @@ fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
     })
 }
 
-fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
+fn update_devices(conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::Ethernet);

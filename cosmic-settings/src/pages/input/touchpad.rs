@@ -8,9 +8,7 @@ use cosmic::{Apply, Element};
 use cosmic_comp_config::CosmicCompConfig;
 use cosmic_comp_config::input::{AccelProfile, ClickMethod, ScrollMethod};
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
-use slab::Slab;
+use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -52,21 +50,21 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("touchpad", "input-touchpad-symbolic")
             .title(fl!("touchpad"))
-            .description(fl!("touchpad", "desc"))
+            .description(fl!("xdg-entry-touchpad-comment"))
     }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn touchpad() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let primary_button = descriptions.insert(fl!("primary-button"));
-    let primary_button_desc = descriptions.insert(fl!("primary-button", "desc"));
-    let touchpad_speed = descriptions.insert(fl!("touchpad", "speed"));
-    let acceleration = descriptions.insert(fl!("touchpad", "acceleration"));
-    let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
-    let disable_while_typing = descriptions.insert(fl!("disable-while-typing"));
+    crate::slab!(descriptions {
+        primary_button = fl!("primary-button");
+        primary_button_desc = fl!("primary-button", "desc");
+        touchpad_speed = fl!("touchpad", "speed");
+        acceleration = fl!("touchpad", "acceleration");
+        acceleration_desc = fl!("acceleration-desc");
+        disable_while_typing = fl!("disable-while-typing");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -148,12 +146,14 @@ fn touchpad() -> Section<crate::pages::Message> {
 }
 
 fn click_behavior() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let click_finger = descriptions.insert(fl!("click-behavior", "click-finger"));
-    let button_areas = descriptions.insert(fl!("click-behavior", "button-areas"));
-    let tap_to_click = descriptions.insert(fl!("tap-to-click"));
-    let _tap_to_click_desc = descriptions.insert(fl!("tap-to-click", "desc"));
+    crate::slab!(descriptions {
+        click_finger = fl!("click-behavior", "click-finger");
+        button_areas = fl!("click-behavior", "button-areas");
+        tap_to_click = fl!("tap-to-click");
+        tap_and_drag = fl!("tap-and-drag");
+        drag_lock = fl!("drag-lock");
+        _tap_to_click_desc = fl!("tap-to-click", "desc");
+    });
 
     Section::default()
         .title(fl!("click-behavior"))
@@ -163,53 +163,69 @@ fn click_behavior() -> Section<crate::pages::Message> {
             let page = binder
                 .page::<super::Page>()
                 .expect("input devices page not found");
+            let tap_enabled = page
+                .input_touchpad
+                .tap_config
+                .as_ref()
+                .is_some_and(|x| x.enabled);
 
             settings::section()
                 .title(&*section.title)
                 // Secondary click via two fingers, and middle-click via three fingers
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[click_finger]),
-                        ClickMethod::Clickfinger,
-                        page.input_touchpad.click_method,
-                        |option| Message::SetSecondaryClickBehavior(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                .add(settings::item::builder(&descriptions[click_finger]).radio(
+                    ClickMethod::Clickfinger,
+                    page.input_touchpad.click_method,
+                    |option| Message::SetSecondaryClickBehavior(Some(option), true),
+                ))
                 // Secondary and middle-click via button areas.
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[button_areas]),
-                        ClickMethod::ButtonAreas,
-                        page.input_touchpad.click_method,
-                        |option| Message::SetSecondaryClickBehavior(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                .add(settings::item::builder(&descriptions[button_areas]).radio(
+                    ClickMethod::ButtonAreas,
+                    page.input_touchpad.click_method,
+                    |option| Message::SetSecondaryClickBehavior(Some(option), true),
+                ))
                 .add(
-                    settings::item::builder(&descriptions[tap_to_click]).toggler(
-                        page.input_touchpad
-                            .tap_config
-                            .as_ref()
-                            .is_some_and(|x| x.enabled),
-                        Message::TapToClick,
-                    ),
+                    settings::item::builder(&descriptions[tap_to_click])
+                        .toggler(tap_enabled, Message::TapToClick),
                 )
+                .add_maybe(if tap_enabled {
+                    Some(
+                        settings::item::builder(&descriptions[tap_and_drag]).toggler(
+                            page.input_touchpad
+                                .tap_config
+                                .as_ref()
+                                .is_some_and(|x| x.drag),
+                            Message::TapAndDrag,
+                        ),
+                    )
+                } else {
+                    None
+                })
+                .add_maybe(if tap_enabled {
+                    Some(
+                        settings::item::builder(&descriptions[drag_lock]).toggler(
+                            page.input_touchpad
+                                .tap_config
+                                .as_ref()
+                                .is_some_and(|x| x.drag_lock),
+                            Message::DragLock,
+                        ),
+                    )
+                } else {
+                    None
+                })
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
         })
 }
 
 fn scrolling() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let edge = descriptions.insert(fl!("scrolling", "edge"));
-    let natural = descriptions.insert(fl!("scrolling", "natural"));
-    let natural_desc = descriptions.insert(fl!("scrolling", "natural-desc"));
-    let scroll_speed = descriptions.insert(fl!("scrolling", "speed"));
-    let two_finger = descriptions.insert(fl!("scrolling", "two-finger"));
+    crate::slab!(descriptions {
+        edge = fl!("scrolling", "edge");
+        natural = fl!("scrolling", "natural");
+        natural_desc = fl!("scrolling", "natural-desc");
+        scroll_speed = fl!("scrolling", "speed");
+        two_finger = fl!("scrolling", "two-finger");
+    });
 
     Section::default()
         .title(fl!("scrolling"))
@@ -223,33 +239,27 @@ fn scrolling() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 // Two-finger scrolling toggle
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[two_finger]),
+                .add(
+                    settings::item::builder(&descriptions[two_finger]).radio(
                         ScrollMethod::TwoFinger,
                         page.input_touchpad
                             .scroll_config
                             .as_ref()
                             .and_then(|x| x.method),
                         |option| Message::SetScrollMethod(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                    ),
+                )
                 // Edge scrolling toggle
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[edge]),
+                .add(
+                    settings::item::builder(&descriptions[edge]).radio(
                         ScrollMethod::Edge,
                         page.input_touchpad
                             .scroll_config
                             .as_ref()
                             .and_then(|x| x.method),
                         |option| Message::SetScrollMethod(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                    ),
+                )
                 // Scroll speed slider
                 .add(settings::item(&descriptions[scroll_speed], {
                     let value = page
@@ -288,7 +298,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                             page.input_touchpad
                                 .scroll_config
                                 .as_ref()
-                                .is_some_and(|conf| conf.natural_scroll.unwrap_or(false)),
+                                .is_some_and(|conf| conf.natural_scroll.unwrap_or(true)),
                             |enabled| Message::SetNaturalScroll(enabled, true),
                         ),
                 )
@@ -298,7 +308,11 @@ fn scrolling() -> Section<crate::pages::Message> {
 }
 
 fn gestures() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
+    crate::slab!(descriptions {
+        switch_workspaces = fl!("switch-workspaces");
+        switch_workspaces_horizontal = fl!("switch-workspaces", "horizontal");
+        switch_workspaces_vertical = fl!("switch-workspaces", "vertical");
+    });
 
     // let four_finger_down = descriptions.insert(fl!("gestures", "four-finger-down"));
     // let four_finger_left = descriptions.insert(fl!("gestures", "four-finger-left"));
@@ -309,10 +323,6 @@ fn gestures() -> Section<crate::pages::Message> {
     // let open_application_library = descriptions.insert(fl!("open-application-library"));
     // let open_workspaces_view = descriptions.insert(fl!("open-workspaces-view"));
     // let switch_between_windows = descriptions.insert(fl!("switch-between-windows"));
-
-    let switch_workspaces = descriptions.insert(fl!("switch-workspaces"));
-    let switch_workspaces_horizontal = descriptions.insert(fl!("switch-workspaces", "horizontal"));
-    let switch_workspaces_vertical = descriptions.insert(fl!("switch-workspaces", "vertical"));
 
     Section::default()
         .title(fl!("gestures"))

@@ -1,7 +1,8 @@
-use chrono::{Duration, TimeDelta};
-use futures::{FutureExt, Stream, StreamExt, future::join_all};
-use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
-use zbus::{Connection, zvariant::ObjectPath};
+use futures::future::join_all;
+use futures::{FutureExt, Stream, StreamExt};
+use jiff::{Span, SpanRelativeTo, SpanRound, ToSpan, Unit};
+use upower_zbus::{BatteryState, BatteryType, DeviceProxy, UPowerProxy};
+use zbus::{Connection, ObjectPath};
 
 mod ppdaemon;
 mod s76powerdaemon;
@@ -233,7 +234,7 @@ pub struct Battery {
     pub is_present: bool,
     pub percent: f64,
     pub is_charging: bool,
-    pub remaining_duration: Duration,
+    pub remaining_duration: Span,
 }
 
 #[derive(Default, Debug, Clone)]
@@ -245,7 +246,7 @@ pub struct ConnectedDevice {
     pub proxy: Option<DeviceProxy<'static>>,
 }
 
-pub async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
+pub async fn get_device_proxy<'a>() -> Result<DeviceProxy<'a>, zbus::Error> {
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
@@ -254,13 +255,13 @@ pub async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus
         }
     };
 
-    match upower_dbus::UPowerProxy::new(&connection).await {
+    match UPowerProxy::new(&connection).await {
         Ok(p) => p.get_display_device().await,
         Err(e) => Err(e),
     }
 }
 
-async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zbus::Error> {
+async fn enumerate_devices<'a>() -> Result<Vec<DeviceProxy<'a>>, zbus::Error> {
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
@@ -269,7 +270,7 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
         }
     };
 
-    let devices = upower_dbus::UPowerProxy::new(&connection)
+    let devices = UPowerProxy::new(&connection)
         .await?
         .enumerate_devices()
         .await?;
@@ -302,7 +303,7 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
 
 impl Battery {
     pub async fn from_device(proxy: &DeviceProxy<'_>) -> Self {
-        let mut remaining_duration: Duration = Duration::default();
+        let mut remaining_duration = Span::default();
 
         let (is_present, percentage, battery_state) = futures::join!(
             proxy.is_present().map(Result::unwrap_or_default),
@@ -319,15 +320,11 @@ impl Battery {
                 && (percent - 100.0_f64).abs() < f64::EPSILON;
 
         if !is_charging {
-            if let Ok(time) = proxy.time_to_empty().await
-                && let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
-            {
-                remaining_duration = dur;
+            if let Ok(time) = proxy.time_to_empty().await {
+                remaining_duration = time.seconds();
             }
-        } else if let Ok(time) = proxy.time_to_full().await
-            && let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
-        {
-            remaining_duration = dur;
+        } else if let Ok(time) = proxy.time_to_full().await {
+            remaining_duration = time.seconds();
         }
 
         let battery_percent = if percent > 95.0 {
@@ -378,15 +375,22 @@ impl Battery {
         Battery::default()
     }
     pub fn remaining_time(&self) -> String {
-        if self.remaining_duration <= TimeDelta::zero() {
+        if !self.remaining_duration.is_positive() {
             return String::new();
         }
 
-        let total_seconds = self.remaining_duration.num_seconds();
+        let balanced = self
+            .remaining_duration
+            .round(
+                SpanRound::new()
+                    .largest(Unit::Day)
+                    .relative(SpanRelativeTo::days_are_24_hours()),
+            )
+            .unwrap();
 
-        let days = total_seconds / 86400;
-        let hours = total_seconds % 86400 / 3600;
-        let minutes = (total_seconds % 3600) / 60;
+        let days = balanced.get_days();
+        let hours = balanced.get_hours();
+        let minutes = balanced.get_minutes();
 
         let mut time: Vec<String> = Vec::new();
         if days > 0 {
@@ -469,7 +473,7 @@ impl ConnectedDevice {
     pub async fn device_removed_stream(
         connection: &'_ Connection,
     ) -> Result<impl Stream<Item = String> + '_, zbus::Error> {
-        let proxy = upower_dbus::UPowerProxy::new(connection).await?;
+        let proxy = UPowerProxy::new(connection).await?;
         let stream = proxy.receive_device_removed().await?;
 
         let transformed_stream = stream.filter_map(move |device_removed| async move {
@@ -489,7 +493,7 @@ impl ConnectedDevice {
     pub async fn device_added_stream(
         connection: &'_ Connection,
     ) -> Result<impl futures::Stream<Item = ConnectedDevice> + '_, zbus::Error> {
-        let proxy = upower_dbus::UPowerProxy::new(connection).await?;
+        let proxy = UPowerProxy::new(connection).await?;
         let stream = proxy.receive_device_added().await?;
 
         let transformed_stream = stream.filter_map(move |device_added| async move {
@@ -546,7 +550,7 @@ mod tests {
         for case in cases {
             let (actual, expected) = case;
             let battery = Battery {
-                remaining_duration: Duration::new(actual, 0).unwrap(),
+                remaining_duration: actual.seconds(),
                 is_charging: false,
                 ..Default::default()
             };

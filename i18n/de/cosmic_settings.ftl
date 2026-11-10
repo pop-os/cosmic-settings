@@ -1,4 +1,4 @@
-app = COSMIC Einstellungen
+app = COSMIC-Einstellungen
 dbus-connection-error = Verbindung zum DBus ist fehlgeschlagen
 ok = OK
 unknown = Unbekannt
@@ -6,17 +6,10 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Kabelgebundene Verbindungen
-        [wifi] Wi-Fi-Verbindungen
-        [vpn] VPN-Verbindungen
-       *[other] Unbekannte Verbindungen
-    } und Verbindungsprofile.
 add-network = Netzwerk hinzufügen
     .profile = Profil hinzufügen
 add-vpn = VPN hinzufügen
-airplane-on = Flugzeugmodus ist eingeschaltet.
+airplane-on = Flugmodus ist eingeschaltet.
 cable-unplugged = Kabel ausgesteckt
 connect = Verbinden
 connected = Verbunden
@@ -36,9 +29,9 @@ visible-networks = Sichtbare Netzwerke
 identity = Identität
 auth-dialog = Authentifizierung erforderlich
     .vpn-description = Gib den vom VPN-Dienst geforderten Benutzernamen und das Passwort ein.
-    .wifi-description = Gib das Passwort oder den Verschlüsselungscode ein. Du kannst die Verbindung auch durch Drücken der „WPS“-Taste am Router herstellen.
-forget-dialog = Dieses Wi-Fi-Netzwerk vergessen?
-    .description = Du musst erneut ein Passwort eingeben, um dieses Wi-Fi-Netzwerk in der Zukunft zu verwenden.
+    .wifi-description = Gib das Passwort oder den Verschlüsselungsschlüssel ein. Du kannst die Verbindung auch durch Drücken der Taste „WPS“ am Router herstellen.
+forget-dialog = Dieses WLAN-Netzwerk vergessen?
+    .description = Du musst erneut ein Passwort eingeben, um dieses WLAN-Netzwerk in Zukunft verwenden zu können.
 network-device-state =
     .activated = Verbunden
     .config = Wird verbunden
@@ -55,7 +48,7 @@ network-device-state =
     .unmanaged = Unverwaltet
     .unplugged = Kabel ausgesteckt
 remove-connection-dialog = Verbindungsprofil entfernen?
-    .vpn-description = Um dieses Netzwerk in der Zukunft nutzen zu können, musst du erneut ein Passwort eingeben.
+    .vpn-description = Du musst erneut ein Passwort eingeben, um dieses Netzwerk in Zukunft verwenden zu können.
     .wired-description = Du musst dieses Profil neu erstellen, um es in Zukunft verwenden zu können.
 vpn = VPN
     .connections = VPN-Verbindungen
@@ -67,6 +60,8 @@ vpn-error = VPN-Fehler
     .connect = Verbinden mit dem VPN ist fehlgeschlagen
     .connection-editor = Verbindungseditor ist fehlgeschlagen
     .connection-settings = Abrufen der Einstellungen für aktive Verbindungen ist fehlgeschlagen
+    .openvpn-config-path = Ungültiger Dateipfad für OpenVPN-Konfiguration
+    .openvpn-config-path-desc = Die ausgewählte Datei muss sich im lokalen Dateisystem befinden.
     .updating-state = Aktualisieren des Netzwerkmanager-Status ist fehlgeschlagen
     .wireguard-config-path = Ungültiger Dateipfad für WireGuard-Konfiguration
     .wireguard-config-path-desc = Die ausgewählte Datei muss sich im lokalen Dateisystem befinden.
@@ -82,8 +77,8 @@ wired = Kabelgebunden
     .connections = Kabelgebundene Verbindungen
     .devices = Kabelgebundene Geräte
     .remove = Verbindungsprofil entfernen
-wifi = Wi-Fi
-    .adapter = Wi-Fi-Adapter { $id }
+wifi = WLAN
+    .adapter = WLAN-Adapter { $id }
     .forget = Dieses Netzwerk vergessen
 wireguard-dialog = WireGuard-Gerät hinzufügen
     .description = Wähle einen Gerätenamen für die WireGuard-Konfiguration aus.
@@ -91,7 +86,7 @@ wireguard-dialog = WireGuard-Gerät hinzufügen
 ## Networking: Online Accounts
 
 online-accounts = Online-Konten
-    .desc = Hinzufügen von Konten, IMAP und SMTP, Unternehmensanmeldungen
+    .desc = Konten, IMAP und SMTP, Unternehmensanmeldungen hinzufügen
 
 # Bluetooth
 
@@ -99,7 +94,6 @@ activate = Aktivieren
 confirm = Bestätigen
 enable = Aktivieren
 bluetooth = Bluetooth
-    .desc = Bluetooth-Geräte verwalten
     .status = Dieses System ist als { $aliases } sichtbar, während die Bluetooth-Einstellungen geöffnet sind.
     .connected = Verbunden
     .connecting = Wird verbunden
@@ -121,16 +115,18 @@ bluetooth-adapters = Bluetooth-Adapter
 
 ## Accessibility
 
-accessibility = Zugänglichkeit
-    .vision = Sehkraft
+accessibility = Barrierefreiheit
+    .vision = Sehen
     .on = Ein
     .off = Aus
     .unavailable = Nicht verfügbar
     .screen-reader = Bildschirmleser
-    .high-contrast = Modus mit hohem Kontrast
+    .high-contrast = Modus für hohen Kontrast
     .invert-colors = Farben invertieren
     .color-filters = Farbfilter
-hearing = Gehör
+    .shake-cursor = Mauszeiger schütteln, um ihn zu finden
+    .shake-cursor-desc = Schüttle die Maus kurz, um den Mauszeiger vorübergehend zu vergrößern
+hearing = Hören
     .mono = Stereo-Audio als Mono abspielen
 default = Standard
 magnifier = Vergrößerungsglas
@@ -156,8 +152,8 @@ magnifier = Vergrößerungsglas
     .continuous = Vergrößerung folgt der Maus
     .onedge = Bewegt sich, wenn die Maus die Kanten berürt
     .centered = Den Mauszeiger auf der Vergrößerung zentriert halten
-color-filter = Typ des Farbfilters
-    .unknown = Unbekannt Filter aktiv
+color-filter = Farbfiltertyp
+    .unknown = Unbekannter Filter aktiv
     .greyscale = Graustufen
     .deuteranopia = Grün/Rot (Grünschwäche, Deuteranopie)
     .protanopia = Rot/Grün (Rotschwäche, Protanopie)
@@ -171,13 +167,12 @@ desktop = Desktop
 
 wallpaper = Hintergrundbild
     .change = Bild ändern alle
-    .desc = Hintergrundbilder, Farben und Diashow-Optionen.
     .fit = Hintergrundbild anpassen
     .folder-dialog = Ordner für Hintergrundbilder auswählen
     .image-dialog = Hintergrundbild auswählen
     .plural = Hintergrundbilder
     .same = Gleiches Hintergrundbild auf allen Bildschirmen
-    .slide = Diashow
+    .slide = Slideshow
 add-color = Farbe hinzufügen
 add-image = Bild hinzufügen
 all-displays = Alle Bildschirme
@@ -186,7 +181,7 @@ dialog-add = Hinzufügen
 fill = Füllen
 fit-to-screen = An Bildschirm anpassen
 open-new-folder = Neuen Ordner öffnen
-recent-folders = Letzte Ordner
+recent-folders = Zuletzt verwendete Ordner
 x-minutes =
     { $number } { $number ->
         [one] Minute
@@ -202,9 +197,8 @@ never = Nie
 ## Desktop: Appearance
 
 appearance = Aussehen
-    .desc = Akzentfarben und Themen.
 accent-color = Akzentfarbe
-app-background = Anwendungs- oder Fensterhintergrund
+app-background = Fensterhintergrund
 auto = Automatisch
 close = Schließen
 color-picker = Farbwähler
@@ -212,38 +206,51 @@ copied-to-clipboard = In Zwischenablage kopiert
 copy-to-clipboard = In Zwischenablage kopieren
 dark = Dunkel
 export = Exportieren
-hex = Hex
+hex = Hexadezimal
 import = Importieren
 light = Hell
 mode-and-colors = Modus und Farben
-recent-colors = Letzte Farben
-reset-to-default = Auf Standardwerte zurücksetzen
+recent-colors = Zuletzt verwendete Farben
+reset-to-default = Auf Standard zurücksetzen
 rgb = RGB
 window-hint-accent = Hinweisfarbe für aktives Fenster
-window-hint-accent-toggle = Akzentfarbe des Themas als Hinweisfarbe für aktives Fenster verwenden
-auto-switch = Automatischer Wechsel zwischen hellem und dunklem Modus
+window-hint-accent-toggle = Themenakzentfarbe als Hinweis für aktives Fenster verwenden
+auto-switch = Automatisch zwischen hellem und dunklem Modus wechseln
     .sunrise = Wechselt bei Sonnenaufgang in den hellen Modus
     .sunset = Wechselt bei Sonnenuntergang in den dunklen Modus
     .next-sunrise = Wechselt beim nächsten Sonnenaufgang in den hellen Modus
     .next-sunset = Wechselt beim nächsten Sonnenuntergang in den dunklen Modus
 container-background = Container-Hintergrund
-    .desc-detail = Die Hintergrundfarbe des Containers wird für die Navigationsseitenleiste, die Seitenschublade, Dialoge und ähnliche Widgets verwendet. Standardmäßig wird sie automatisch vom Anwendungs- oder Fensterhintergrund abgeleitet.
-    .reset = Auf Automatisch zurücksetzen
-    .desc = Die Farbe des primären Containers wird für die Navigationsseitenleiste, die Seitenschublade, Dialoge und ähnliche Widgets verwendet.
+    .desc-detail = Die Hintergrundfarbe des Containers wird für die Navigationsseitenleiste, die Seitenschublade, Dialoge und ähnliche Widgets verwendet. Standardmäßig wird die Hintergrundfarbe des Containers automatisch aus dem Hintergrund des Fensters abgeleitet.
+    .reset = Auf automatisch zurücksetzen
+    .desc = Wird für die Navigationsseitenleiste, Seitenschublade, Dialoge und ähnliche Widgets verwendet
 control-tint = Komponententönung steuern
-    .desc = Wird für Hintergründe von Standardschaltflächen, Sucheingaben, Texteingaben und ähnlichen Komponenten verwendet.
+    .desc = Wird für Hintergründe von Standardschaltflächen, Sucheingaben, Texteingaben und ähnlichen Komponenten verwendet
 frosted = Milchglaseffekt bei der Systemoberfläche
-    .desc = Wendet eine Hintergrundunschärfe auf Panel, Dock, Applets, Starter und Anwendungsbibliothek an.
-enable-export = Dieses Thema auf GNOME-Apps anwenden.
+    .desc = Wendet Hintergrundunschärfe auf Panel, Dock, Applets, Starter und Anwendungsbibliothek an
+enable-export = Aktuelles Thema auf GNOME-Apps anwenden
     .desc = Nicht alle Toolkits unterstützen den automatischen Wechsel. Nicht-COSMIC-Apps müssen nach einem Themenwechsel möglicherweise neu gestartet werden.
 icon-theme = Symbolthema
-    .desc = Wendet einen anderen Satz von Symbolen auf Anwendungen an.
-text-tint = Texttönung der Oberfläche
-    .desc = Farbe zur Ableitung von Oberflächentextfarben, die auf verschiedenen Oberflächen einen ausreichenden Kontrast aufweisen.
+    .desc = Wendet einen anderen Satz von Symbolen auf Anwendungen an
+text-tint = Texttönung der Benutzeroberfläche
+    .desc = Zum Ableiten von Textfarben der Benutzeroberfläche, die auf verschiedenen Oberflächen einen ausreichenden Kontrast aufweisen
 style = Stil
     .round = Rund
     .slightly-round = Leicht rund
     .square = Quadratisch
+    .frosted-glass = Milchglas
+    .frosted-system-interface = Systemschnittstelle
+    .frosted-system-interface-desc = Wendet einen Milchglaseffekt auf den Starter, die Anwendungsbibliothek, die Arbeitsflächenübersicht und die Bildschirmsteuerelemente an
+    .frosted-windows = Fenster
+    .frosted-windows-desc = Wendet einen Milchglaseffekt auf Fenster und Dialoge an
+    .frosted-panels = Panels
+    .frosted-panels-desc = Wendet einen Milchglaseffekt auf das Panel und das Dock an
+    .frosted-applets = Applets
+    .frosted-applets-desc = Wendet einen Milchglaseffekt auf die Applet-Menüs im Panel und im Dock an
+    .frosted-thickness = Dicke der Mattierung
+    .less = weniger
+    .more = mehr
+    .glass-opacity = Glastrübung
 interface-density = Dichte der Benutzeroberfläche
     .comfortable = Komfortabel
     .compact = Kompakt
@@ -262,12 +269,10 @@ monospace-font = Nichtproportionale Schriftart
 ## Desktop: Notifications
 
 notifications = Benachrichtigungen
-    .desc = Nicht stören, Sperrbildschirm-Benachrichtigungen und Einstellungen pro Anwendung.
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Obere Leiste mit Desktop-Steuerelementen und Menüs.
 add = Hinzufügen
 add-applet = Applet hinzufügen
 all = Alle
@@ -275,12 +280,12 @@ applets = Applets
 center-segment = Mittelsegment
 end-segment = Endsegment
 large = Groß
-no-applets-found = Keine Applets gefunden...
+no-applets-found = Keine Applets gefunden ...
 panel-bottom = Unten
 panel-left = Links
 panel-right = Rechts
 panel-top = Oben
-search-applets = Applets suchen...
+search-applets = Applets suchen ...
 small = Klein
 start-segment = Anfangssegment
 panel-appearance = Aussehen
@@ -291,7 +296,7 @@ panel-behavior-and-position = Verhalten und Positionen
     .autohide = Panel automatisch ausblenden
     .dock-autohide = Dock automatisch ausblenden
     .position = Position auf Bildschirm
-    .display = Anzeigen auf Bildschirm
+    .display = Auf Bildschirm anzeigen
 panel-style = Stil
     .anchor-gap = Lücke zwischen Panel und Bildschirmrändern
     .dock-anchor-gap = Lücke zwischen Dock und Bildschirmrändern
@@ -299,28 +304,26 @@ panel-style = Stil
     .dock-extend = Dock bis zu den Bildschirmrändern ausdehnen
     .appearance = Aussehen
     .size = Größe
-    .background-opacity = Deckkraft des Hintergrunds
+    .background-opacity = Hintergrunddeckkraft
 panel-applets = Konfiguration
-    .dock-desc = Dock-Applets konfigurieren.
-    .desc = Panel-Applets konfigurieren.
+    .dock-desc = Dock-Applets konfigurieren
+    .desc = Panel-Applets konfigurieren
 panel-missing = Panel-Konfiguration fehlt
     .desc = Die Konfigurationsdatei des Panels fehlt aufgrund der Verwendung einer benutzerdefinierten Konfiguration oder sie ist beschädigt.
-    .fix = Auf Standardwerte zurücksetzen
+    .fix = Auf Standard zurücksetzen
 
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Panel mit angehefteten Anwendungen in der App-Ablage und anderen Applets.
 
 ## Desktop: Window management
 
 window-management = Fensterverwaltung
-    .desc = Super-Tasten-Aktion, Optionen für die Fenstersteuerung und zusätzliche Optionen für die Fensterkachelung.
 super-key = Super-Tasten-Aktion
     .launcher = Starter öffnen
     .workspaces = Arbeitsflächen öffnen
     .applications = Anwendungen öffnen
-    .disable = Deaktivieren
+    .none = Keine
 edge-gravity = Schwebende Fenster werden von nahe gelegenen Kanten angezogen
 window-controls = Fenstersteuerung
     .minimize = Minimieren-Schaltfläche anzeigen
@@ -334,22 +337,26 @@ focus-navigation = Fokus-Navigation
 ## Desktop: Workspaces
 
 workspaces = Arbeitsflächen
-    .desc = Anzahl, Verhalten und Platzierung der Arbeitsflächen festlegen.
-workspaces-behavior = Verhaltern der Arbeitsfläche
+workspaces-overview = Arbeitsflächenübersicht
+    .action-on-typing = Aktion beim Tippen
+    .none = Keine
+    .launcher = Starter öffnen
+    .applications = Anwendungen öffnen
+workspaces-behavior = Arbeitsflächenverhalten
     .dynamic = Dynamische Arbeitsflächen
     .dynamic-desc = Entfernt automatisch leere Arbeitsflächen.
     .fixed = Feste Anzahl an Arbeitsflächen
     .fixed-desc = Arbeitsflächen in der Übersicht hinzufügen oder entfernen.
-workspaces-multi-behavior = Multi-Monitor-Verhalten
+workspaces-multi-behavior = Verhalten bei mehreren Monitoren
     .span = Arbeitsflächen erstrecken sich über mehrere Bildschirme
     .separate = Bildschirme haben separate Arbeitsflächen
 workspaces-overview-thumbnails = Miniaturansichten der Arbeitsflächenübersicht
-    .show-number = Nummer der Arbeitsfläche anzeigen
-    .show-name = Name der Arbeitsfläche anzeigen
-workspaces-orientation = Ausrichtung der Arbeitsflächen
+    .show-number = Arbeitsflächennummer anzeigen
+    .show-name = Arbeitsflächenname anzeigen
+workspaces-orientation = Arbeitsflächenausrichtung
     .vertical = Vertikal
     .horizontal = Horizontal
-hot-corner = Aktive Ecken
+hot-corner = Aktive Ecke
     .top-left-corner = Aktive Ecke oben links für Arbeitsflächen aktivieren
 
 ## Displays
@@ -361,7 +368,6 @@ color = Farbe
     .sidebar = Farbprofile
     .temperature = Farbtemperatur
 display = Bildschirme
-    .desc = Bildschirme, Grafikumschaltung und Nachtlicht verwalten
     .arrangement = Bildschirmanordnung
     .arrangement-desc = Bildschirme ziehen, um sie neu anzuordnen.
     .enable = Bildschirm aktivieren
@@ -388,15 +394,15 @@ mirroring = Spiegelung
         }
 night-light = Nachtlicht
     .auto = Automatisch (Sonnenuntergang bis Sonnenaufgang)
-    .desc = Blaues Licht mittels wärmerer Farben reduzieren.
+    .desc = Blaues Licht mittels wärmerer Farben reduzieren
 orientation = Ausrichtung
     .standard = Standard
-    .rotate-90 = Um 90 Grad drehen
-    .rotate-180 = Um 180 Grad drehen
-    .rotate-270 = Um 270 Grad drehen
-vrr = Variable refresh rate
-    .enabled = Aktiv
-    .force = Immer aktiv
+    .rotate-90 = Um 90° drehen
+    .rotate-180 = Um 180° drehen
+    .rotate-270 = Um 270° drehen
+vrr = Variable Bildwiederholrate
+    .enabled = Aktiviert
+    .force = Immer
     .auto = Automatisch
     .disabled = Deaktiviert
 scheduling = Zeitplanung
@@ -410,7 +416,6 @@ dialog = Dialog
 ## Sound
 
 sound = Klang
-    .desc = N/V
 sound-output = Ausgabe
     .volume = Ausgabelautstärke
     .device = Ausgabegerät
@@ -424,16 +429,15 @@ sound-input = Eingang
     .device = Eingabegerät
     .level = Eingangspegel
 sound-alerts = Alarmsignale
-    .volume = Lautstärke von Alarmsignalen.
-    .sound = Alarmsignalklang.
+    .volume = Lautstärke von Alarmsignalen
+    .sound = Alarmsignalklang
 sound-applications = Anwendungen
     .desc = Lautstärken und Einstellungen von Anwendungen
-profile = Profil
+    .none = Keine Anwendungen verwenden einen Klang
 
 ## Energie
 
 power = Energie & Akku
-    .desc = Energieeinstellungen verwalten
 battery = Akku
     .minute =
         { $value } { $value ->
@@ -475,12 +479,11 @@ power-saving = Energiesparoptionen
 
 ## Input
 
-acceleration-desc = Passt die Tracking-Empfindlichkeit automatisch an die Geschwindigkeit an.
+acceleration-desc = Passt die Tracking-Empfindlichkeit automatisch an die Geschwindigkeit an
 disable-while-typing = Während dem Tippen deaktivieren
 input-devices = Eingabegeräte
-    .desc = Eingabegeräte
 primary-button = Primäre Taste
-    .desc = Legt die Reihenfolge der physischen Tasten fest.
+    .desc = Legt die Reihenfolge der physischen Tasten fest
     .left = Links
     .right = Rechts
 scrolling = Scrollen
@@ -497,7 +500,6 @@ fast = Schnell
 short = Kurz
 long = Lang
 keyboard = Tastatur
-    .desc = Eingabequellen, Umschaltung, Eingabe von Sonderzeichen, Tastenkombinationen.
 keyboard-sources = Eingabequellen
     .desc = Die Eingabequellen können mit der Tastenkombination Super+Leertaste umgeschaltet werden. Dies kann in den Einstellungen für Tastenkombinationen angepasst werden.
     .move-up = Nach oben verschieben
@@ -509,7 +511,24 @@ keyboard-sources = Eingabequellen
 keyboard-special-char = Eingabe von Sonderzeichen
     .alternate = Taste für alternative Zeichen
     .compose = Compose-Taste
+    .compose-desc = Mit der Compose-Taste kannst du viele verschiedene Zeichen eingeben. Drück einfach die Compose-Taste und dann die Zeichen, die du brauchst. Wenn du zum Beispiel die Compose-Taste und dann C und o drückst, kommt ©, und wenn du die Compose-Taste und dann a und ' drückst, kommt á.
     .caps = Feststelltaste
+    .ctrl = Steuerungstaste
+    .ctrl-right = Rechte Strg-Taste
+    .swap-with-ctrl = Mit der Steuerungstaste tauschen
+    .alt = Alt-Taste
+    .alt-left = Linke Alt-Taste
+    .alt-right = Rechte Alt-Taste
+    .super = Super-Taste
+    .super-left = Linke Super-Taste
+    .super-right = Rechte Super-Taste
+    .menu = Menü-Taste
+    .backspace = Rücktaste
+    .escape = Escape-Taste
+    .swap-with-escape = Mit der Escape-Taste tauschen
+    .print-screen = Druck-Taste
+    .scroll-lock = Rollen-Taste
+    .none = Keine
 keyboard-typing-assist = Tippen
     .repeat-rate = Wiederholungsrate
     .repeat-delay = Wiederholungsverzögerung
@@ -520,29 +539,29 @@ keyboard-numlock-boot = Numlock
     .off = Deaktiviert
     .set = Numlock-Boot-Status setzen
 added = Hinzugefügt
-type-to-search = Zum Suchen tippen...
+type-to-search = Zum Suchen tippen ...
 show-extended-input-sources = Erweiterte Eingabequellen anzeigen
 
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Tastenkombinationen
     .desc = Tastenkombinationen anzeigen und anpassen
-add-another-keybinding = Weitere Tastenkombination hinzufügen
+add-another-keybinding = Weitere Tastenbelegung hinzufügen
 cancel = Abbrechen
 command = Befehl
 custom = Benutzerdefiniert
-debug = Debug
+debug = Fehlerbehebung
 disabled = Deaktiviert
-input-source-switch = Tastaturlayout umschalten
-migrate-workspace-prev = Arbeitsfläche zur vorherigen Ausgabe migrieren
-migrate-workspace-next = Arbeitsfläche zur nächsten Ausgabe migrieren
+input-source-switch = Spracheingabequelle der Tastatur wechseln
+migrate-workspace-prev = Arbeitsfläche zur vorherigen Ausgabe verlagern
+migrate-workspace-next = Arbeitsfläche zur nächsten Ausgabe verlagern
 migrate-workspace =
     Arbeitsfläche zur { $direction ->
        *[down] unteren
         [left] linken
         [right] rechten
         [up] oberen
-    } Ausgabe migrieren
+    } Ausgabe verlagern
 navigate = Navigieren
 replace = Ersetzen
 shortcut-name = Name der Tastenkombination
@@ -581,7 +600,7 @@ nav-shortcuts = Navigation
 manage-windows = Fenster verwalten
     .close = Fenster schließen
     .maximize = Fenster maximieren
-    .fullscreen = Fenster zum Vollbild
+    .fullscreen = Vollbildfenster
     .minimize = Fenster minimieren
     .resize-inwards = Fenstergröße nach innen ändern
     .resize-outwards = Fenstergröße nach außen ändern
@@ -620,6 +639,7 @@ system-shortcut = System
     .app-library = App-Bibliothek öffnen
     .brightness-down = Bildschirmhelligkeit verringern
     .brightness-up = Bildschirmhelligkeit erhöhen
+    .display-toggle = Internen Bildschirm umschalten
     .home-folder = Persönlichen Ordner öffnen
     .keyboard-brightness-down = Tastaturhelligkeit verringern
     .keyboard-brightness-up = Tastaturhelligkeit erhöhen
@@ -633,7 +653,9 @@ system-shortcut = System
     .play-prev = Vorheriger Titel
     .poweroff = System ausschalten
     .screenshot = Bildschirmfoto machen
+    .suspend = Bereitschaft
     .terminal = Terminal öffnen
+    .touchpad-toggle = Touchpad umschalten
     .volume-lower = Lautstärke der Audioausgabe verringern
     .volume-raise = Lautstärke der Audioausgabe erhöhen
     .web-browser = Webbrowser öffnen
@@ -656,7 +678,6 @@ zoom-out = Herauszoomen
 ## Input: Mouse
 
 mouse = Maus
-    .desc = Mausgeschwindigkeit, -beschleunigung, natürliches Scrollen.
     .speed = Mausgeschwindigkeit
     .acceleration = Mausbeschleunigung aktivieren
 
@@ -664,14 +685,13 @@ mouse = Maus
 
 click-behavior = Klickverhalten
     .click-finger = Sekundärklick mit zwei Fingern und Mittelklick mit drei Fingern
-    .button-areas = Sekundärklick in der rechten unteren Ecke und Mittelklick in der unteren Mitte
+    .button-areas = Sekundärklick in der unteren rechten Ecke und Mittelklick in der unteren Mitte
 pinch-to-zoom = Zwei-Finger-Zoom
-    .desc = Mit zwei Fingern in den Inhalt zoomen, wenn die Anwendung den Zoom unterstützt.
+    .desc = Mit zwei Fingern in den Inhalt zoomen, wenn die Anwendung den Zoom unterstützt
 tap-to-click = Tippen zum Klicken
-    .desc = Ermöglicht das Tippen mit einem Finger für den ersten Klick, mit zwei Fingern für den zweiten Klick und mit drei Fingern für den mittleren Klick.
+    .desc = Ermöglicht das Tippen mit einem Finger für den Primärklick, das Tippen mit zwei Fingern für den Sekundärklick und das Tippen mit drei Fingern für den Mittelklick
 touchpad = Touchpad
     .acceleration = Touchpad-Beschleunigung aktivieren
-    .desc = Touchpad-Geschwindigkeit, Klickoptionen, Gesten.
     .speed = Touchpad-Geschwindigkeit
 
 ## Input: Gestures
@@ -692,34 +712,32 @@ open-workspaces-view = Arbeitsflächenübersicht öffnen
 ## Time & Language
 
 time = Uhrzeit & Sprache
-    .desc = N/V
 time-date = Datum & Uhrzeit
-    .desc = Zeitzone, automatische Uhreinstellungen und einige Zeitformatierungen.
     .auto = Automatisch festlegen
-    .auto-ntp = Datum & Uhrzeit werden automatisch aktualisiert, wenn die Zeitzone eingestellt ist.
+    .auto-ntp = Datum & Uhrzeit werden automatisch aktualisiert, wenn die Zeitzone eingestellt ist
 time-zone = Zeitzone
     .auto = Automatische Zeitzone
     .auto-info = Erfordert Ortungsdienste und Internetzugang
-time-format = Datum- & Zeitformat
+time-format = Datums- & Uhrzeitformat
     .twenty-four = 24-Stunden-Uhrzeit
-    .show-seconds = Sekunden anzeigen
+    .show-seconds = Sekunden
+    .show-weekday = Wochentag
     .first = Erster Tag der Woche
-    .show-date = Datum im oberen Panel anzeigen
+    .date = Datum
     .friday = Freitag
     .saturday = Samstag
     .sunday = Sonntag
     .monday = Montag
 time-region = Region & Sprache
-    .desc = Datum, Uhrzeiten und Zahlen gemäß deiner Region formatieren
 formatting = Formatierung
-    .dates = Daten
+    .dates = Datum
     .time = Uhrzeit
     .date-and-time = Datum & Uhrzeit
     .numbers = Zahlen
     .measurement = Maß
     .paper = Papier
 preferred-languages = Bevorzugte Sprachen
-    .desc = Die Reihenfolge der Sprachen bestimmt, welche Sprache für die Übersetzung des Desktops verwendet wird. Die Änderungen werden bei der nächsten Anmeldung wirksam.
+    .desc = Die Reihenfolge der Sprachen bestimmt, welche Sprache für die Übersetzung der Benutzeroberfläche verwendet wird. Die Änderungen werden bei der nächsten Anmeldung wirksam.
 add-language = Sprache hinzufügen
     .context = Sprache hinzufügen
 install-additional-languages = Zusätzliche Sprachen installieren
@@ -732,7 +750,6 @@ applications = Anwendungen
 ## Applications: Default Applications
 
 default-apps = Standardanwendungen
-    .desc = Standard-Webbrowser, E-Mail-Client, Dateibrowser und andere Anwendungen.
     .web-browser = Webbrowser
     .file-manager = Dateibrowser
     .mail-client = E-Mail-Client
@@ -741,30 +758,33 @@ default-apps = Standardanwendungen
     .photos = Fotos
     .calendar = Kalender
     .terminal = Terminal
-    .other-associations = Weitere Standardanwendungen
-    .text-editor = Text-Editor
+    .other-associations = Andere Zuordnungen
+    .text-editor = Texteditor
+    .not-installed = Nicht installiert
 
 ## Applications: Startup Applications
 
-startup-apps = Startup-Anwendungen
-    .desc = Konfigurieren Sie Anwendungen, die bei der Anmeldung ausgeführt werden.
+startup-apps = Startanwendungen
     .add = Anwendung hinzufügen
-    .user = Benutzerspezifische Anwendungen
-    .user-description = Diese Anwendungen werden gestartet, wenn Sie sich bei Ihrem aktuellen Benutzer anmelden.
+    .user = Anwendungen, die bei deiner Anmeldung gestartet werden
+    .none = Keine Startanwendungen hinzugefügt
     .remove-dialog-title = { $name } entfernen?
-    .remove-dialog-description = Sind Sie sicher, dass Sie diese Anwendung als Startup-Anwendung entfernen möchten?
-    .search-for-application = Nach Anwendungen suche
+    .remove-dialog-description = Diese Startanwendung entfernen?
+    .add-startup-app = Startanwendung hinzufügen
 
 ## Applications: Legacy Applications
 
 legacy-applications = Kompatibilität mit X11-Anwendungen
-    .desc = Anwendungsskalierung des X11-Fenstersystems und globale Tastaturkürzel.
 # This is still work in progress, as I didn't have enough time. Therefore, I left this here temporarily.
 legacy-app-scaling = Anwendungsskalierung des X11-Fenstersystems
-    .scaled-by-system = Alle X11-Anwendungen skalieren
-    .system-description = X11-Anwendungen werden auf HiDPI-Bildschirmen unscharf dargestellt.
-    .scaled-natively = X11-Anwendungen in nativer Auflösung rendern
-    .native-description = X11-Anwendungen, die keine Skalierung unterstützen, werden klein dargestellt, wenn HiDPI-Bildschirme verwendet werden. Für Spiele aktivieren, um die volle Monitorauflösung auszunutzen.
+    .scaled-gaming = Für Spiele und Vollbild-Apps optimieren
+    .gaming-description = X11-Anwendungen können im Vergleich zu Wayland-Anwendungen etwas größer/kleiner erscheinen
+    .scaled-applications = Für Anwendungen optimieren
+    .applications-description = Spiele und Vollbild-X11-Anwendungen passen möglicherweise nicht zu deiner Bildschirmauflösung
+    .scaled-compatibility = Modus für maximale Kompatibilität
+    .compatibility-description = X11-Anwendungen können auf HiDPI-Bildschirmen unscharf erscheinen
+    .preferred-display = Bevorzugte Anzeige für Spiele und Vollbild-X11-Anwendungen
+    .no-display = Keine
 
 ## System
 
@@ -773,9 +793,8 @@ system = System & Konten
 ## System: Über
 
 about = Über
-    .desc = Gerätename, Hardwareinfo, Voreinstellungen des Betriebssystems.
 about-device = Gerätename
-    .desc = Dieser Name erscheint bei anderen Netzwerk- oder Bluetooth-Geräten.
+    .desc = Dieser Name erscheint bei anderen Netzwerk- oder Bluetooth-Geräten
 about-hardware = Hardware
     .model = Hardwaremodell
     .memory = Speicher
@@ -785,7 +804,7 @@ about-hardware = Hardware
 about-os = Betriebssystem
     .os = Betriebssystem
     .os-architecture = Betriebssystemarchitektur
-    .kernel = Kernel Version
+    .kernel = Kernel-Version
     .desktop-environment = Desktopumgebung
     .windowing-system = Fenstersystem
 about-related = Zugehörige Einstellungen
@@ -794,17 +813,163 @@ about-related = Zugehörige Einstellungen
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmwaredetails.
 
 ## System: Benutzer
 
 users = Benutzer
-    .desc = Authentifizierung und Benutzerkonten.
     .admin = Administrator
     .standard = Standard
     .profile-add = Profilbild auswählen
 administrator = Administrator
-    .desc = Administratoren können die Einstellungen für alle Benutzer ändern, andere Benutzer hinzufügen und entfernen.
+    .desc = Administratoren können die Einstellungen für alle Benutzer ändern, andere Benutzer hinzufügen und entfernen
 add-user = Benutzer hinzufügen
 remove-user = Benutzer entfernen
 full-name = Vollständiger Name
+network-name = Netzwerkname
+xdg-entry-dock-keywords = COSMIC;Dock;Panel;Applet
+xdg-entry-a11y = Barrierefreiheit
+xdg-entry-displays-comment = Bildschirm-Konfigurationseinstellungen verwalten
+xdg-entry-default-apps = Standardanwendungen
+xdg-entry-about-keywords = COSMIC;Über
+xdg-entry-desktop-comment = Hintergrundbild, Aussehen, Panel, Dock, Fensterverwaltung und Arbeitsflächeneinstellungen
+xdg-entry-keyboard = Tastatur
+xdg-entry-displays = Bildschirme
+xdg-entry-input-comment = Tastatur- und Mauseinstellungen
+xdg-entry-dock-comment = Eine optionale Leiste für Apps und Applets
+xdg-entry-dock = Dock
+xdg-entry-input-keywords = COSMIC;Eingabe;Tastatur;Maus;Mäuse;
+xdg-entry-comment = Einstellungsanwendung für den COSMIC Desktop
+xdg-entry-applications = Anwendungen
+xdg-entry-default-apps-keywords = COSMIC;Standard;Anwendung
+xdg-entry-keywords = COSMIC;Einstellungen;
+xdg-entry-about = Über
+xdg-entry-input = Eingabegeräte
+xdg-entry-applications-keywords = COSMIC;Standard;Anwendung;Start;X11;Kompatibilität
+xdg-entry-appearance = Aussehen
+xdg-entry-displays-keywords = COSMIC;Bildschirm;
+save = Speichern
+share = Netzwerk teilen
+scan-to-connect-description = Scanne den QR-Code, um dich mit diesem Netzwerk zu verbinden.
+qr-code-unavailable = QR-Code nicht verfügbar
+xdg-entry-x11-applications-keywords = COSMIC;X11;Anwendung;Spiel;Kompatibilität;
+xdg-entry-x11-applications-comment = Skalierung von X11-Fenstersystemanwendungen, primärer Bildschirm und globale Tastenkombinationen
+xdg-entry-x11-applications = Kompatibilität mit X11-Anwendungen
+xdg-entry-workspaces-keywords = COSMIC;Arbeitsfläche;Ausrichtung;Übersicht;Monitor;
+xdg-entry-wireless-keywords = COSMIC;WLAN;Netzwerk;Verbindung;
+xdg-entry-wireless-comment = WLAN-Verbindungen und Verbindungsprofile
+xdg-entry-wireless = WLAN
+xdg-entry-wired-keywords = COSMIC;Kabelgebunden;LAN;Netzwerk;Verbindung;
+xdg-entry-wired-comment = Kabelgebundene Verbindungen und Verbindungsprofile
+xdg-entry-wired = Kabelgebunden
+xdg-entry-window-management-keywords = COSMIC;Fenster;Verwaltung;Kachelung;Super;Taste;
+xdg-entry-window-management-comment = Super-Tasten-Aktion, Fenstersteuerungsoptionen und zusätzliche Fensterkachelungsoptionen
+xdg-entry-window-management = Fensterverwaltung
+xdg-entry-wallpaper = Hintergrundbild
+xdg-entry-vpn-keywords = COSMIC;VPN;Netzwerk;Verbindung;OpenVPN;OpenConnect;
+xdg-entry-vpn-comment = VPN-Verbindungen und Verbindungsprofile
+xdg-entry-users-keywords = COSMIC;Benutzer;Konto;
+xdg-entry-users-comment = Authentifizierung und Benutzerkonten
+xdg-entry-time-language-keywords = COSMIC;System;Uhrzeit;Datum;Region;Sprache;
+xdg-entry-time-language-comment = Systemdatum, Uhrzeit, Region und Sprache verwalten
+xdg-entry-system-keywords = COSMIC;System;Info;Konten;Firmware;
+xdg-entry-system-comment = Systeminformationen, Konten und Firmware-Aktualisierungen
+xdg-entry-system = System & Konten
+xdg-entry-startup-apps-keywords = COSMIC;Start;Anwendung;
+xdg-entry-startup-apps-comment = Anwendungen konfigurieren, die bei der Anmeldung ausgeführt werden
+xdg-entry-startup-apps = Startanwendungen
+xdg-entry-sound-keywords = COSMIC;Klang;Audio;Alarm;Pipewire;
+xdg-entry-sound-comment = Audioeinstellungen für Geräte, Alarme und Anwendungen
+xdg-entry-sound = Klang
+xdg-entry-region-language-keywords = COSMIC;Region;Sprache;Datum;Format;Uhrzeit;Gebietsschema;Lokalisierung;
+xdg-entry-region-language-comment = Datumsangaben, Uhrzeiten und Zahlen entsprechend deiner Region formatieren
+xdg-entry-region-language = Region & Sprache
+xdg-entry-power-keywords = COSMIC;Energie;Akku
+xdg-entry-power-comment = Energiemodi und Energiesparoptionen
+xdg-entry-power = Energie & Akku
+xdg-entry-panel-keywords = COSMIC;Panel;Applet
+xdg-entry-panel-comment = Primäre Systemleiste für Menüs und Applets
+xdg-entry-panel = Panel
+xdg-entry-date-time-keywords = COSMIC;Zeit;Zone;
+xdg-entry-date-time-comment = Zeitzone, automatische Uhrzeiteinstellungen und Zeitformatierung
+sound-device-profiles = Geräteprofile
+sound-usb-audio = USB-Audio
+sound-hd-audio = HD-Audio
+sound-device-port-unplugged = Ausgesteckt
+amplification = Verstärkung
+    .desc = Ermöglicht die Erhöhung der Lautstärke auf 150 %
+place-here = Applets hier platzieren
+shadow-and-corners = Fensterschatten und -ecken
+shadows-tiling = Gekachelte Fenster
+    .clip = Systemecken zuordnen
+    .shadow = Schatten anwenden
+shadows-floating = Schwebende Fenster
+    .clip = Systemecken zuordnen und Schatten anwenden
+xdg-entry-workspaces-comment = Arbeitsflächenausrichtung, Übersicht und Verhalten bei mehreren Monitoren
+xdg-entry-workspaces = Arbeitsflächen
+xdg-entry-users = Benutzer
+xdg-entry-touchpad-keywords = COSMIC;Touchpad;Geste;
+xdg-entry-touchpad-comment = Touchpad-Geschwindigkeit, Klickoptionen und Gesten
+xdg-entry-touchpad = Touchpad
+xdg-entry-time-language = Uhrzeit & Sprache
+xdg-entry-notifications-keywords = COSMIC;Benachrichtigung;Sperre;
+xdg-entry-notifications-comment = Nicht stören, Sperrbildschirm-Benachrichtigungen und Einstellungen pro Anwendung
+xdg-entry-notifications = Benachrichtigungen
+xdg-entry-network-keywords = COSMIC;Netzwerk;Drahtlos;WLAN;VPN;
+xdg-entry-network = Netzwerk & Drahtlos
+xdg-entry-mouse-keywords = COSMIC;Maus;Beschleunigung;Scrollen;
+xdg-entry-mouse-comment = Mausgeschwindigkeit, -beschleunigung und natürliches Scrollen
+xdg-entry-mouse = Maus
+xdg-entry-keyboard-keywords = COSMIC;Tastatur;Eingabe;Quelle;Tastenkombinationen;
+xdg-entry-date-time = Datum & Uhrzeit
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
+xdg-entry-bluetooth-comment = Bluetooth-Geräte verwalten
+xdg-entry-applications-comment = Standardanwendungen, Startanwendungen und Kompatibilitätseinstellungen für X11-Anwendungen
+xdg-entry-wallpaper-keywords = COSMIC;Hintergrundbild;Hintergrund;Slideshow;
+xdg-entry-wallpaper-comment = Hintergrundbilder, Farben und Slideshow-Optionen
+xdg-entry-network-comment = Netzwerkverbindungen verwalten
+xdg-entry-keyboard-comment = Eingabequellen, Umschalten, Eingabe von Sonderzeichen, Tastenkombinationen
+xdg-entry-default-apps-comment = Standard-Webbrowser, E-Mail-Client, Dateibrowser und andere Anwendungen
+xdg-entry-appearance-keywords = COSMIC;Akzent;Farbe;Symbol;Schriftart;Thema
+xdg-entry-appearance-comment = Akzentfarben und Themen
+password-mismatch = Passwort und Bestätigung müssen übereinstimmen
+invalid-username = Ungültiger Benutzername
+change-password = Passwort ändern
+xdg-entry-about-comment = Gerätename, Hardware-Informationen, Betriebssystem-Standardeinstellungen
+no-search-results = Es wurden keine Netzwerke gefunden, die deiner Suche entsprechen.
+legacy-app-global-shortcuts = Globale Tastenkombinationen in X11-Anwendungen
+    .desc = Globale Tastenkombinationen ermöglichen es, dass in Anwendungen ausgeführte Tastenanschläge und Mausklicks von anderen Anwendungen für Funktionen wie Push-to-Talk oder Push-to-Mute erkannt werden. Standardmäßig sind globale Tastenkombinationen in X11-Anwendungen deaktiviert, um sicherzustellen, dass andere Anwendungen keine Tastatur- und Mausereignisse überwachen können, die sensible Informationen enthalten.
+    .none = Keine Tasten
+    .modifiers = Modifikatortasten (Super, Umschalt, Steuerung, Alt)
+    .combination = Alle Tasten, während die Modifikatortasten Super, Steuerung oder Alt gedrückt werden
+    .all = Alle Tasten
+    .mouse = Maustasten-Ereignisse in X11-Anwendungen
+xdg-entry-desktop-keywords = COSMIC;Desktop;
+xdg-entry-desktop = Desktop
+xdg-entry-a11y-keywords = COSMIC;Barrierefreiheit;A11y;Bildschirm;Leser;Vergrößerungsglas;Kontrast;Farbe;
+xdg-entry-a11y-comment = Bildschirmleser, Vergrößerungsglas, hoher Kontrast und Farbfilter
+workspaces-navigation = Navigation
+    .wraparound = Mit Tastenkombinationen und Gesten zwischen der ersten und letzten Arbeitsfläche wechseln
+bluetooth-display-passkey = Bluetooth-Kopplung
+    .description = Bitte gib den folgenden Passkey auf { $device } ein und drücke dann die Eingabetaste
+bluetooth-display-pin = Bluetooth-Kopplung
+    .description = Bitte gib die folgende PIN auf { $device } ein und drücke dann die Eingabetaste
+bluetooth-rename-device = Gerät umbenennen
+rename = Umbenennen
+mobility = Mobilität
+on-screen-keyboard = Bildschirmtastatur
+    .always-show = Bildschirmtastatur immer anzeigen
+    .icon-on-panel = Symbol auf der Leiste
+    .show-on-gamepad-shortcut = Bildschirmtastatur mit einem Gamepad anzeigen, indem die Start- und Select-/Back-Tasten gleichzeitig gedrückt werden
+    .show-on-text-input = Bildschirmtastatur anzeigen, wenn ein Textfeld ausgewählt wird
+date-time-applet-settings-title = Datum- & Uhrzeit-Applet
+date-time-applet-settings-label = Einstellungen für das Datums- & Uhrzeit-Applet
+xdg-entry-drawing-tablet = Zeichentablett
+drawing-tablet = Zeichentablett
+    .no-devices-detected = Es wurden keine Zeichentabletts oder Stiftgeräte erkannt
+    .map-to-display = Zuordnen zur Anzeige
+    .not-set = Nicht festgelegt
+    .enabled = Aktiviert
+xdg-entry-drawing-tablet-comment = Anzeigezuordnung
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablett;Zeichnen;Empfindlichkeit;
+tap-and-drag = Tippen und ziehen
+drag-lock = Ziehverriegelung

@@ -1,14 +1,13 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{collections::BTreeMap, path::PathBuf};
+use std::collections::BTreeMap;
+use std::path::PathBuf;
 
 use super::Message;
-use cosmic::{
-    Element,
-    iced::{Background, Length},
-    widget::{button, icon, text},
-};
+use cosmic::Element;
+use cosmic::iced::{Background, Length};
+use cosmic::widget::{button, icon, text};
 use tokio::io::AsyncBufReadExt;
 
 const ICON_PREV_N: usize = 6;
@@ -32,11 +31,11 @@ pub fn button(
     let theme = theme.cosmic();
     let background = Background::Color(theme.palette.neutral_4.into());
 
-    cosmic::widget::column()
+    cosmic::widget::column::with_capacity(2)
         .push(
             cosmic::widget::button::custom_image_button(
-                cosmic::widget::column::with_children(vec![
-                    cosmic::widget::row()
+                cosmic::widget::column::with_children([
+                    cosmic::widget::row::with_capacity(ICON_PREV_ROW)
                         .extend(
                             handles
                                 .iter()
@@ -47,7 +46,7 @@ pub fn button(
                         )
                         .spacing(theme.space_xxxs())
                         .into(),
-                    cosmic::widget::row()
+                    cosmic::widget::row::with_capacity(ICON_PREV_ROW)
                         .extend(
                             handles
                                 .iter()
@@ -128,15 +127,10 @@ pub async fn fetch() -> Message {
 
     let xdg_data_home = std::env::var("XDG_DATA_HOME")
         .ok()
-        .and_then(|value| {
-            if value.is_empty() {
-                None
-            } else {
-                Some(PathBuf::from(value))
-            }
-        })
-        .or_else(dirs::home_dir)
-        .map(|dir| dir.join(".local/share/icons"));
+        .filter(|value| !value.is_empty())
+        .map(PathBuf::from)
+        .or_else(|| dirs::home_dir().map(|dir| dir.join(".local/share")))
+        .map(|dir| dir.join("icons"));
 
     let xdg_data_dirs = std::env::var("XDG_DATA_DIRS").ok();
 

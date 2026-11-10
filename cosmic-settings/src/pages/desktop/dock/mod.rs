@@ -1,14 +1,10 @@
 use std::collections::HashMap;
 
-use cosmic::Apply;
-use cosmic::{
-    Element, Task,
-    cosmic_config::{ConfigSet, CosmicConfigEntry},
-    widget::{settings, text, toggler},
-};
+use cosmic::cosmic_config::{ConfigSet, CosmicConfigEntry};
+use cosmic::widget::{settings, text};
+use cosmic::{Apply, Element, Task};
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, Section, section};
-use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -158,9 +154,9 @@ impl Default for Page {
 }
 
 pub(crate) fn enable() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let dock = descriptions.insert(fl!("dock"));
+    crate::slab!(descriptions {
+        dock = fl!("dock");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -171,16 +167,15 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
             };
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[dock],
-                    toggler(
+                .add(
+                    settings::item::builder(&descriptions[dock]).toggler(
                         container_config
                             .config_list
                             .iter()
                             .any(|e| e.name.as_str() == "Dock"),
-                    )
-                    .on_toggle(Message::EnableDock),
-                ))
+                        Message::EnableDock,
+                    ),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Dock)
         })
@@ -216,7 +211,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("dock", "preferences-dock-symbolic")
             .title(fl!("dock"))
-            .description(fl!("dock", "desc"))
+            .description(fl!("xdg-entry-dock-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

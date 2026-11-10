@@ -4,10 +4,11 @@
 use crate::{AdapterUpdate, Device, DeviceUpdate, Event};
 use std::pin::Pin;
 
-use bluez_zbus::BluetoothDevice;
-use futures::{channel::mpsc, stream::FusedStream};
+use cosmic_bluez_zbus::BluetoothDevice;
+use futures::channel::mpsc;
+use futures::stream::FusedStream;
 use iced_futures::futures::{SinkExt, StreamExt};
-use zbus::{fdo, zvariant::OwnedObjectPath};
+use zbus::{OwnedObjectPath, fdo};
 
 enum DevicePropertyWatcherTask {
     Add(OwnedObjectPath),

@@ -1,5 +1,10 @@
 name: Validate .desktop files
 
+env:
+  # Stops the `debconf: unable to initialize frontend: {Dialog, Readline, Teletype}` errors
+  # See https://stackoverflow.com/a/34774096
+  DEBIAN_FRONTEND: noninteractive
+
 on:
   push:
     branches:
@@ -13,7 +18,7 @@ jobs:
       image: ubuntu:25.10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install desktop-file-utils
         run: |

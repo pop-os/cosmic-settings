@@ -16,6 +16,7 @@
     <description xml:lang="nl">Gebruikersaccount bewerken</description>
     <description xml:lang="af">Bestuur die gebruikersrekening</description>
     <description xml:lang="hu">Felhasználói fiókok kezelése</description>
+    <description xml:lang="it">Gestione account utente</description>
     <message>Authentication is required to change user data</message>
     <message xml:lang="ar">الاستيثاق مطلوب لتغيير بيانات المستخدم</message>
     <message xml:lang="cs">Je vyžadováno ověření pro změnu uživatelských dat</message>
@@ -24,6 +25,7 @@
     <message xml:lang="pt_BR">Autenticação é necessária para alterar dados de usuário</message>
     <message xml:lang="pt">Autenticação é necessária para alterar dados de usuário</message>
     <message xml:lang="hu">Felhasználói adatok módosításához hitelesítés szükséges</message>
+    <message xml:lang="it">Autenticazione necessaria per modificare i dati dell'utente</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>

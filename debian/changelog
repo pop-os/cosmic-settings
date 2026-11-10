@@ -1,3 +1,45 @@
+cosmic-settings (1.11.0) noble; urgency=medium
+
+  * Epoch 1.11.0 version update
+
+ -- Michael Murphy <michael@mmurphy.dev>  Mon, 19 Oct 2026 17:16:01 +0200
+
+cosmic-settings (1.10.0) noble; urgency=medium
+
+  * Epoch 1.10.0 version update
+
+ -- Michael Murphy <michael@mmurphy.dev>  Mon, 05 Oct 2026 21:26:47 +0200
+
+cosmic-settings (1.9.0) noble; urgency=medium
+
+  * Epoch 1.9.0 version update
+
+ -- Michael Murphy <michael@mmurphy.dev>  Mon, 14 Sep 2026 21:58:05 +0200
+
+cosmic-settings (1.7.0) noble; urgency=medium
+
+  * Epoch 1.7.0 version update
+
+ -- Michael Murphy <michael@mmurphy.dev>  Fri, 21 Aug 2026 20:44:57 +0200
+
+cosmic-settings (1.0.12) noble; urgency=medium
+
+  * release: 1.0.12
+
+ -- Michael Murphy <mmstick@pop-os>  Mon, 27 Apr 2026 15:24:27 +0200
+
+cosmic-settings (1.0.7) noble; urgency=medium
+
+  * release: 1.0.7
+
+ -- Michael Murphy <michael@mmurphy.dev>  Tue, 17 Feb 2026 17:02:45 +0100
+
+cosmic-settings (1.0.2) noble; urgency=medium
+
+  * Released version
+
+ -- Michael Murphy <michael@mmurphy.dev>  Fri, 09 Jan 2026 21:31:17 +0100
+
 cosmic-settings (0.1.0) jammy; urgency=medium
 
   * Project in development

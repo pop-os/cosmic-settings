@@ -1,15 +1,15 @@
 [package]
 name = "cosmic-settings-accessibility-subscription"
-version = "0.1.0"
+version = "1.11.0"
 edition = "2024"
 license = "MPL-2.0"
 rust-version.workspace = true
 publish = true
 
 [dependencies]
-cosmic-dbus-a11y = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-futures = "0.3.31"
+a11y-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
+futures = "0.3.33"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
-tokio = "1.48.0"
-tracing = "0.1.41"
-zbus = "5.12.0"
+tokio = { version = "1.53.1", features = ["sync", "time"] }
+tracing.workspace = true
+zbus = "6.0"

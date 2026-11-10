@@ -3,8 +3,10 @@
 
 #[cfg(feature = "page-about")]
 pub mod about;
-
-pub mod firmware;
+#[cfg(feature = "page-about")]
+pub mod info;
+#[cfg(feature = "pop-os")]
+pub mod os_updates;
 #[cfg(feature = "page-users")]
 pub mod users;
 
@@ -29,6 +31,11 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         mut page: page::Insert<crate::pages::Message>,
     ) -> page::Insert<crate::pages::Message> {
+        #[cfg(feature = "pop-os")]
+        {
+            page = page.sub_page::<os_updates::Page>();
+        }
+
         #[cfg(feature = "page-users")]
         {
             page = page.sub_page::<users::Page>();
@@ -38,8 +45,6 @@ impl page::AutoBind<crate::pages::Message> for Page {
         {
             page = page.sub_page::<about::Page>();
         }
-
-        page = page.sub_page::<firmware::Page>();
 
         page
     }

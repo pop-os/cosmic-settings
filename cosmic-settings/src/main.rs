@@ -7,6 +7,12 @@
 #![allow(clippy::cast_lossless)]
 #![allow(clippy::too_many_lines)]
 
+#[cfg(not(any(feature = "systemd", feature = "openrc")))]
+compile_error!(
+    "At least one service manager feature must be enabled. \
+     Enable 'systemd' or 'openrc' for bluetooth service management."
+);
+
 pub mod app;
 use std::str::FromStr;
 
@@ -16,13 +22,17 @@ pub mod config;
 #[macro_use]
 pub mod localize;
 pub mod pages;
+pub mod service_manager;
 pub mod subscription;
 pub mod theme;
 pub mod utils;
 pub mod widget;
 
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
-use cosmic::{app::CosmicFlags, iced::Limits};
+use cosmic::app::CosmicFlags;
+use cosmic::iced::Limits;
 use i18n_embed::DesktopLanguageRequester;
 use ron::error::SpannedError;
 use serde::{Deserialize, Serialize};
@@ -37,6 +47,37 @@ pub struct Args {
 }
 
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum AppearanceCommands {
+    /// Import a theme from a RON file
+    Import {
+        /// Path to the theme file
+        path: PathBuf,
+    },
+    /// Export the current theme to a RON file
+    Export {
+        /// Path where the theme file will be saved
+        path: PathBuf,
+    },
+}
+
+#[cfg(feature = "page-input")]
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum KeyboardCommands {
+    /// Keyboard Shortcuts settings page
+    Shortcuts {
+        #[command(subcommand)]
+        command: Option<ShortcutsCommands>,
+    },
+}
+
+#[cfg(feature = "page-input")]
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum ShortcutsCommands {
+    /// Custom Shortcuts settings page
+    Custom,
+}
+
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
 pub enum PageCommands {
     /// Accessibility settings page
     #[cfg(feature = "page-accessibility")]
@@ -44,11 +85,17 @@ pub enum PageCommands {
     /// Accessibility Magnifier settings page
     #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier,
+    /// Accessibility OSK settings page
+    #[cfg(feature = "page-accessibility")]
+    AccessibilityOsk,
     /// About settings page
     #[cfg(feature = "page-about")]
     About,
     /// Appearance settings page
-    Appearance,
+    Appearance {
+        #[command(subcommand)]
+        command: Option<AppearanceCommands>,
+    },
     /// Applications settings page
     Applications,
     /// Bluetooth settings page
@@ -71,14 +118,15 @@ pub enum PageCommands {
     /// Dock applets page
     #[cfg(feature = "wayland")]
     DockApplet,
-    /// Firmware settings page
-    Firmware,
     /// Input Devices settings page
     #[cfg(feature = "page-input")]
     Input,
     /// Keyboard settings page
     #[cfg(feature = "page-input")]
-    Keyboard,
+    Keyboard {
+        #[command(subcommand)]
+        command: Option<KeyboardCommands>,
+    },
     /// Legacy Applications settings page
     #[cfg(feature = "page-legacy-applications")]
     LegacyApplications,
@@ -88,6 +136,8 @@ pub enum PageCommands {
     /// Network settings page
     #[cfg(feature = "page-networking")]
     Network,
+    #[cfg(feature = "pop-os")]
+    OsUpdates,
     /// Panel settings page
     #[cfg(feature = "wayland")]
     Panel,
@@ -162,6 +212,7 @@ impl CosmicFlags for Args {
 /// Returns error if iced fails to run the application.
 pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
+    jxl_image_rs_integration::register_image_decoding_hook();
 
     if std::env::var("RUST_SPANTRACE").is_err() {
         unsafe { std::env::set_var("RUST_SPANTRACE", "0") };
@@ -176,6 +227,17 @@ pub fn main() -> color_eyre::Result<()> {
     }
 
     let args = Args::parse();
+
+    if let Some(PageCommands::Appearance { command: Some(cmd) }) = &args.sub_command {
+        return match cmd {
+            AppearanceCommands::Import { path } => {
+                pages::desktop::appearance::commands::import_theme(path)
+            }
+            AppearanceCommands::Export { path } => {
+                pages::desktop::appearance::commands::export_theme(path)
+            }
+        };
+    }
 
     let settings = cosmic::app::Settings::default()
         .size_limits(Limits::NONE.min_width(360.0).min_height(300.0));
@@ -201,11 +263,6 @@ fn init_localizer() {
 }
 
 fn init_logger() {
-    let log_level = std::env::var("RUST_LOG")
-        .ok()
-        .and_then(|level| level.parse::<tracing::Level>().ok())
-        .unwrap_or(tracing::Level::INFO);
-
     let log_format = tracing_subscriber::fmt::format()
         .pretty()
         .without_time()
@@ -214,17 +271,14 @@ fn init_logger() {
         .with_target(false)
         .with_thread_names(true);
 
-    let log_filter = tracing_subscriber::fmt::Layer::default()
+    let log_layer = tracing_subscriber::fmt::Layer::default()
         .with_writer(std::io::stderr)
-        .event_format(log_format)
-        .with_filter(tracing_subscriber::filter::filter_fn(move |metadata| {
-            let target = metadata.target();
-            metadata.level() == &tracing::Level::ERROR
-                || ((target.starts_with("cosmic_settings") || target.starts_with("cosmic_bg"))
-                    && metadata.level() <= &log_level)
-        }));
+        .event_format(log_format);
 
-    tracing_subscriber::registry().with(log_filter).init();
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_env("RUST_LOG"))
+        .with(log_layer)
+        .init();
 }
 
 #[macro_export]

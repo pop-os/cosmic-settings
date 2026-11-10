@@ -4,14 +4,14 @@
 pub mod device {
     use futures::{FutureExt, Stream, StreamExt};
     use iced_futures::Subscription;
-    use std::{fmt::Debug, hash::Hash};
-    use upower_dbus::{BatteryType, DeviceProxy, UPowerProxy};
+    use std::fmt::Debug;
+    use std::hash::Hash;
+    use upower_zbus::{BatteryType, DeviceProxy, UPowerProxy};
 
     pub fn device_subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
         id: I,
     ) -> iced_futures::Subscription<DeviceDbusEvent> {
-        Subscription::run_with_id(
-            id,
+        Subscription::run_with(id, |_| {
             async move {
                 match events().await {
                     Ok(stream) => stream,
@@ -21,8 +21,8 @@ pub mod device {
                     }
                 }
             }
-            .flatten_stream(),
-        )
+            .flatten_stream()
+        })
     }
 
     async fn display_device() -> zbus::Result<(UPowerProxy<'static>, DeviceProxy<'static>)> {
@@ -32,15 +32,16 @@ pub mod device {
         Ok((upower, device_path))
     }
 
-    async fn events() -> zbus::Result<impl Stream<Item = DeviceDbusEvent>> {
+    async fn events() -> zbus::Result<Box<dyn Stream<Item = DeviceDbusEvent> + Unpin + Send>> {
         let (upower, device) = display_device().await?;
         let devices = upower.enumerate_devices().await?;
         let mut has_battery = false;
         for device in devices {
-            let Ok(d) = DeviceProxy::builder(upower.inner().connection()).path(device) else {
-                continue;
-            };
-            let Ok(d) = d.build().await else {
+            let Ok(d) = DeviceProxy::builder(upower.inner().connection())
+                .path(device)
+                .build()
+                .await
+            else {
                 continue;
             };
             if d.type_().await == Ok(BatteryType::Battery)
@@ -51,11 +52,11 @@ pub mod device {
             }
         }
 
-        let initial = futures::stream::iter(if has_battery {
-            None
-        } else {
-            Some(DeviceDbusEvent::NoBattery)
-        });
+        if !has_battery {
+            return Ok(Box::new(futures::stream::iter(Some(
+                DeviceDbusEvent::NoBattery,
+            ))));
+        };
 
         let stream = futures::stream_select!(
             upower.receive_on_battery_changed().await.map(|_| ()),
@@ -63,7 +64,7 @@ pub mod device {
             device.receive_time_to_empty_changed().await.map(|_| ()),
         );
 
-        Ok(initial.chain(stream.map(move |_| {
+        Ok(Box::new(stream.map(move |_| {
             DeviceDbusEvent::Update {
                 on_battery: upower
                     .cached_on_battery()
@@ -98,16 +99,16 @@ pub mod kbdbacklight {
 
     use futures::{FutureExt, Stream, StreamExt};
     use iced_futures::Subscription;
-    use std::{fmt::Debug, hash::Hash};
+    use std::fmt::Debug;
+    use std::hash::Hash;
     use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
     use tokio_stream::wrappers::UnboundedReceiverStream;
-    use upower_dbus::{BrightnessChanged, KbdBacklightProxy};
+    use upower_zbus::{BrightnessChanged, KbdBacklightProxy};
 
     pub fn kbd_backlight_subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
         id: I,
     ) -> iced_futures::Subscription<KeyboardBacklightUpdate> {
-        Subscription::run_with_id(
-            id,
+        Subscription::run_with(id, |_| {
             async move {
                 match events().await {
                     Ok(stream) => stream,
@@ -117,8 +118,8 @@ pub mod kbdbacklight {
                     }
                 }
             }
-            .flatten_stream(),
-        )
+            .flatten_stream()
+        })
     }
 
     enum Event {

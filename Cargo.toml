@@ -1,20 +1,58 @@
 [workspace]
-members = ["cosmic-settings", "page", "pages/*", "subscriptions/*"]
+members = [
+    "cosmic-settings",
+    "page",
+    "pages/*",
+    "subscriptions/*",
+    "theme-bundle-config",
+]
 default-members = ["cosmic-settings"]
 resolver = "3"
 
 [workspace.package]
-rust-version = "1.85"
+rust-version = "1.95"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
-tokio = { version = "1.48.0", features = ["macros"] }
+tokio = { version = "1.53.1", features = ["macros"] }
+iced_winit = { git = "https://github.com/pop-os/libcosmic", default-features = false }
+image = { version = "0.25.10", default-features = false, features = [
+    "jpeg",
+    "png",
+    "rayon",
+    "webp",
+    "hdr",
+] }
+fontdb = "0.23.0"
+tracing = "0.1.44"
+walkdir = "=2.5.0"
+jxl-image-rs-integration = "0.8"
 
 [workspace.dependencies.libcosmic]
-features = ["dbus-config", "multi-window", "winit", "tokio", "qr_code"]
+features = [
+    "dbus-config",
+    "desktop",
+    "multi-window",
+    "winit",
+    "tokio",
+    "qr_code",
+]
 git = "https://github.com/pop-os/libcosmic"
 
+[workspace.dependencies.ron]
+version = "0.8"
+
+[workspace.dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[workspace.dependencies.zip]
+version = "2"
+
 [workspace.dependencies.cosmic-config]
+git = "https://github.com/pop-os/libcosmic"
+
+[workspace.dependencies.cosmic-theme]
 git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.cosmic-bg-config]
@@ -34,9 +72,8 @@ git = "https://github.com/pop-os/cosmic-panel"
 git = "https://github.com/pop-os/cosmic-randr"
 
 [workspace.dependencies.sctk]
-git = "https://github.com/smithay/client-toolkit/"
+version = "0.20"
 package = "smithay-client-toolkit"
-# rev = "c583de8"
 
 [profile.dev]
 opt-level = 3
@@ -52,27 +89,36 @@ inherits = "release"
 lto = "off"
 debug = true
 
-# Fix text rendering being cut off on the right
 # [patch.'https://github.com/pop-os/cosmic-text']
 # cosmic-text = { git = "https://github.com/pop-os/cosmic-text//", rev = "b017d7c" }
 
 [patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
-cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "c0cff4d" }
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "c0cff4d" }
 
 # [patch.'https://github.com/pop-os/cosmic-settings-daemon']
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
-# libcosmic = { path = "../libcosmic" }
-# cosmic-config = { path = "../libcosmic/cosmic-config" }
-# cosmic-theme = { path = "../libcosmic/cosmic-theme" }
-# iced_futures = { path = "../libcosmic/iced/futures" }
+# [patch.'https://github.com/pop-os/cosmic-bg']
+# cosmic-bg-config = { path = "../cosmic-bg/config" }
+
+# [patch."https://github.com/pop-os/libcosmic"]
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_tiny_skia = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_core = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_debug = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_graphics = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_program = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+# build_helpers = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
 
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
-# cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
 
-[patch."https://github.com/smithay/client-toolkit.git"]
-sctk = { package = "smithay-client-toolkit", version = "0.20.0" }
+[patch.crates-io]
+atspi = { git = "https://github.com/wash2/atspi" }
+atspi-common = { git = "https://github.com/wash2/atspi" }

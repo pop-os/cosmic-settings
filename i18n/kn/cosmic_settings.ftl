@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] ತಂತಿ
-        [wifi] ವೈ-ಫೈ
-        [vpn] ವಿ.ಪಿ.ಎನ್
-       *[other] ಅಜ್ಞಾತ
-    } ಸಂಪರ್ಕಗಳು ಮತ್ತು ಸಂಪರ್ಕ ಪ್ರೊಫೈಲ್‌ಗಳು.
 add-network = ನೆಟ್ವರ್ಕ್ ಸೇರಿಸಿ
     .profile = ಪ್ರೊಫೈಲ್ ಸೇರಿಸಿ
 add-vpn = ವಿ.ಪಿ.ಎನ್ ಸೇರಿಸಿ
@@ -369,7 +362,6 @@ sound-alerts = ಎಚ್ಚರಿಕೆಗಳು
     .sound = ಎಚ್ಚರಿಕೆ ಶಬ್ದ
 sound-applications = ಅಪ್ಲಿಕೇಶನ್‌ಗಳು
     .desc = ಅಪ್ಲಿಕೇಶನ್ ಶಬ್ದಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು
-profile = ಪ್ರೊಫೈಲ್
 
 ## Power
 

@@ -3,6 +3,7 @@
 
 use super::{ShortcutMessage, ShortcutModel};
 use cosmic::app::ContextDrawer;
+use cosmic::iced::platform_specific::shell::wayland::commands::keyboard_shortcuts_inhibit;
 use cosmic::{Element, Task};
 use cosmic_settings_config::shortcuts::Action;
 use cosmic_settings_config::shortcuts::action::{Direction, FocusDirection};
@@ -17,10 +18,13 @@ impl Default for Page {
     fn default() -> Self {
         Self {
             model: super::Model::default().actions(|defaults, keybindings| {
-                actions().iter().fold(Slab::new(), |mut slab, action| {
-                    slab.insert(ShortcutModel::new(defaults, keybindings, action.clone()));
-                    slab
-                })
+                actions().iter().cloned().fold(
+                    Slab::with_capacity(actions().len()),
+                    |mut slab, action| {
+                        slab.insert(ShortcutModel::new(defaults, keybindings, action));
+                        slab
+                    },
+                )
             }),
         }
     }
@@ -71,10 +75,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.model.on_clear();
-        cosmic::iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
-            false,
-        )
-        .discard()
+        keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
     }
 
     #[cfg(feature = "wayland")]
@@ -119,7 +120,7 @@ pub const fn actions() -> &'static [Action] {
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
+    let mut descriptions = Slab::with_capacity(actions().len());
 
     // Make these searchable in the global settings search.
     for action in actions() {

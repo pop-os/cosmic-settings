@@ -5,51 +5,96 @@ pub mod shortcuts;
 
 use std::cmp;
 
-use cosmic::{
-    Apply, Element, Task,
-    app::{ContextDrawer, context_drawer},
-    cosmic_config::{self, ConfigSet},
-    iced::{Alignment, Color, Length},
-    iced_core::Border,
-    theme,
-    widget::{self, ListColumn, button, container, icon, radio, row, settings},
-};
+use cosmic::app::{ContextDrawer, context_drawer};
+use cosmic::cosmic_config::{self, ConfigSet};
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{self, ListColumn, button, container, icon, list, row, settings};
+use cosmic::{Apply, Element, Task, theme};
 use cosmic_comp_config::{KeyboardConfig, NumlockState, XkbConfig};
 use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;
-use slab::Slab;
 use slotmap::{DefaultKey, Key, SlotMap};
 
-static COMPOSE_OPTIONS: &[(&str, &str)] = &[
-    // ("Left Alt", "compose:lalt"), XXX?
-    ("Right Alt", "compose:ralt"),
-    ("Left Super", "compose:lwin"),
-    ("Right Super", "compose:rwin"),
-    ("Menu key", "compose:menu"),
-    ("Right Ctrl", "compose:rctrl"),
-    ("Caps Lock", "compose:caps"),
-    ("Scroll Lock", "compose:sclk"),
-    ("Print Screen", "compose:prsc"),
-];
+/// Contains all options for mapping a [SpecialKey].
+/// The available options differ for each key being mapped.
+enum SpecialKeyAlternative {
+    AltLeft,
+    AltRight,
+    Ctrl,
+    CtrlRight,
+    SwapWithCtrl,
+    Super,
+    SuperLeft,
+    SuperRight,
+    CapsLock,
+    ScrollLock,
+    MenuKey,
+    Backspace,
+    Escape,
+    SwapWithEscape,
+    PrintScreen,
+    None,
+}
+impl SpecialKeyAlternative {
+    fn display_text(&self) -> String {
+        match self {
+            Self::AltLeft => fl!("keyboard-special-char", "alt-left"),
+            Self::AltRight => fl!("keyboard-special-char", "alt-right"),
+            Self::Ctrl => fl!("keyboard-special-char", "ctrl"),
+            Self::CtrlRight => fl!("keyboard-special-char", "ctrl-right"),
+            Self::SwapWithCtrl => fl!("keyboard-special-char", "swap-with-ctrl"),
+            Self::Super => fl!("keyboard-special-char", "super"),
+            Self::SuperLeft => fl!("keyboard-special-char", "super-left"),
+            Self::SuperRight => fl!("keyboard-special-char", "super-right"),
+            Self::CapsLock => fl!("keyboard-special-char", "caps"),
+            Self::ScrollLock => fl!("keyboard-special-char", "scroll-lock"),
+            Self::MenuKey => fl!("keyboard-special-char", "menu"),
+            Self::Backspace => fl!("keyboard-special-char", "backspace"),
+            Self::Escape => fl!("keyboard-special-char", "escape"),
+            Self::SwapWithEscape => fl!("keyboard-special-char", "swap-with-escape"),
+            Self::PrintScreen => fl!("keyboard-special-char", "print-screen"),
+            Self::None => fl!("keyboard-special-char", "none"),
+        }
+    }
+}
 
-static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
-    ("Left Alt", "lv3:lalt_switch"),
-    ("Right Alt", "lv3:ralt_switch"),
-    ("Left Super", "lv3:lwin_switch"),
-    ("Right Super", "lv3:rwin_switch"),
-    ("Menu key", "lv3:menu_switch"),
+/// The second/right value is the key identifier, which is how it will be saved to the configuration.
+/// These values are different for each [SpecialKey], even for the same [SpecialKeyAlternative].
+/// The identifier starts with a prefix defined by [SpecialKey::prefixes].
+type SpecialKeyOption = (SpecialKeyAlternative, &'static str);
+
+/// Available options for [SpecialKey::Compose].
+static COMPOSE_OPTIONS: &[SpecialKeyOption] = &[
+    // ("Left Alt", "compose:lalt"), XXX?
+    (SpecialKeyAlternative::AltRight, "compose:ralt"),
+    (SpecialKeyAlternative::SuperLeft, "compose:lwin"),
+    (SpecialKeyAlternative::SuperRight, "compose:rwin"),
+    (SpecialKeyAlternative::MenuKey, "compose:menu"),
+    (SpecialKeyAlternative::CtrlRight, "compose:rctrl"),
+    (SpecialKeyAlternative::CapsLock, "compose:caps"),
+    (SpecialKeyAlternative::ScrollLock, "compose:sclk"),
+    (SpecialKeyAlternative::PrintScreen, "compose:prsc"),
+];
+/// Available options for [SpecialKey::AlternateCharacters].
+static ALTERNATE_CHARACTER_OPTIONS: &[SpecialKeyOption] = &[
+    (SpecialKeyAlternative::AltLeft, "lv3:lalt_switch"),
+    (SpecialKeyAlternative::AltRight, "lv3:ralt_switch"),
+    (SpecialKeyAlternative::SuperLeft, "lv3:lwin_switch"),
+    (SpecialKeyAlternative::SuperRight, "lv3:rwin_switch"),
+    (SpecialKeyAlternative::MenuKey, "lv3:menu_switch"),
     // ("Right Ctrl", "lv3:"), XXX
-    ("Caps Lock", "lv3:caps_switch"),
+    (SpecialKeyAlternative::CapsLock, "lv3:caps_switch"),
     // ("Scroll Lock", "lv3:"), XXX
     // ("Print Screen", "lv3"), XXX
 ];
-
-static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
-    ("Escape", "caps:escape"),
-    ("Swap with Escape", "caps:swapescape"),
-    ("Backspace", "caps:backspace"),
-    ("Super", "caps:super"),
-    ("Control", "caps:ctrl_modifier"),
+/// Available options for [SpecialKey::CapsLock].
+static CAPS_LOCK_OPTIONS: &[SpecialKeyOption] = &[
+    (SpecialKeyAlternative::Escape, "caps:escape"),
+    (SpecialKeyAlternative::SwapWithEscape, "caps:swapescape"),
+    (SpecialKeyAlternative::Backspace, "caps:backspace"),
+    (SpecialKeyAlternative::Super, "caps:super"),
+    (SpecialKeyAlternative::Ctrl, "caps:ctrl_modifier"),
+    (SpecialKeyAlternative::SwapWithCtrl, "ctrl:swapcaps"),
 ];
 
 #[derive(Clone, Debug)]
@@ -73,8 +118,8 @@ pub enum SourceContext {
     MoveDown(DefaultKey),
     MoveUp(DefaultKey),
     Remove(DefaultKey),
-    Settings(DefaultKey),
-    ViewLayout(DefaultKey),
+    // Settings(DefaultKey),
+    // ViewLayout(DefaultKey),
 }
 
 pub type Locale = String;
@@ -85,6 +130,7 @@ pub type Description = String;
 pub enum LayoutSource {
     Base,
     Extra,
+    Custom,
 }
 
 const KB_REPEAT_DELAY_DEFAULT: u32 = 600;
@@ -146,17 +192,17 @@ pub enum SpecialKey {
 impl SpecialKey {
     pub fn title(self) -> String {
         match self {
-            Self::Compose => "Compose".to_string(),
-            Self::AlternateCharacters => "Alternate Characters".to_string(),
-            Self::CapsLock => "Caps Lock".to_string(),
+            Self::Compose => fl!("keyboard-special-char", "compose"),
+            Self::AlternateCharacters => fl!("keyboard-special-char", "alternate"),
+            Self::CapsLock => fl!("keyboard-special-char", "caps"),
         }
     }
 
-    pub fn prefix(self) -> &'static str {
+    pub fn prefixes(self) -> &'static [&'static str] {
         match self {
-            Self::Compose => "compose:",
-            Self::AlternateCharacters => "lv3:",
-            Self::CapsLock => "caps:",
+            Self::Compose => &["compose:"],
+            Self::AlternateCharacters => &["lv3:"],
+            Self::CapsLock => &["caps:", "ctrl:"],
         }
     }
 }
@@ -165,70 +211,77 @@ fn popover_menu_row(
     id: DefaultKey,
     label: String,
     message: impl Fn(DefaultKey) -> SourceContext + 'static,
+    disabled: bool,
 ) -> cosmic::Element<'static, Message> {
+    let spacing = theme::spacing();
     widget::text::body(label)
-        .apply(widget::container)
-        .class(cosmic::theme::Container::custom(|theme| {
-            widget::container::Style {
-                background: None,
-                ..container::Catalog::style(theme, &cosmic::theme::Container::List)
-            }
-        }))
+        .align_y(Alignment::Center)
         .apply(button::custom)
-        .on_press(())
-        .class(theme::Button::Transparent)
+        .padding([spacing.space_xxxs, spacing.space_xs])
+        .width(Length::Fill)
+        .class(theme::Button::MenuItem)
+        .on_press_maybe(if disabled {
+            None
+        } else {
+            Some(Message::SourceContext(message(id)))
+        })
         .apply(Element::from)
-        .map(move |()| Message::SourceContext(message(id)))
 }
 
-fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
-    widget::column::with_children(vec![
+fn popover_menu(
+    id: DefaultKey,
+    is_first: bool,
+    is_last: bool,
+) -> cosmic::Element<'static, Message> {
+    widget::column::with_children([
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-up"),
             SourceContext::MoveUp,
+            is_first,
         ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-down"),
             SourceContext::MoveDown,
+            is_last,
         ),
-        cosmic::widget::divider::horizontal::default().into(),
+        widget::divider::horizontal::default()
+            .apply(widget::container)
+            .padding(8)
+            .into(),
+        // popover_menu_row(
+        //     id,
+        //     fl!("keyboard-sources", "settings"),
+        //     SourceContext::Settings,
+        //     false,
+        // ),
+        // popover_menu_row(
+        //     id,
+        //     fl!("keyboard-sources", "view-layout"),
+        //     SourceContext::ViewLayout,
+        //     false,
+        // ),
         popover_menu_row(
             id,
-            fl!("keyboard-sources", "settings"),
-            SourceContext::Settings,
+            fl!("keyboard-sources", "remove"),
+            SourceContext::Remove,
+            false,
         ),
-        popover_menu_row(
-            id,
-            fl!("keyboard-sources", "view-layout"),
-            SourceContext::ViewLayout,
-        ),
-        popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding([2, 8])
-    .width(Length::Shrink)
-    .height(Length::Shrink)
-    .apply(cosmic::widget::container)
-    .class(cosmic::theme::Container::custom(|theme| {
-        let cosmic = theme.cosmic();
-        let background = &cosmic.background;
-        container::Style {
-            icon_color: Some(background.on.into()),
-            text_color: Some(background.on.into()),
-            background: Some(Color::from(background.base).into()),
-            border: Border {
-                color: background.component.divider.into(),
-                width: 1.0,
-                radius: cosmic.corner_radii.radius_s.into(),
-            },
-            shadow: Default::default(),
-        }
-    }))
+    .width(Length::Fixed(200.0))
+    .apply(widget::container)
+    .padding(theme::spacing().space_xxs)
+    .class(theme::Container::Dropdown)
     .into()
 }
 
-fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Message> {
+fn popover_button(
+    id: DefaultKey,
+    expanded: bool,
+    is_first: bool,
+    is_last: bool,
+) -> cosmic::Element<'static, Message> {
     let on_press = Message::ExpandInputSourcePopover(if expanded { None } else { Some(id) });
 
     let button = button::icon(icon::from_name("view-more-symbolic"))
@@ -236,8 +289,9 @@ fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Me
         .on_press(on_press);
 
     if expanded {
-        cosmic::widget::popover(button)
-            .popup(popover_menu(id))
+        widget::popover(button)
+            .position(widget::popover::Position::Bottom)
+            .popup(popover_menu(id, is_first, is_last))
             .on_close(Message::ExpandInputSourcePopover(None))
             .into()
     } else {
@@ -249,25 +303,22 @@ fn input_source(
     id: DefaultKey,
     description: &str,
     expanded_source_popover: Option<DefaultKey>,
+    is_first: bool,
+    is_last: bool,
 ) -> cosmic::Element<'_, Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    settings::item(description, popover_button(id, expanded)).into()
+    settings::item(description, popover_button(id, expanded, is_first, is_last)).into()
 }
 
 fn special_char_radio_row<'a>(
-    desc: &'a str,
+    desc: String,
     value: Option<&'static str>,
     current_value: Option<&'a str>,
-) -> cosmic::Element<'a, Message> {
-    settings::item_row(vec![
-        radio(desc, value, Some(current_value), |_| {
-            Message::SpecialCharacterSelect(value)
-        })
-        .width(Length::Fill)
-        .into(),
-    ])
-    .into()
+) -> list::ListButton<'a, Message> {
+    settings::item::builder(desc).radio(value, Some(current_value), |_| {
+        Message::SpecialCharacterSelect(value)
+    })
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -291,13 +342,13 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("keyboard", "input-keyboard-symbolic")
             .title(fl!("keyboard"))
-            .description(fl!("keyboard", "desc"))
+            .description(fl!("xdg-entry-keyboard-comment"))
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.context.as_ref().map(|context| match context {
             Context::ShowInputSourcesContext => {
-                let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
+                let search = widget::search_input("", &self.input_source_search)
                     .on_input(Message::InputSourceSearch)
                     .on_clear(Message::InputSourceSearch(String::new()))
                     .apply(Element::from)
@@ -347,6 +398,22 @@ impl page::Page<crate::pages::Message> for Page {
                             .map(|layout| (layout, LayoutSource::Extra)),
                     )
                     .collect::<Vec<_>>();
+
+                // Add user-defined layouts if any are found
+                let user_layouts = xkb_data::user_keyboard_layouts();
+                match user_layouts {
+                    Ok(ref custom) => {
+                        sorted_layouts.extend(
+                            custom
+                                .layouts()
+                                .iter()
+                                .map(|layout| (layout, LayoutSource::Custom)),
+                        );
+                    }
+                    Err(why) => {
+                        tracing::error!(?why, "failed to get user keyboard layouts");
+                    }
+                }
 
                 sorted_layouts.sort_unstable_by(|(a, _), (b, _)| {
                     match (a.name(), b.name()) {
@@ -479,15 +546,13 @@ impl Page {
                             let _removed = self.active_layouts.remove(pos);
                             self.update_xkb_config();
                         }
-                    }
+                    } // SourceContext::Settings(_id) => {
+                      //     eprintln!("settings not implemented");
+                      // }
 
-                    SourceContext::Settings(_id) => {
-                        eprintln!("settings not implemented");
-                    }
-
-                    SourceContext::ViewLayout(_id) => {
-                        eprintln!("view layout not implemented");
-                    }
+                      // SourceContext::ViewLayout(_id) => {
+                      //     eprintln!("view layout not implemented");
+                      // }
                 }
             }
 
@@ -513,10 +578,10 @@ impl Page {
             Message::SpecialCharacterSelect(id) => {
                 if let Some(Context::SpecialCharacter(special_key)) = self.context {
                     let options = self.xkb.options.as_deref().unwrap_or_default();
-                    let prefix = special_key.prefix();
+                    let prefixes = special_key.prefixes();
                     let new_options = options
                         .split(',')
-                        .filter(|x| !x.starts_with(prefix))
+                        .filter(|x| !prefixes.iter().any(|prefix| x.starts_with(prefix)))
                         .chain(id)
                         .join(",");
 
@@ -552,9 +617,11 @@ impl Page {
     pub fn add_input_source_view(&self) -> Element<'_, crate::pages::Message> {
         let space_l = theme::spacing().space_l;
 
-        let toggler = settings::item::builder(fl!("show-extended-input-sources")).toggler(
-            self.show_extended_input_sources,
-            Message::SetShowExtendedInputSources,
+        let toggler = settings::section().add(
+            settings::item::builder(fl!("show-extended-input-sources")).toggler(
+                self.show_extended_input_sources,
+                Message::SetShowExtendedInputSources,
+            ),
         );
 
         let mut list = widget::list_column();
@@ -569,7 +636,7 @@ impl Page {
             }
         }
 
-        widget::column()
+        widget::column::with_capacity(2)
             .spacing(space_l)
             .push(toggler)
             .push(list)
@@ -610,27 +677,35 @@ impl Page {
             SpecialKey::AlternateCharacters => (ALTERNATE_CHARACTER_OPTIONS, None),
             SpecialKey::CapsLock => (CAPS_LOCK_OPTIONS, None),
         };
-        let prefix = special_key.prefix();
+        let prefixes = special_key.prefixes();
         let current = self
             .xkb
             .options
             .iter()
             .flat_map(|x| x.split(','))
-            .find(|x| x.starts_with(prefix));
+            .find(|x| prefixes.iter().any(|prefix| x.starts_with(prefix)));
 
         // TODO layout default
 
         let mut list = cosmic::widget::list_column();
 
         if matches!(special_key, SpecialKey::CapsLock) {
-            list = list.add(special_char_radio_row("Caps Lock", None, current));
+            list = list.add(special_char_radio_row(
+                SpecialKeyAlternative::CapsLock.display_text(),
+                None,
+                current,
+            ));
         } else {
-            list = list.add(special_char_radio_row("None", None, current));
+            list = list.add(special_char_radio_row(
+                SpecialKeyAlternative::None.display_text(),
+                None,
+                current,
+            ));
         }
 
         list = options
             .iter()
-            .map(|(desc, id)| special_char_radio_row(desc, Some(id), current))
+            .map(|(key, id)| special_char_radio_row(key.display_text(), Some(id), current))
             .fold(list, ListColumn::add);
 
         widget::column::with_capacity(2)
@@ -653,16 +728,11 @@ impl Page {
 
         let mut list = cosmic::widget::list_column();
         for (desc, state) in options {
-            list = list.add(settings::item_row(vec![
-                radio(
-                    cosmic::widget::text(desc),
-                    Some(state),
-                    Some(Some(current)),
-                    |_| Message::SetNumlockState(state),
-                )
-                .width(Length::Fill)
-                .into(),
-            ]));
+            list = list.add(settings::item::builder(desc).radio(
+                Some(state),
+                Some(Some(current)),
+                |_| Message::SetNumlockState(state),
+            ));
         }
 
         list.into()
@@ -700,12 +770,17 @@ fn input_sources() -> Section<crate::pages::Message> {
             // TODO Need something more custom, with drag and drop
             let mut section = settings::section().title(&section.title);
 
-            for id in &page.active_layouts {
+            for (position, id) in page.active_layouts.iter().enumerate() {
                 if let Some((_locale, _variant, description, _source)) =
                     page.keyboard_layouts.get(*id)
                 {
-                    section =
-                        section.add(input_source(*id, description, page.expanded_source_popover));
+                    section = section.add(input_source(
+                        *id,
+                        description,
+                        page.expanded_source_popover,
+                        position == 0,
+                        position + 1 == page.active_layouts.len(),
+                    ));
                 }
             }
 
@@ -713,7 +788,7 @@ fn input_sources() -> Section<crate::pages::Message> {
                 .on_press(Message::ShowInputSourcesContext);
 
             widget::column::with_capacity(2)
-                .spacing(cosmic::theme::spacing().space_xxs)
+                .spacing(theme::spacing().space_xxs)
                 .push(section)
                 .push(
                     widget::container(add_input_source)
@@ -726,11 +801,11 @@ fn input_sources() -> Section<crate::pages::Message> {
 }
 
 fn special_character_entry() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let alternate = descriptions.insert(fl!("keyboard-special-char", "alternate"));
-    let compose = descriptions.insert(fl!("keyboard-special-char", "compose"));
-    let caps = descriptions.insert(fl!("keyboard-special-char", "caps"));
+    crate::slab!(descriptions {
+        alternate = fl!("keyboard-special-char", "alternate");
+        compose = fl!("keyboard-special-char", "compose");
+        caps = fl!("keyboard-special-char", "caps");
+    });
 
     Section::default()
         .title(fl!("keyboard-special-char"))
@@ -758,9 +833,9 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_shortcuts() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let shortcuts_desc = descriptions.insert(fl!("keyboard-shortcuts", "desc"));
+    crate::slab!(descriptions {
+        shortcuts_desc = fl!("keyboard-shortcuts", "desc");
+    });
 
     Section::default()
         .title(fl!("keyboard-shortcuts"))
@@ -784,14 +859,14 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_typing_assist() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let repeat_delay = descriptions.insert(fl!("keyboard-typing-assist", "repeat-delay"));
-    let repeat_rate = descriptions.insert(fl!("keyboard-typing-assist", "repeat-rate"));
-    let short = descriptions.insert(fl!("short"));
-    let long = descriptions.insert(fl!("long"));
-    let slow = descriptions.insert(fl!("slow"));
-    let fast = descriptions.insert(fl!("fast"));
+    crate::slab!(descriptions {
+        repeat_delay = fl!("keyboard-typing-assist", "repeat-delay");
+        repeat_rate = fl!("keyboard-typing-assist", "repeat-rate");
+        short = fl!("short");
+        long = fl!("long");
+        slow = fl!("slow");
+        fast = fl!("fast");
+    });
 
     Section::default()
         .title(fl!("keyboard-typing-assist"))
@@ -801,55 +876,63 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(&descriptions[repeat_delay], {
-                    // Delay
-                    let delay_slider = cosmic::widget::slider(
-                        KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
-                        page.xkb.repeat_delay,
-                        Message::SetRepeatKeysDelay,
-                    )
-                    .width(Length::Fill)
-                    .breakpoints(&[KB_REPEAT_DELAY_DEFAULT])
-                    .step(50_u32)
-                    .apply(widget::container)
-                    .max_width(250);
+                .add(
+                    settings::item::builder(&descriptions[repeat_delay])
+                        .flex_control({
+                            // Delay
+                            let delay_slider = cosmic::widget::slider(
+                                KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
+                                page.xkb.repeat_delay,
+                                Message::SetRepeatKeysDelay,
+                            )
+                            .width(Length::Fill)
+                            .breakpoints(&[KB_REPEAT_DELAY_DEFAULT])
+                            .step(50_u32)
+                            .apply(widget::container)
+                            .max_width(250);
 
-                    row::with_capacity(3)
-                        .align_y(Alignment::Center)
-                        .spacing(cosmic::theme::spacing().space_s)
-                        .push(widget::text::body(&descriptions[short]))
-                        .push(delay_slider)
-                        .push(widget::text::body(&descriptions[long]))
-                }))
-                .add(settings::flex_item(&descriptions[repeat_rate], {
-                    // Repeat rate
-                    let rate_slider = cosmic::widget::slider(
-                        KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,
-                        page.xkb.repeat_rate,
-                        Message::SetRepeatKeysRate,
-                    )
-                    .width(Length::Fill)
-                    .breakpoints(&[KB_REPEAT_RATE_DEFAULT])
-                    .step(5_u32)
-                    .apply(widget::container)
-                    .max_width(250);
+                            row::with_capacity(3)
+                                .align_y(Alignment::Center)
+                                .spacing(theme::spacing().space_s)
+                                .push(widget::text::body(&descriptions[short]))
+                                .push(delay_slider)
+                                .push(widget::text::body(&descriptions[long]))
+                        })
+                        .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::item::builder(&descriptions[repeat_rate])
+                        .flex_control({
+                            // Repeat rate
+                            let rate_slider = cosmic::widget::slider(
+                                KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,
+                                page.xkb.repeat_rate,
+                                Message::SetRepeatKeysRate,
+                            )
+                            .width(Length::Fill)
+                            .breakpoints(&[KB_REPEAT_RATE_DEFAULT])
+                            .step(5_u32)
+                            .apply(widget::container)
+                            .max_width(250);
 
-                    row::with_capacity(3)
-                        .align_y(Alignment::Center)
-                        .spacing(cosmic::theme::spacing().space_s)
-                        .push(widget::text::body(&descriptions[slow]))
-                        .push(rate_slider)
-                        .push(widget::text::body(&descriptions[fast]))
-                }))
+                            row::with_capacity(3)
+                                .align_y(Alignment::Center)
+                                .spacing(theme::spacing().space_s)
+                                .push(widget::text::body(&descriptions[slow]))
+                                .push(rate_slider)
+                                .push(widget::text::body(&descriptions[fast]))
+                        })
+                        .align_items(Alignment::Center),
+                )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Keyboard)
         })
 }
 
 fn keyboard_num_lock() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let boot_state = descriptions.insert(fl!("keyboard-numlock-boot", "boot-state"));
+    crate::slab!(descriptions {
+        boot_state = fl!("keyboard-numlock-boot", "boot-state");
+    });
 
     Section::default()
         .title(fl!("keyboard-numlock-boot"))

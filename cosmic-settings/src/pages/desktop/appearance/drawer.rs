@@ -1,23 +1,20 @@
 use cosmic::app::{ContextDrawer, context_drawer};
-use cosmic::config::CosmicTk;
-use cosmic::cosmic_config::{Config, ConfigSet};
+use cosmic::cosmic_config::ConfigSet;
 use cosmic::cosmic_theme::Spacing;
-use cosmic::iced_core::{Color, Length};
-use cosmic::widget::{
-    ColorPickerModel, color_picker::ColorPickerUpdate, container, flex_row, settings, text,
-};
-use cosmic::{Apply, Task};
-use cosmic::{Element, widget};
+use cosmic::iced::core::{Color, Length};
+use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::{ColorPickerModel, container, flex_row, settings, text};
+use cosmic::{Apply, Element, Task, task, widget};
+use cosmic_config::ConfigGet;
 use std::sync::Arc;
+use tracing::error;
 
 use crate::app;
+use crate::pages::desktop::appearance::theme_manager::Manager;
 use crate::widget::color_picker_context_view;
 
-use super::{
-    ContextView, Message, font_config, icon_themes,
-    icon_themes::{IconHandles, IconThemes},
-    theme_manager,
-};
+use super::icon_themes::{IconHandles, IconThemes};
+use super::{ContextView, Message, font_config, icon_themes, theme_manager};
 
 pub struct Content {
     context_view: Option<ContextView>,
@@ -34,11 +31,22 @@ pub struct Content {
     icon_fetch_handle: Option<cosmic::iced::task::Handle>,
 
     icon_theme_active: Option<usize>,
-    icon_global: bool,
     icon_themes: IconThemes,
     icon_handles: IconHandles,
-    tk_config: Option<Config>,
+
+    comp_config: cosmic_config::Config,
+    #[cfg(feature = "cosmic-comp-config")]
+    appearance_conf: cosmic_comp_config::AppearanceConfig,
 }
+
+#[cfg(feature = "cosmic-comp-config")]
+#[derive(Debug, Clone)]
+pub enum CornerMessage {
+    ClipFloating(bool),
+    ClipTiled(bool),
+    ShadowTiled(bool),
+}
+
 #[derive(Debug, Clone)]
 pub enum FontMessage {
     FontLoaded(Vec<Arc<str>>, Vec<Arc<str>>),
@@ -50,7 +58,6 @@ pub enum FontMessage {
 pub enum IconMessage {
     IconLoaded((IconThemes, IconHandles)),
     IconTheme(usize),
-    ApplyThemeGlobal(bool),
 }
 
 crate::cache_dynamic_lazy! {
@@ -63,6 +70,11 @@ crate::cache_dynamic_lazy! {
 impl From<&theme_manager::Manager> for Content {
     fn from(theme_manager: &theme_manager::Manager) -> Self {
         let theme = theme_manager.theme();
+        let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        #[cfg(feature = "cosmic-comp-config")]
+        let appearance_conf = comp_config
+            .get::<cosmic_comp_config::AppearanceConfig>("appearance_settings")
+            .unwrap_or_default();
         Self {
             context_view: None,
             custom_accent: ColorPickerModel::new(
@@ -74,7 +86,7 @@ impl From<&theme_manager::Manager> for Content {
             application_background: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
-                Some(theme.background.base.into()),
+                Some(theme.background(false).base.into()),
                 theme_manager.get_color(&ContextView::ApplicationBackground),
             ),
             container_background: ColorPickerModel::new(
@@ -86,7 +98,7 @@ impl From<&theme_manager::Manager> for Content {
             interface_text: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
-                Some(theme.background.on.into()),
+                Some(theme.background(false).on.into()),
                 theme_manager.get_color(&ContextView::InterfaceText),
             ),
             control_component: ColorPickerModel::new(
@@ -101,14 +113,16 @@ impl From<&theme_manager::Manager> for Content {
                 None,
                 theme_manager.get_color(&ContextView::AccentWindowHint),
             ),
-            font_config: font_config::Model::new(),
+            font_config: font_config::Model::from_theme(theme),
+
             icons_fetched: false,
-            icon_global: cosmic::config::apply_theme_global(),
             icon_fetch_handle: None,
             icon_theme_active: None,
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
-            tk_config: CosmicTk::config().ok(),
+            comp_config,
+            #[cfg(feature = "cosmic-comp-config")]
+            appearance_conf,
         }
     }
 }
@@ -122,10 +136,21 @@ impl Content {
         }
     }
 
+    pub fn preserve_from(&mut self, previous: &mut Content) {
+        self.font_config
+            .take_families_from(&mut previous.font_config);
+
+        self.icons_fetched = previous.icons_fetched;
+        self.icon_theme_active = previous.icon_theme_active;
+        self.icon_themes = std::mem::take(&mut previous.icon_themes);
+        self.icon_handles = std::mem::take(&mut previous.icon_handles);
+    }
+
     pub fn update_font(
         &mut self,
         message: FontMessage,
         context_view: Option<&ContextView>,
+        manager: &mut Manager,
     ) -> Task<app::Message> {
         match message {
             FontMessage::FontLoaded(interface, mono) => {
@@ -136,11 +161,11 @@ impl Content {
                 Some(c) => self.font_config.search(input.to_string(), c),
             },
             FontMessage::Select(font) => {
-                if let Some(context_view) = context_view
-                    && let Some(task) = self.font_config.select(font.to_string(), context_view)
-                {
-                    return task;
+                if let Some(context_view) = context_view {
+                    self.font_config
+                        .select(font.to_string(), context_view, manager);
                 }
+
                 Task::none()
             }
         }
@@ -194,29 +219,44 @@ impl Content {
         &mut self,
         message: IconMessage,
         _context_view: &ContextView,
+        manager: &mut Manager,
     ) -> Task<app::Message> {
         match message {
             IconMessage::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
 
-                    if let Some(ref config) = self.tk_config {
-                        _ = config.set::<String>("icon_theme", theme.id);
+                    let is_dark = manager.mode().is_dark;
+                    manager.set_icon_theme(theme.id.clone());
+
+                    let (config, builder_config) = if is_dark {
+                        (
+                            cosmic::cosmic_theme::Theme::dark_config(),
+                            cosmic::cosmic_theme::ThemeBuilder::dark_config(),
+                        )
+                    } else {
+                        (
+                            cosmic::cosmic_theme::Theme::light_config(),
+                            cosmic::cosmic_theme::ThemeBuilder::light_config(),
+                        )
+                    };
+
+                    if let Some((config, builder_config)) = config.ok().zip(builder_config.ok()) {
+                        _ = config.set::<String>("icon_theme", theme.id.clone());
+                        _ = builder_config.set::<String>("icon_theme", theme.id);
+
+                        if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+                            && let Err(error) = store.sync_active(
+                                cosmic_theme_bundle_config::Mode::from_is_dark(is_dark),
+                            )
+                        {
+                            tracing::warn!(?error, "failed to sync the active theme bundle");
+                        }
                     }
                 }
             }
-            IconMessage::ApplyThemeGlobal(enabled) => {
-                if let Some(config) = self.tk_config.as_ref() {
-                    _ = config.set("apply_theme_global", enabled);
-                    self.icon_global = enabled;
-                } else {
-                    tracing::error!(
-                        "Failed to apply theme to GNOME config because the CosmicTK config does not exist."
-                    );
-                }
-            }
             IconMessage::IconLoaded((icon_themes, icon_handles)) => {
-                let active_icon_theme = cosmic::config::icon_theme();
+                let active_icon_theme = manager.theme().icon_theme.clone();
 
                 // Set the icon themes, and define the active icon theme.
                 self.icon_themes = icon_themes;
@@ -234,9 +274,50 @@ impl Content {
         Task::none()
     }
 
-    pub fn on_open(&mut self, context_view: &ContextView) -> Task<app::Message> {
+    #[cfg(feature = "cosmic-comp-config")]
+    pub fn update_shadow_and_corners(
+        &mut self,
+        message: CornerMessage,
+        _context_view: &ContextView,
+    ) -> Task<app::Message> {
+        match message {
+            CornerMessage::ClipFloating(enabled) => {
+                self.appearance_conf.clip_floating_windows = enabled;
+            }
+            CornerMessage::ClipTiled(enabled) => {
+                self.appearance_conf.clip_tiled_windows = enabled;
+            }
+            CornerMessage::ShadowTiled(enabled) => {
+                self.appearance_conf.shadow_tiled_windows = enabled;
+            }
+        }
+
+        if let Err(err) = self
+            .comp_config
+            .set("appearance_settings", self.appearance_conf)
+        {
+            error!(?err, "Failed to set config 'appearance_settings'");
+        }
+
+        Task::none()
+    }
+
+    pub fn on_open<F>(
+        &mut self,
+        context_view: &ContextView,
+        manager: &Manager,
+        wrap: F,
+    ) -> Task<app::Message>
+    where
+        F: Fn(super::Message) -> crate::pages::Message + Send + 'static,
+    {
         match *context_view {
-            ContextView::IconsAndToolkit => {
+            ContextView::IconThemes => {
+                self.icon_theme_active = self
+                    .icon_themes
+                    .iter()
+                    .position(|theme| theme.id == manager.theme().icon_theme);
+
                 if self.icons_fetched {
                     return Task::none();
                 }
@@ -245,10 +326,13 @@ impl Content {
                 let (task, handle) = cosmic::task::future(icon_themes::fetch()).abortable();
                 self.icon_fetch_handle = Some(handle);
 
-                return task;
+                return task.map(wrap).map(crate::app::Message::PageMessage);
             }
             ContextView::MonospaceFont | ContextView::SystemFont => {
                 self.font_config.reset();
+                return task::message(super::Message::FocusFontInput)
+                    .map(wrap)
+                    .map(crate::app::Message::PageMessage);
             }
             _ => {}
         }
@@ -276,11 +360,15 @@ impl Content {
         }
     }
 
+    pub fn sync_fonts(&mut self, manager: &theme_manager::Manager) {
+        self.font_config.set_theme(manager.theme());
+    }
+
     pub fn reset(&mut self, manager: &theme_manager::Manager) {
         self.application_background = ColorPickerModel::new(
             &*HEX,
             &*RGB,
-            Some(manager.theme().background.base.into()),
+            Some(manager.theme().background(false).base.into()),
             manager.get_color(&ContextView::ApplicationBackground),
         );
         self.custom_accent = ColorPickerModel::new(
@@ -298,7 +386,7 @@ impl Content {
         self.interface_text = ColorPickerModel::new(
             &*HEX,
             &*RGB,
-            Some(manager.theme().background.on.into()),
+            Some(manager.theme().background(false).on.into()),
             manager.get_color(&ContextView::InterfaceText),
         );
         self.control_component = ColorPickerModel::new(
@@ -315,10 +403,14 @@ impl Content {
         );
     }
 
-    pub fn context_drawer(
+    pub fn context_drawer<F>(
         &self,
         context_view: Option<ContextView>,
-    ) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        wrap: F,
+    ) -> Option<ContextDrawer<'_, crate::pages::Message>>
+    where
+        F: Fn(super::Message) -> crate::pages::Message + Clone + 'static,
+    {
         Some(match context_view? {
             ContextView::AccentWindowHint => context_drawer(
                 color_picker_context_view(
@@ -327,7 +419,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.accent_window_hint,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("window-hint-accent")),
@@ -339,7 +431,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.application_background,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("app-background")),
@@ -351,7 +443,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.container_background,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("container-background")),
@@ -363,7 +455,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.control_component,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("control-tint")),
@@ -375,7 +467,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.custom_accent,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("accent-color")),
@@ -387,7 +479,7 @@ impl Content {
                     Message::DrawerColor,
                     &self.interface_text,
                 )
-                .map(crate::pages::Message::Appearance),
+                .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("text-tint")),
@@ -397,72 +489,100 @@ impl Content {
                     .selection_context(&ContextView::SystemFont, |name| {
                         Message::DrawerFont(FontMessage::Select(name))
                     })
-                    .map(crate::pages::Message::Appearance),
+                    .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("interface-font"))
-            .header(self.font_config.search_input()),
+            .header(self.font_config.search_input().map(wrap.clone())),
 
             ContextView::MonospaceFont => context_drawer(
                 self.font_config
                     .selection_context(&ContextView::MonospaceFont, |name| {
                         Message::DrawerFont(FontMessage::Select(name))
                     })
-                    .map(crate::pages::Message::Appearance),
+                    .map(wrap.clone()),
                 crate::pages::Message::CloseContextDrawer,
             )
             .title(fl!("monospace-font"))
-            .header(self.font_config.search_input()),
+            .header(self.font_config.search_input().map(wrap.clone())),
 
-            ContextView::IconsAndToolkit => context_drawer(
-                self.icons_and_toolkit(),
+            ContextView::IconThemes => context_drawer(
+                self.icon_theme_choices(wrap.clone()),
+                crate::pages::Message::CloseContextDrawer,
+            ),
+
+            #[cfg(feature = "cosmic-comp-config")]
+            ContextView::ShadowAndCorners => context_drawer(
+                self.shadow_and_corners(),
                 crate::pages::Message::CloseContextDrawer,
             ),
         })
     }
 
-    pub fn icons_and_toolkit(&self) -> Element<'_, crate::pages::Message> {
+    pub fn icon_theme_choices<F>(&self, wrap: F) -> Element<'_, crate::pages::Message>
+    where
+        F: Fn(Message) -> crate::pages::Message + Clone + 'static,
+    {
         let Spacing {
             space_xxs,
             space_xs,
-            space_m,
             ..
         } = cosmic::theme::spacing();
 
         let active = self.icon_theme_active;
 
+        widget::column::with_children([
+            text::heading(&*ICON_THEME).into(),
+            flex_row(
+                self.icon_themes
+                    .iter()
+                    .zip(self.icon_handles.iter())
+                    .enumerate()
+                    .map(|(i, (theme, handles))| {
+                        let selected = active.map(|j| i == j).unwrap_or_default();
+                        icon_themes::button(&theme.name, handles, i, selected, |id| {
+                            Message::DrawerIcon(IconMessage::IconTheme(id))
+                        })
+                    })
+                    .collect(),
+            )
+            .row_spacing(space_xs)
+            .column_spacing(space_xs)
+            .apply(container)
+            .center_x(Length::Fill)
+            .into(),
+        ])
+        .spacing(space_xxs)
+        .width(Length::Fill)
+        .apply(Element::from)
+        .map(wrap)
+    }
+
+    #[cfg(feature = "cosmic-comp-config")]
+    pub fn shadow_and_corners(&self) -> Element<'_, crate::pages::Message> {
+        let Spacing { space_m, .. } = cosmic::theme::spacing();
+
         cosmic::iced::widget::column![
-            // Export theme choice
-            settings::section().add(
-                settings::item::builder(fl!("enable-export"))
-                    .description(fl!("enable-export", "desc"))
-                    .toggler(self.icon_global, |b| {
-                        Message::DrawerIcon(IconMessage::ApplyThemeGlobal(b))
+            settings::section().title(fl!("shadows-floating")).add(
+                settings::item::builder(fl!("shadows-floating", "clip"))
+                    .toggler(self.appearance_conf.clip_floating_windows, |b| {
+                        Message::DrawerCorners(CornerMessage::ClipFloating(b))
                     })
             ),
-            // Icon theme previews
-            widget::column::with_children(vec![
-                text::heading(&*ICON_THEME).into(),
-                flex_row(
-                    self.icon_themes
-                        .iter()
-                        .zip(self.icon_handles.iter())
-                        .enumerate()
-                        .map(|(i, (theme, handles))| {
-                            let selected = active.map(|j| i == j).unwrap_or_default();
-                            icon_themes::button(&theme.name, handles, i, selected, |id| {
-                                Message::DrawerIcon(IconMessage::IconTheme(id))
-                            })
+            settings::section()
+                .title(fl!("shadows-tiling"))
+                .add(
+                    settings::item::builder(fl!("shadows-tiling", "clip"))
+                        .toggler(self.appearance_conf.clip_tiled_windows, |b| {
+                            Message::DrawerCorners(CornerMessage::ClipTiled(b))
                         })
-                        .collect(),
                 )
-                .row_spacing(space_xs)
-                .column_spacing(space_xs)
-                .apply(container)
-                .center_x(Length::Fill)
-                .into()
-            ])
-            .spacing(space_xxs)
+                .add(
+                    settings::item::builder(fl!("shadows-tiling", "shadow"))
+                        .toggler(self.appearance_conf.shadow_tiled_windows, |b| {
+                            Message::DrawerCorners(CornerMessage::ShadowTiled(b))
+                        })
+                )
         ]
         .spacing(space_m)
         .width(Length::Fill)

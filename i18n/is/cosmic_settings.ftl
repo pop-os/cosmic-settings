@@ -6,7 +6,6 @@ import = Flytja inn
 settings = Stillingar
 dark = Dökkt
 light = Ljóst
-profile = Notandasnið
 identity = Auðkenni
 password = Lykilorð
 password-confirm = Staðfesta lykilorð
@@ -21,13 +20,6 @@ dbus-connection-error = Náði ekki að tengjast DBus
 ok = Í lagi
 unknown = Óþekkt
 number = { $number }
-connections-and-profiles =
-    { $variant ->
-        [wired] Kapaltengdar
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] óþekktar
-    } tengingar og tengisnið.
 add-network = Add network
     .profile = Bæta við notandasniði
 add-vpn = Bæta við VPN

@@ -1,15 +1,20 @@
 use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
+use cosmic::widget::text_input::focus;
 use cosmic::widget::{button, icon, settings, text};
-use cosmic::{Apply, Element, Task, widget};
+use cosmic::{Apply, Element, Task, task, widget};
 use cosmic_settings_page::section::Entity;
 use cosmic_settings_page::{self as page, Content, Info, Section};
 use freedesktop_desktop_entry::DesktopEntry;
 use itertools::Itertools;
 use slotmap::{Key, SlotMap};
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
 use tracing::error;
+
+pub static ADD_APPLICATION_SEARCH: LazyLock<widget::Id> =
+    LazyLock::new(|| widget::Id::new("ADD_APPLICATION_SEARCH"));
 
 #[derive(Clone, Debug)]
 pub struct CachedApps {
@@ -51,6 +56,7 @@ pub enum Message {
     ShowApplicationSidebar(DirectoryType),
     UpdateApplications(CachedApps),
     UpdateStartupApplications(CachedApps),
+    FocusAddApplicationSearch,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -101,7 +107,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> Info {
         page::Info::new("startup-apps", "preferences-startup-applications-symbolic")
             .title(fl!("startup-apps"))
-            .description(fl!("startup-apps", "desc"))
+            .description(fl!("xdg-entry-startup-apps-comment"))
     }
     fn content(
         &self,
@@ -113,9 +119,10 @@ impl page::Page<crate::pages::Message> for Page {
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         match &self.context {
             Some(Context::AddApplication(directory_type)) => {
-                let search = widget::search_input(fl!("type-to-search"), &self.application_search)
+                let search = widget::search_input("", &self.application_search)
                     .on_input(|i| Message::ApplicationSearch(i).into())
                     .on_clear(Message::ApplicationSearch(String::new()).into())
+                    .id(ADD_APPLICATION_SEARCH.clone())
                     .apply(Element::from);
 
                 Some(
@@ -132,6 +139,9 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
+        if self.app_to_remove.is_some() {
+            return Task::none();
+        }
         let (task, on_enter_handle) = Task::future(async move {
             let locales = freedesktop_desktop_entry::get_languages_from_env();
 
@@ -139,8 +149,11 @@ impl page::Page<crate::pages::Message> for Page {
             let user_entries =
                 freedesktop_desktop_entry::Iter::new(user_dirs.into_iter()).entries(Some(&locales));
 
+            let mut user_entries_vec = user_entries.collect_vec();
+            sort_entries_by_name(&mut user_entries_vec, &locales);
+
             let mut apps_hash = HashMap::with_capacity(1);
-            apps_hash.insert(DirectoryType::User, user_entries.collect_vec());
+            apps_hash.insert(DirectoryType::User, user_entries_vec);
 
             Message::UpdateStartupApplications(CachedApps {
                 apps: apps_hash,
@@ -214,7 +227,8 @@ impl Page {
             }
             Message::ShowApplicationSidebar(directory_type) => {
                 self.context = Some(Context::AddApplication(directory_type));
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity))
+                    .chain(task::message(Message::FocusAddApplicationSearch));
             }
             Message::AddStartupApplication(directory_type, app) => {
                 let mut file_name = app.clone().appid;
@@ -227,32 +241,29 @@ impl Page {
 
                 _ = std::fs::create_dir_all(directory_to_target.as_path());
 
-                if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone()))
-                    && !exists
-                {
-                    // when adding an application, we want to symlink to be more user-friendly
-                    // this ensures that, as an application gets updated / removed, so does the
-                    // symlink
-                    match std::os::unix::fs::symlink(
-                        app.clone().path,
-                        directory_to_target.join(file_name),
-                    ) {
-                        Ok(_) => {
-                            if let Some(ref mut cached_startup_apps) = self.cached_startup_apps {
-                                let target_apps = cached_startup_apps.apps.get(&directory_type);
-                                if let Some(target_apps) = target_apps {
-                                    let mut new_apps = target_apps.clone();
-                                    new_apps.push(app.clone());
+                let link_path = directory_to_target.join(file_name);
 
-                                    cached_startup_apps
-                                        .apps
-                                        .insert(directory_type.clone(), new_apps);
-                                }
+                // when adding an application, we want to symlink to be more user-friendly
+                // this ensures that, as an application gets updated / removed, so does the
+                // symlink
+                match create_autostart_symlink(&link_path, &app.path) {
+                    Ok(true) => {
+                        if let Some(ref mut cached_startup_apps) = self.cached_startup_apps {
+                            let target_apps = cached_startup_apps.apps.get(&directory_type);
+                            if let Some(target_apps) = target_apps {
+                                let mut new_apps = target_apps.clone();
+                                new_apps.push(app.clone());
+                                sort_entries_by_name(&mut new_apps, &cached_startup_apps.locales);
+
+                                cached_startup_apps
+                                    .apps
+                                    .insert(directory_type.clone(), new_apps);
                             }
                         }
-                        Err(e) => {
-                            error!(?e, "Failed to symlink");
-                        }
+                    }
+                    Ok(false) => {}
+                    Err(e) => {
+                        error!(?e, "Failed to symlink");
                     }
                 }
 
@@ -262,6 +273,7 @@ impl Page {
                 if !confirm {
                     self.app_to_remove = Some(app);
                     self.target_directory_type = Some(directory_type);
+                    return cosmic::task::message(crate::app::Message::Page(self.entity));
                 } else {
                     let mut file_name = app.clone().appid;
                     file_name.push_str(".desktop");
@@ -270,11 +282,12 @@ impl Page {
 
                     let directory_to_target =
                         directories.first().expect("Always at least one directory");
-                    if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone()))
-                        && exists
-                    {
+
+                    let file_path = directory_to_target.join(file_name);
+
+                    if std::fs::symlink_metadata(&file_path).is_ok() {
                         // remove_file works for both regular files & symlinks
-                        match std::fs::remove_file(directory_to_target.join(file_name)) {
+                        match std::fs::remove_file(&file_path) {
                             Ok(_) => {
                                 if let Some(ref mut cached_startup_apps) = self.cached_startup_apps
                                 {
@@ -307,6 +320,26 @@ impl Page {
                 self.app_to_remove = None;
                 self.target_directory_type = None;
                 self.context = None;
+            }
+            Message::FocusAddApplicationSearch => {
+                // retry until the widget is in the tree and focused or the dialog is removed.
+                if matches!(self.context, Some(Context::AddApplication(_))) {
+                    return cosmic::iced::runtime::task::widget(
+                        cosmic::iced::core::widget::operation::focusable::find_focused(),
+                    )
+                    .collect()
+                    .then(|id| {
+                        if id
+                            .first()
+                            .is_some_and(|id| *id == ADD_APPLICATION_SEARCH.clone())
+                        {
+                            Task::none()
+                        } else {
+                            focus(ADD_APPLICATION_SEARCH.clone())
+                                .chain(task::message(Message::FocusAddApplicationSearch))
+                        }
+                    });
+                }
             }
             _ => {}
         }
@@ -429,6 +462,38 @@ fn apps() -> Section<crate::pages::Message> {
         })
 }
 
+/// Creates a symbolic link at `link_path` pointing to `target` for the autostart entry.
+///
+/// Returns `Ok(true)` if the symbolic link was created; `Ok(false)` if the entry already exists and remains unchanged;
+/// or an error if the symbolic link could not be created.
+fn create_autostart_symlink(link_path: &Path, target: &Path) -> std::io::Result<bool> {
+    match std::fs::symlink_metadata(link_path) {
+        Ok(metadata) => {
+            let broken_symlink =
+                metadata.file_type().is_symlink() && std::fs::metadata(link_path).is_err();
+            if !broken_symlink {
+                // A valid entry already exists; leave it as is.
+                return Ok(false);
+            }
+            // Replace the broken symbolic link with a new one.
+            std::fs::remove_file(link_path)?;
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e),
+    }
+
+    std::os::unix::fs::symlink(target, link_path)?;
+    Ok(true)
+}
+
+fn sort_entries_by_name(entries: &mut [DesktopEntry], locales: &[String]) {
+    entries.sort_by_cached_key(|e| {
+        e.name(locales)
+            .map(|n| n.to_lowercase())
+            .unwrap_or_else(|| e.appid.to_lowercase())
+    });
+}
+
 fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
     let mut dedupe = HashSet::new();
 
@@ -468,6 +533,8 @@ fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
         result.push(entry.clone());
         dedupe.insert(app_id.to_owned());
     }
+
+    sort_entries_by_name(&mut result, &locales);
 
     result
 }

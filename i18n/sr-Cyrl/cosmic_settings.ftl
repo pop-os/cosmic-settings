@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Жичане
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Непознате
-    } конекције и профили конекција.
 add-network = Додај мрежу
     .profile = Додај профил
 add-vpn = Додај VPN
@@ -432,7 +425,6 @@ sound-alerts = Упозорења
     .sound = Звук упозорења
 sound-applications = Апликације
     .desc = Јачина звука апликација и подешавања
-profile = Профил
 
 ## Power
 

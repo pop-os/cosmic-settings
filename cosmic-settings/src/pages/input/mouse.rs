@@ -5,9 +5,7 @@ use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::AccelProfile;
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
-use slab::Slab;
+use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 
 use super::Message;
@@ -41,19 +39,19 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("mouse", "input-mouse-symbolic")
             .title(fl!("mouse"))
-            .description(fl!("mouse", "desc"))
+            .description(fl!("xdg-entry-mouse-comment"))
     }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn mouse() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let mouse_acceleration = descriptions.insert(fl!("mouse", "acceleration"));
-    let mouse_speed = descriptions.insert(fl!("mouse", "speed"));
-    let primary_button = descriptions.insert(fl!("primary-button"));
-    let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
+    crate::slab!(descriptions {
+        mouse_acceleration = fl!("mouse", "acceleration");
+        mouse_speed = fl!("mouse", "speed");
+        primary_button = fl!("primary-button");
+        acceleration_desc = fl!("acceleration-desc");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -63,12 +61,15 @@ fn mouse() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(
-                    &descriptions[primary_button],
-                    cosmic::widget::segmented_control::horizontal(&input.primary_button)
-                        .minimum_button_width(0)
-                        .on_activate(|x| Message::PrimaryButtonSelected(x, false)),
-                ))
+                .add(
+                    settings::flex_item(
+                        &descriptions[primary_button],
+                        cosmic::widget::segmented_control::horizontal(&input.primary_button)
+                            .minimum_button_width(0)
+                            .on_activate(|x| Message::PrimaryButtonSelected(x, false)),
+                    )
+                    .align_items(Alignment::Center),
+                )
                 .add(
                     settings::item::builder(&descriptions[mouse_speed]).flex_control({
                         let value = (input
@@ -116,11 +117,11 @@ fn mouse() -> Section<crate::pages::Message> {
 }
 
 fn scrolling() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let natural = descriptions.insert(fl!("scrolling", "natural"));
-    let natural_desc = descriptions.insert(fl!("scrolling", "natural-desc"));
-    let scroll_speed = descriptions.insert(fl!("scrolling", "speed"));
+    crate::slab!(descriptions {
+        natural = fl!("scrolling", "natural");
+        natural_desc = fl!("scrolling", "natural-desc");
+        scroll_speed = fl!("scrolling", "speed");
+    });
 
     Section::default()
         .title(fl!("scrolling"))
@@ -131,35 +132,39 @@ fn scrolling() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(&descriptions[scroll_speed], {
-                    let value = input
-                        .input_default
-                        .scroll_config
-                        .as_ref()
-                        .and_then(|x| x.scroll_factor)
-                        .unwrap_or(1.)
-                        .log(2.)
-                        * 10.0
-                        + 50.0;
+                .add(
+                    settings::item::builder(&descriptions[scroll_speed])
+                        .flex_control({
+                            let value = input
+                                .input_default
+                                .scroll_config
+                                .as_ref()
+                                .and_then(|x| x.scroll_factor)
+                                .unwrap_or(1.)
+                                .log(2.)
+                                * 10.0
+                                + 50.0;
 
-                    let slider = widget::slider(1.0..=100.0, value, |value| {
-                        Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), false)
-                    })
-                    .width(Length::Fill)
-                    .breakpoints(&[50.0])
-                    .apply(widget::container)
-                    .max_width(250);
+                            let slider = widget::slider(1.0..=100.0, value, |value| {
+                                Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), false)
+                            })
+                            .width(Length::Fill)
+                            .breakpoints(&[50.0])
+                            .apply(widget::container)
+                            .max_width(250);
 
-                    row::with_capacity(2)
-                        .align_y(Alignment::Center)
-                        .spacing(8)
-                        .push(
-                            text::body(format!("{:.0}", value.round()))
-                                .width(Length::Fixed(22.0))
-                                .align_x(Alignment::Center),
-                        )
-                        .push(slider)
-                }))
+                            row::with_capacity(2)
+                                .align_y(Alignment::Center)
+                                .spacing(8)
+                                .push(
+                                    text::body(format!("{:.0}", value.round()))
+                                        .width(Length::Fixed(22.0))
+                                        .align_x(Alignment::Center),
+                                )
+                                .push(slider)
+                        })
+                        .align_items(Alignment::Center),
+                )
                 .add(
                     settings::item::builder(&descriptions[natural])
                         .description(&descriptions[natural_desc])

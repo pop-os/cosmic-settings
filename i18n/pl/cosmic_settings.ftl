@@ -4,15 +4,64 @@ ok = OK
 unknown = Nieznane
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = O systemie
+xdg-entry-about-comment = Nazwa urządzenia, informacje o sprzęcie i systemie operacyjnym
+xdg-entry-a11y = Dostępność
+xdg-entry-a11y-comment = Czytnik ekranowy, lupa, wysoki kontrast i filtry kolorów
+xdg-entry-appearance = Wygląd
+xdg-entry-appearance-comment = Kolory akcentów i styl
+xdg-entry-applications = Aplikacje
+xdg-entry-bluetooth-comment = Zarządzaj urządzeniami Bluetooth
+xdg-entry-date-time = Godzina i Data
+xdg-entry-date-time-comment = Strefy czasowe, automatyczna konfiguracja zegara i format wyświetlania czasu
+xdg-entry-default-apps = Domyślne aplikacje
+xdg-entry-default-apps-comment = Domyślna przeglądarka, klient poczty e-mail, menedżer plików i inne aplikacje
+xdg-entry-desktop = Pulpit
+xdg-entry-displays = Wyświetlacze
+xdg-entry-displays-comment = Zarządzaj ustawieniami wyświetlania
+xdg-entry-dock = Dok
+xdg-entry-dock-comment = Opcjonalny panel na aplikacje i aplety
+xdg-entry-input = Urządzenia wprowadzania danych
+xdg-entry-keyboard = Klawiatura
+xdg-entry-keyboard-comment = Źródła wprowadzania, przełączanie, specjalne klawisze, skróty
+xdg-entry-mouse = Mysz
+xdg-entry-mouse-comment = Prędkość myszy, przyspieszenie i naturalne przewijanie
+xdg-entry-network = Sieć i połączenia bezprzewodowe
+xdg-entry-network-comment = Zarządzaj połączeniami sieciowymi
+xdg-entry-notifications = Powiadomienia
+xdg-entry-notifications-comment = Tryb „nie przeszkadzać”, powiadomienia na ekranie blokady i ustawienia poszczególnych aplikacji
+xdg-entry-panel = Panel
+xdg-entry-power = Zasilanie i bateria
+xdg-entry-power-comment = Tryby zasilania i opcje oszczędzania energii
+xdg-entry-region-language = Region i język
+xdg-entry-region-language-comment = Format wyświetlanych dat, godzin i liczb dopasowany do regionu
+xdg-entry-sound = Dźwięk
+xdg-entry-sound-comment = Opcje dźwięku dla urządzeń, alertów i aplikacji
+xdg-entry-startup-apps = Aplikacje startowe
+xdg-entry-startup-apps-comment = Konfiguracja aplikacji uruchamianych po zalogowaniu
+xdg-entry-system = System i konta
+xdg-entry-time-language = Czas i język
+xdg-entry-touchpad = Gładzik
+xdg-entry-touchpad-comment = Prędkość gładzika, opcje kliknięć, gesty
+xdg-entry-users = Użytkownicy
+xdg-entry-users-comment = Uwierzytelnianie i konta użytkowników
+xdg-entry-vpn-comment = Połączenia VPN i profile połączeń
+xdg-entry-wallpaper = Tapeta
+xdg-entry-wallpaper-comment = Obraz tła, kolory i opcje pokazu slajdów
+xdg-entry-window-management = Zarządzanie oknami
+xdg-entry-window-management-comment = Działanie klawisza Super, opcje kontroli oknami i dodatkowe ustawienia kafelkowania okien
+xdg-entry-wired = Połączenia przewodowe
+xdg-entry-wired-comment = Połączenia przewodowe i profile połączeń
+xdg-entry-wireless-comment = Połączenia Wi-Fi i profile połączeń
+xdg-entry-workspaces = Obszary robocze
+xdg-entry-workspaces-comment = Zachowanie przy wielu wyświetlaczach, podgląd, kierunek i zachowanie obszarów roboczych
+xdg-entry-x11-applications = Kompatybilność aplikacji X11
+xdg-entry-x11-applications-comment = Skalowanie aplikacji systemu okien X11 i globalne skróty klawiszowe
+
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Połączenia przewodowe
-        [wifi] Połączenia Wi-Fi
-        [vpn] Połączenia VPN
-       *[other] Nieznane połączenia
-    } i profile połączeń.
 add-network = Dodaj sieć
     .profile = Dodaj profil
 add-vpn = Dodaj VPN
@@ -67,6 +116,8 @@ vpn-error = Błąd VPN
     .connect = Nie udało się połączyć z VPN
     .connection-editor = Błąd edytora połączenia
     .connection-settings = Nie udało się uzyskać ustawień dla aktywnych połączeń
+    .openvpn-config-path = Nieprawidłowa ścieżka pliku konfiguracji OpenVPN
+    .openvpn-config-path-desc = Wybrany plik musi być w lokalnym systemie plików.
     .updating-state = Nie udało się zaktualizować stanu menedżera sieci
     .wireguard-config-path = Nieprawidłowa ścieżka pliku konfiguracji WireGuard
     .wireguard-config-path-desc = Wybrany plik musi znajdować się w lokalnym systemie plików system.
@@ -99,7 +150,6 @@ activate = Aktywuj
 confirm = Potwierdź
 enable = Włącz
 bluetooth = Bluetooth
-    .desc = Zarządzaj urządzeniami Bluetooth
     .status = Ten system jest widoczny jako { $aliases }, gdy ustawienia Bluetooth są otwarte.
     .connected = Połączono
     .connecting = Łączenie
@@ -130,6 +180,8 @@ accessibility = Dostępność
     .high-contrast = Tryb wysokiego kontrastu
     .invert-colors = Odwróć kolory
     .color-filters = Filtry kolorów
+    .shake-cursor = Porusz energicznie kursorem by go znaleźć
+    .shake-cursor-desc = Szybko ruszaj myszką by czasowo powiększyć kursor
 hearing = Słuchanie
     .mono = Odtwarzaj dźwięk stereo jako mono
 default = Domyślne
@@ -171,7 +223,6 @@ desktop = Pulpit
 
 wallpaper = Tapeta
     .change = Zmieniaj obraz co
-    .desc = Obrazy tapety, kolory i opcje pokazu slajdów.
     .fit = Dopasuj tapetę
     .folder-dialog = Wybierz katalog z tapetami
     .image-dialog = Wybierz obraz tapety
@@ -204,7 +255,6 @@ never = Nigdy
 ## Desktop: Appearance
 
 appearance = Wygląd
-    .desc = Kolory akcentów i motywy
 accent-color = Kolory akcentów
 app-background = Tło okien
 auto = Automatyczne
@@ -246,6 +296,19 @@ style = Styl
     .round = Okrągły
     .slightly-round = Lekko zaokrąglony
     .square = Kwadratowy
+    .frosted-glass = Oszronione szkło
+    .frosted-system-interface = Interfejs systemu
+    .frosted-system-interface-desc = Użyj oszronionego szkła do Programu startowego, biblioteki aplikacji, podglądu obszarów roboczych i elementów kontrolnych na ekranie
+    .frosted-windows = Okna
+    .frosted-windows-desc = Użyj oszronionego szkła w oknach i dialogach
+    .frosted-panels = Panele
+    .frosted-panels-desc = Użyj oszronionego szkła w panelach i doku
+    .frosted-applets = Aplety
+    .frosted-applets-desc = Użyj oszronionego szkła w apletach menu na panelu i doku
+    .frosted-thickness = Grubość szronu
+    .less = mniej
+    .more = więcej
+    .glass-opacity = Przeźroczystość szkła
 interface-density = Zagęszczenie interfejsu
     .comfortable = Wygodne
     .compact = Zwarte
@@ -264,12 +327,10 @@ monospace-font = Czcionka o stałej szerokości
 ## Desktop: Notifications
 
 notifications = Powiadomienia
-    .desc = Nie Przeszkadzać, powiadomienia ekranu blokady oraz ustawienia konkretnej aplikacji
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Główna belka z menu i apletami
 add = Dodaj
 add-applet = Dodaj aplet
 all = Wszystkie
@@ -312,17 +373,15 @@ panel-missing = Brakuje Konfiguracji Panelu
 ## Desktop: Dock
 
 dock = Dok
-    .desc = Dodatkowa belka z aplikacjami i apletami
 
 ## Desktop: Window management
 
 window-management = Zarządzanie oknami
-    .desc = Akcje klawisza super, ustawienia kontroli okien i dodatkowe ustawienia kafelkowania okien
 super-key = Klawisz Super
     .launcher = Otwórz program startowy
     .workspaces = Otwórz obszary robocze
     .applications = Otwórz aplikacje
-    .disable = Wyłącz
+    .none = Nie przypisany
 edge-gravity = Pływające okna są przyciągane do pobliskich krawędzi
 window-controls = Sterowanie oknami
     .maximize = Pokaż przycisk maksymalizacji
@@ -336,7 +395,6 @@ focus-navigation = Nawigacja aktywnym oknem
 ## Desktop: Workspaces
 
 workspaces = Obszary robocze
-    .desc = Zachowanie i orientacja obszaru roboczego
 workspaces-behavior = Zachowanie obszaru roboczego
     .dynamic = Dynamiczne obszary robocze
     .dynamic-desc = Puste obszary robocze są automatycznie usuwane.
@@ -348,7 +406,7 @@ workspaces-multi-behavior = Funkcjonowanie przy wielu monitorach
 workspaces-overview-thumbnails = Miniatury podglądu obszaru roboczego
     .show-number = Pokaż numer obszaru roboczego
     .show-name = Pokaż nazwę obszaru roboczego
-workspaces-orientation = Orientacja obszarów roboczych
+workspaces-orientation = Kierunek obszarów roboczych
     .vertical = Pionowy
     .horizontal = Poziomy
 hot-corner = Narożnik funkcyjny
@@ -363,14 +421,13 @@ color = Kolor
     .sidebar = Profile Koloru
     .temperature = Temperatura koloru
 display = Wyświetlacz
-    .desc = Zarządzaj wyświetlaczami i nocnym światłem
     .arrangement = Układ wyświetlaczy
     .arrangement-desc = Przeciągaj wyświetlacze, aby zmienić układ
     .enable = Włącz wyświetlacz
     .external = { $size } { $output } Zewnętrzny Wyświetlacz
     .laptop = { $size } Wyświetlacz Laptopa
     .options = Opcje Wyświetlacza
-    .refresh-rate = Prędkość odświeżania ekranu
+    .refresh-rate = Częstotliwość odświeżania ekranu
     .resolution = Rozdzielczość
     .scale = Skala
     .additional-scale-options = Dodatkowe opcje skalowania
@@ -396,8 +453,8 @@ mirroring = Lustrzane Odbicie
 night-light = Nocne Światło
     .auto = Automatyczne (od świtu do zmierzchu)
     .desc = Zmniejsza ilość niebieskiego światła i ociepla kolory
-orientation = Orientacja
-    .standard = Standardowa
+orientation = Kierunek
+    .standard = Standardowy
     .rotate-90 = Obróć o 90°
     .rotate-180 = Obróć o 180°
     .rotate-270 = Obróć o 270°
@@ -422,7 +479,6 @@ dialog = Dialog
 ## Sound
 
 sound = Dźwięk
-    .desc = Nie dotyczy
 sound-output = Wyjście
     .volume = Głośność wyjścia
     .device = Urządzenie wyjścia
@@ -442,12 +498,11 @@ sound-alerts = Alerty
     .sound = Dźwięk alertów
 sound-applications = Aplikacje
     .desc = Ustawienia i głośność aplikacji
-profile = Profil
+    .none = Żadna z aplikacji nie wydaje dźwięków
 
 ## Power
 
 power = Zasilanie i bateria
-    .desc = Zarządzaj ustawieniami zasilania
 battery = Bateria
     .minute =
         { $value } { $value ->
@@ -494,7 +549,6 @@ power-saving = Opcje Oszczędzania Energii
 acceleration-desc = Automatycznie dostosuj dokładność śledzenia do prędkości ruchu
 disable-while-typing = Wyłącz podczas pisania
 input-devices = Urządzenia wprowadzania danych
-    .desc = Urządzenia wprowadzania danych
 primary-button = Główny przycisk
     .desc = Ustawia kolejność fizycznych przycisków
     .left = Lewy
@@ -513,7 +567,6 @@ fast = Szybko
 short = Krótko
 long = Długo
 keyboard = Klawiatura
-    .desc = Wprowadzanie danych, przełączanie, wprowadzanie znaków specjalnych i skróty na klawiaturze
 keyboard-sources = Źródła wprowadzania danych
     .desc = Źródła wprowadzania danych można zmienić, naciskając kombinację klawiszy Super i Spacja. Może być to spersonalizowane w ustawieniach skrótów klawiaturowych.
     .move-up = Przesuń w górę
@@ -527,6 +580,22 @@ keyboard-special-char = Wpis znaków specjalnych
     .compose = Klawisz komponujący
     .compose-desc = Klawisz komponujący umożliwia wprowadzanie różnorodnych liter. By z niego skorzystać, naciśnij go a następnie kombinację znaków. Na przykład, po naciśnięciu klawisza komponującego a następnie C i o wyjdzie ©, lub klawisz komponujący a następnie a i ' wyjdzie á.
     .caps = Klawisz Caps Lock
+    .ctrl = Control
+    .ctrl-right = Prawy Ctrl
+    .swap-with-ctrl = Zamień z Control
+    .alt = Alt
+    .alt-left = Lewy Alt
+    .alt-right = Prawy Alt
+    .super = Super
+    .super-left = Lewy Super
+    .super-right = Prawy Super
+    .menu = Klawisz Menu
+    .backspace = Backspace
+    .escape = Escape
+    .swap-with-escape = Zamień zEscape
+    .print-screen = Print Screen
+    .scroll-lock = Scroll Lock
+    .none = Nie Przypisany
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
     .repeat-delay = Opóźnienie powtarzania
@@ -650,6 +719,7 @@ system-shortcut = System
     .play-prev = Poprzedni utwór
     .poweroff = Wyłącz
     .screenshot = Zrób zrzut ekranu
+    .suspend = Wstrzymaj
     .terminal = Otwórz terminal
     .touchpad-toggle = Włączanie/wyłączanie gładzika
     .volume-lower = Zmniejsz głośność wyjścia dźwięku
@@ -674,7 +744,6 @@ zoom-out = Oddal
 ## Input: Mouse
 
 mouse = Myszka
-    .desc = Prędkość, przyśpieszenie i naturalne przewijanie myszki
     .speed = Prędkość myszki
     .acceleration = Włącz akcelerację myszki
 
@@ -689,7 +758,6 @@ tap-to-click = Dotknij, aby kliknąć
     .desc = Włącza klikanie przez dotknięcie jednym palcem dla głównego przycisku, dwoma palcami dla drugiego przycisku i trzema palcami dla środkowego przycisku
 touchpad = Gładzik
     .acceleration = Włącz przyśpieszenie gładzika
-    .desc = Prędkość, opcje klikania i gesty gładzikiem.
     .speed = Prędkość Gładzika
 
 ## Input: Gestures
@@ -710,9 +778,7 @@ open-workspaces-view = Otwarcie podglądu obszarów roboczych
 ## Time & Language
 
 time = Czas i język
-    .desc = Nie dostępne
 time-date = Data i godzina
-    .desc = Strefa czasowa, automatyczne ustawienia zegara oraz formatowanie czasu.
     .auto = Ustaw automatycznie
     .auto-ntp = Czas i data ustawią się automatycznie po wybraniu strefy czasowej
 time-zone = Strefa czasowa
@@ -720,15 +786,15 @@ time-zone = Strefa czasowa
     .auto-info = Wymaga usług lokalizacji oraz połączenia internetowego
 time-format = Format daty i godziny
     .twenty-four = Czas 24-godzinny
-    .show-seconds = Pokaż sekundy
+    .show-seconds = Sekundy
+    .show-weekday = Dzień tygodnia
     .first = Pierwszy dzień tygodnia
-    .show-date = Pokaż datę w aplecie czasu
+    .date = Data
     .friday = Piątek
     .saturday = Sobota
     .sunday = Niedziela
     .monday = Poniedziałek
 time-region = Region i język
-    .desc = Format dat, czasu i numerów odpowiadający wybranemu regionowi
 formatting = Formatowanie
     .dates = Daty
     .time = Godzina
@@ -750,7 +816,6 @@ applications = Aplikacje
 ## Applications: Default Applications
 
 default-apps = Domyślne Aplikacje
-    .desc = Domyślna przeglądarka, klient e-mail, przeglądarka plików i inne aplikacje.
     .web-browser = Przeglądarka
     .file-manager = Przeglądarka plików
     .mail-client = Klient e-mail
@@ -761,11 +826,11 @@ default-apps = Domyślne Aplikacje
     .terminal = Konsola
     .other-associations = Inne powiązania
     .text-editor = Edytor tekstu
+    .not-installed = Nie zainstalowane
 
 ## Applications: Startup Applications
 
 startup-apps = Aplikacje Startowe
-    .desc = Konfiguracja aplikacji uruchamianych po zalogowaniu.
     .add = Dodaj aplikacje
     .user = Aplikacje uruchamiane po zalogowaniu
     .none = Brak dodanych aplikacji startowych
@@ -776,7 +841,6 @@ startup-apps = Aplikacje Startowe
 ## Applications: Legacy Applications
 
 legacy-applications = Kompatybilność Aplikacji X11
-    .desc = Skalowanie i globalne skróty klawiszowe w aplikacjach systemu okien X11
 legacy-app-global-shortcuts = Globalne skróty klawiszowe aplikacji X11
     .desc = Globalne skróty umożliwiają by naciśnięcia klawiszy lub przycisków myszy w aplikacjach były rozpoznawane przez inne aplikacje do między innymi funkcjonalności jak naciśnij-by-rozmawiać lub naciśnij-by-wyciszyć. Domyślnie jest to zablokowane w aplikacjach X11, by nie miały dostępu do śledzenia naciśnięć klawiszy i przyciśnięć myszy w aplikacjach mogących zawierać poufne informacje.
     .none = Żadne przyciski
@@ -801,7 +865,6 @@ system = System i konta
 ## System: About
 
 about = O systemie
-    .desc = Nazwa urządzenia, informacje o sprzęcie, domyślne ustawienia systemu
 about-device = Nazwa urządzenia
     .desc = Ta nazwa wyświetla się innym w sieci i na urządzeniach bluetooth
 about-hardware = Sprzęt
@@ -822,12 +885,10 @@ about-related = Pokrewne ustawienia
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Szczegóły firmware
 
 ## System: Users
 
 users = Użytkownicy
-    .desc = Uwierzytelnianie, logowanie i ekran blokady.
     .admin = Administrator
     .standard = Standardowy
     .profile-add = Wybierz obraz profilu
@@ -846,3 +907,85 @@ qr-code-unavailable = Kod QR jest niedostępny
 network-name = Nazwa Sieci
 share = Udostępnij sieć
 scan-to-connect-description = Zeskanuj kod QR, aby połączyć się z tą siecią.
+sound-device-port-unplugged = Odłączone
+sound-hd-audio = Dźwięk HD
+sound-usb-audio = Dźwięk USB
+sound-device-profiles = Profile urządzeń
+shadows-floating = Pływające okna
+    .clip = Dopasuj do rogów systemowych i zaaplikuj cienie
+shadows-tiling = Pokafelkowane okna
+    .clip = Dopasuj do rogów systemowych
+    .shadow = Zaaplikuj cienie
+shadow-and-corners = Cienie i rogi okna
+workspaces-overview = Podgląd obszarów roboczych
+    .action-on-typing = Działanie po rozpoczęciu pisania
+    .none = Brak
+    .launcher = Otwórz Program Startowy
+    .applications = Otwórz Aplikacje
+xdg-entry-mouse-keywords = COSMIC;Mysz;Myszka;Przyśpieszenie;Akceleracja;Skrolowanie;Scrollowanie;
+xdg-entry-notifications-keywords = COSMIC;Powiadomienia;Blokada;
+xdg-entry-startup-apps-keywords = COSMIC;Aplikacje Startowe;Aplikacje;
+xdg-entry-wired-keywords = COSMIC;Przewodowe;LAN;Sieć;Łącze;
+xdg-entry-appearance-keywords = COSMIC;Akcenty;Kolor;Ikony;Czcionki;Wygląd;Styl
+xdg-entry-dock-keywords = COSMIC;Dok;Panel;Aplet
+xdg-entry-panel-keywords = COSMIC;Panel;Aplet
+xdg-entry-time-language-comment = Zarządzaj datą, czasem, regionem i językiem systemu
+xdg-entry-desktop-keywords = COSMIC;Środowisko Graficzne;
+xdg-entry-x11-applications-keywords = COSMIC;X11;Aplikacje;Gry;Zgodność;
+xdg-entry-touchpad-keywords = COSMIC;Gładzik;Gesty;
+xdg-entry-system-keywords = COSMIC;System;Informacje;Konta;Firmware;Mikrooprogramowanie;
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Sieć;Połączenie;Łącze;
+xdg-entry-applications-comment = Domyślne aplikacje, aplikacje startowe oraz ustawienia zgodności aplikacji X11
+xdg-entry-about-keywords = COSMIC;O programie
+xdg-entry-a11y-keywords = COSMIC;Dostępność;A11y;Ekran;Czytnik;Lupa;Kontrast;Kolor;
+xdg-entry-date-time-keywords = COSMIC;Czas;Strefa Czasowa;
+xdg-entry-desktop-comment = Tapeta, wygląd, panel, dok, zarządzanie oknami i ustawienia obszarów roboczych
+xdg-entry-input-comment = Ustawienia klawiatury i myszy
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
+xdg-entry-network-keywords = COSMIC;Sieci;Bezprzewodowe;WIFI;VPN;
+xdg-entry-wireless = WI-FI
+xdg-entry-workspaces-keywords = COSMIC;Obszary Robocze;Orientacja;Kierunek;Podgląd;Monitor;Wyświetlacz;
+xdg-entry-system-comment = Informacje o Systemie, konta i aktualizacje firmware
+xdg-entry-wallpaper-keywords = COSMIC;Tapeta;Tło;Pokaz Slajdów;Slajdy;
+xdg-entry-users-keywords = COSMIC;Użytkownik;Konto;
+xdg-entry-vpn-keywords = COSMIC;VPN;Sieć;Połączenie;OpenVPN;OpenConnect;
+xdg-entry-time-language-keywords = COSMIC;System;Czas;Data;Region;Język;
+xdg-entry-input-keywords = COSMIC;Wejście;Klawiatura;Mysz;Myszka;
+xdg-entry-comment = Aplikacja ustawień dla środowiska graficznego COSMIC
+xdg-entry-sound-keywords = COSMIC;Dźwięk;Audio;Powiadomienie; Pipewire;
+xdg-entry-power-keywords = COSMIC;Zasilanie;Bateria
+xdg-entry-default-apps-keywords = COSMIC;Dosyślne;Aplikacje
+xdg-entry-keywords = COSMIC;Ustawienia;
+xdg-entry-region-language-keywords = COSMIC;Region;Język;Data;Format;Czas;Ustawienia Regionalne;Położenie;Lokalizacja;
+xdg-entry-applications-keywords = COSMIC;Domyślnie;Aplikacje;Startowe;X11;Zgodność
+xdg-entry-keyboard-keywords = COSMIC;Klawiatura;Wejście;Źródła;Skróty;
+xdg-entry-window-management-keywords = COSMIC;Okna;Zarządzanie;Kafelkowanie;Super;Klawisz;Przycisk;
+xdg-entry-panel-comment = Podstawowy panel z menu i apletami
+xdg-entry-displays-keywords = COSMIC;Wyświetlacz;Ekran;
+no-search-results = Żadna sieć nie odpowiada twojemu wyszukiwaniu.
+workspaces-navigation = Navigation
+    .wraparound = Przemieszczaj się między pierwszym a ostatnim obszarem roboczym używając skrótów klawiszowych i gestów
+bluetooth-display-passkey = Parowanie Bluetooth
+    .description = Wpisz ten kod na { $device } i naciśnij Enter
+bluetooth-display-pin = Bluetooth Pairing
+    .description = Wpisz PIN na { $device } i naciśnij Enter
+rename = Zmień nazwę
+bluetooth-rename-device = Zmień Nazwę Urządzenia
+mobility = Mobilność
+on-screen-keyboard = Klawiatura ekranowa
+    .always-show = Zawsze pokazuj klawiaturę ekranową
+    .icon-on-panel = Ikony na pulpicie
+    .show-on-gamepad-shortcut = Pokaż klawiaturę ekranową kontrolerem po naciśnięciu jednocześnie przycisków Start i Select/Back
+    .show-on-text-input = Pokaż klawiaturę ekranową po wybraniu pola tekstowego
+date-time-applet-settings-title = Aplet czasu i daty
+date-time-applet-settings-label = Ustawienia apletu czasu i daty
+xdg-entry-drawing-tablet = Tablet graficzny
+xdg-entry-drawing-tablet-comment = Mapowanie do wyświetlacza
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablet;Rysowanie;Graficzny;Czułość;
+drawing-tablet = Tablet graficzny
+    .no-devices-detected = Nie wykryto tabletu graficznego lub urządzeń typu pióro
+    .map-to-display = Mapuj do wyświetlacza
+    .not-set = Nie ustawiono
+    .enabled = Aktywny
+tap-and-drag = Chwyć i przeciągnij
+drag-lock = Blokada przeciągania

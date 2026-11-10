@@ -40,7 +40,7 @@ pub struct Section<Message> {
     pub search_ignore: bool,
 }
 
-impl<Message: 'static> Default for Section<Message> {
+impl<Message: Clone + 'static> Default for Section<Message> {
     fn default() -> Self {
         Self {
             title: String::new(),
@@ -120,7 +120,7 @@ impl<Message: Clone + 'static> Section<Message> {
 
 #[must_use]
 #[inline]
-pub fn unimplemented<'a, Message: 'static>(
+pub fn unimplemented<'a, Message: Clone + 'static>(
     _binder: &'a Binder<Message>,
     _page: &'a dyn Page<Message>,
     _section: &'a Section<Message>,

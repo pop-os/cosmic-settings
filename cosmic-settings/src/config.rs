@@ -1,10 +1,8 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::{
-    cosmic_config::{self, ConfigGet, ConfigSet},
-    cosmic_theme::palette::Srgba,
-};
+use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
+use cosmic::cosmic_theme::palette::Srgba;
 
 const NAME: &str = "com.system76.CosmicSettings";
 

@@ -41,6 +41,7 @@
             libinput
             libpulseaudio.dev
             pipewire.dev
+            dav1d
           ];
 
           RUST_SRC_PATH = rustPlatform.rustLibSrc;

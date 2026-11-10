@@ -1,23 +1,22 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::rc::Rc;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
-use cosmic::{
-    Apply, Element, Task,
-    config::{CosmicTk, FontConfig},
-    iced_core::text::Wrapping,
-    widget::{self, settings, svg},
-};
+use cosmic::cosmic_theme::{FontConfig, Theme, ThemeBuilder};
+use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigSet;
 
 use crate::app;
+use crate::pages::desktop::appearance::theme_manager::Manager;
+use crate::widget::selection_context_item;
 
 use super::{ContextView, Message, drawer};
 
-const INTERFACE_FONT: &str = "interface_font";
-const MONOSPACE_FONT: &str = "monospace_font";
+pub static FONT_SEARCH: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("FONT_SEARCH"));
+
+const FONT: &str = "font";
+const MONO_FONT: &str = "mono_font";
 
 pub fn load_font_families() -> (Vec<Arc<str>>, Vec<Arc<str>>) {
     let mut font_system = cosmic::iced::advanced::graphics::text::font_system()
@@ -80,19 +79,33 @@ impl Default for Model {
 
 impl Model {
     pub fn new() -> Model {
+        Model::from_theme(cosmic::theme::active().cosmic())
+    }
+
+    pub fn from_theme(theme: &Theme) -> Model {
         Model {
             font_filter: Vec::new(),
             font_search: String::new(),
             interface_font_families: Vec::new(),
-            interface_font: cosmic::config::interface_font(),
+            interface_font: theme.font.clone(),
             monospace_font_families: Vec::new(),
-            monospace_font: cosmic::config::monospace_font(),
+            monospace_font: theme.mono_font.clone(),
         }
+    }
+
+    pub fn set_theme(&mut self, theme: &Theme) {
+        self.interface_font = theme.font.clone();
+        self.monospace_font = theme.mono_font.clone();
     }
 
     pub fn reset(&mut self) {
         self.font_search.clear();
         self.font_filter.clear();
+    }
+
+    pub fn take_families_from(&mut self, other: &mut Model) {
+        self.interface_font_families = std::mem::take(&mut other.interface_font_families);
+        self.monospace_font_families = std::mem::take(&mut other.monospace_font_families);
     }
 
     pub fn font_loaded(
@@ -106,11 +119,9 @@ impl Model {
         Task::none()
     }
 
-    pub fn select(
-        &mut self,
-        font: String,
-        context_view: &ContextView,
-    ) -> Option<Task<app::Message>> {
+    pub fn select(&mut self, font: String, context_view: &ContextView, manager: &mut Manager) {
+        let is_dark = manager.mode().is_dark;
+
         match *context_view {
             ContextView::MonospaceFont => {
                 self.monospace_font = FontConfig {
@@ -119,9 +130,9 @@ impl Model {
                     style: cosmic::iced::font::Style::Normal,
                     stretch: cosmic::iced::font::Stretch::Normal,
                 };
+                manager.set_mono_font(self.monospace_font.clone());
 
-                update_config(MONOSPACE_FONT, self.monospace_font.clone());
-                None
+                update_theme(MONO_FONT, self.monospace_font.clone(), is_dark);
             }
             ContextView::SystemFont => {
                 self.interface_font = FontConfig {
@@ -130,13 +141,11 @@ impl Model {
                     style: cosmic::iced::font::Style::Normal,
                     stretch: cosmic::iced::font::Stretch::Normal,
                 };
-                update_config(INTERFACE_FONT, self.interface_font.clone());
-                tokio::spawn(async move {
-                    set_gnome_font_name(font.as_ref()).await;
-                });
-                None
+                manager.set_font(self.interface_font.clone());
+
+                update_theme(FONT, self.interface_font.clone(), is_dark);
             }
-            _ => None,
+            _ => {}
         }
     }
 
@@ -162,14 +171,14 @@ impl Model {
         Task::none()
     }
 
-    pub fn search_input(&self) -> Element<'_, crate::pages::Message> {
-        widget::search_input(fl!("type-to-search"), &self.font_search)
+    pub fn search_input(&self) -> Element<'_, Message> {
+        widget::search_input("", &self.font_search)
             .on_input(|input| Message::DrawerFont(drawer::FontMessage::Search(input)))
             .on_clear(Message::DrawerFont(drawer::FontMessage::Search(
                 String::new(),
             )))
+            .id(FONT_SEARCH.clone())
             .apply(Element::from)
-            .map(crate::pages::Message::Appearance)
     }
 
     pub fn selection_context(
@@ -177,10 +186,6 @@ impl Model {
         context_view: &ContextView,
         callback: impl Fn(Arc<str>) -> super::Message,
     ) -> Element<'_, super::Message> {
-        let svg_accent = Rc::new(|theme: &cosmic::Theme| svg::Style {
-            color: Some(theme.cosmic().accent_text_color().into()),
-        });
-
         let (mut families, current_font) = match *context_view {
             ContextView::MonospaceFont => {
                 (&self.monospace_font_families, &self.monospace_font.family)
@@ -193,36 +198,17 @@ impl Model {
             families = &self.font_filter;
         }
 
-        let list = families.iter().fold(widget::list_column(), |list, family| {
-            let selected = &**family == current_font;
-            list.add(
-                settings::item_row(vec![
-                    widget::text::body(&**family)
-                        .class(if selected {
-                            cosmic::theme::Text::Accent
-                        } else {
-                            cosmic::theme::Text::Default
-                        })
-                        .wrapping(Wrapping::Word)
-                        .width(cosmic::iced::Length::Fill)
-                        .into(),
-                    if selected {
-                        widget::icon::from_name("object-select-symbolic")
-                            .size(16)
-                            .icon()
-                            .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
-                            .into()
-                    } else {
-                        widget::horizontal_space().width(16).into()
-                    },
-                ])
-                .apply(widget::container)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press(callback(family.clone())),
-            )
-        });
+        let list = families.iter().fold(
+            widget::list_column::with_capacity(families.len()),
+            |list, family| {
+                let selected = &**family == current_font;
+                list.add(selection_context_item(
+                    family,
+                    selected,
+                    callback(family.clone()),
+                ))
+            },
+        );
         list.into()
     }
 
@@ -235,16 +221,20 @@ impl Model {
     }
 }
 
-fn update_config(variant: &str, font: FontConfig) {
-    if let Ok(config) = CosmicTk::config() {
-        _ = config.set(variant, font);
+fn update_theme(key: &str, font: FontConfig, is_dark: bool) {
+    let (config, builder_config) = if is_dark {
+        (Theme::dark_config(), ThemeBuilder::dark_config())
+    } else {
+        (Theme::light_config(), ThemeBuilder::light_config())
+    };
+    if let Some((config, builder_config)) = config.ok().zip(builder_config.ok()) {
+        _ = config.set(key, font.clone());
+        _ = builder_config.set(key, font);
+        if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+            && let Err(error) =
+                store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(is_dark))
+        {
+            tracing::warn!(?error, "failed to sync the active theme bundle");
+        }
     }
-}
-
-/// Set the preferred icon theme for GNOME/GTK applications.
-pub async fn set_gnome_font_name(font_name: &str) {
-    let _res = tokio::process::Command::new("gsettings")
-        .args(["set", "org.gnome.desktop.interface", "font-name", font_name])
-        .status()
-        .await;
 }

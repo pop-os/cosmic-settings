@@ -7,38 +7,28 @@ pub mod widgets;
 pub use config::Config;
 use url::Url;
 
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
+use cosmic::app::ContextDrawer;
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser;
-use cosmic::{
-    Apply, Element, Task,
-    widget::{ColorPickerModel, color_picker::ColorPickerUpdate, icon},
+use cosmic::iced::core::text::{Ellipsize, EllipsizeHeightLimit};
+use cosmic::iced::runtime::core::image::Handle as ImageHandle;
+use cosmic::iced::{Alignment, Color, Length, Subscription, window};
+use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::segmented_button::{self, SingleSelectModel};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::{
+    ColorPickerModel, button, dropdown, icon, list_column, row, settings, tab_bar, text,
 };
-use cosmic::{app::ContextDrawer, iced_runtime::core::image::Handle as ImageHandle};
-use cosmic::{
-    iced::Subscription,
-    widget::{
-        button, dropdown, list_column, row,
-        segmented_button::{self, SingleSelectModel},
-        settings, tab_bar, text, toggler,
-    },
-};
-use cosmic::{
-    iced::{Alignment, Color, Length, window},
-    surface,
-};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_bg_config::Source;
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
-use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
 
 use crate::subscription::WallpaperEvent;
@@ -75,13 +65,11 @@ pub enum Message {
     AddFolder(Arc<Result<Url, file_chooser::Error>>),
     /// Adds a new image file the system wallpaper folder.
     #[cfg(feature = "xdg-portal")]
-    AddFile(Arc<Result<Url, file_chooser::Error>>),
+    AddFiles(Arc<Result<Vec<Url>, file_chooser::Error>>),
     /// Cache currently displayed image.
     CacheDisplayImage,
     /// Selects an option in the category dropdown menu.
     ChangeCategory(Category),
-    /// Changes the displayed images in the wallpaper view.
-    ChangeFolder(Context),
     /// Emits a wallpaper event.
     Event(WallpaperEvent),
     /// Handles messages from the color dialog.
@@ -114,7 +102,7 @@ pub enum Message {
     Slideshow(bool),
     /// State change from cosmic-bg
     UpdateState(cosmic_bg_config::state::State),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::app::Message {
@@ -156,6 +144,9 @@ pub struct Page {
     /// Whether to show the tab_bar or not.
     show_tab_bar: bool,
 
+    /// Bundle mode whose active look receives background edits from the appearance page.
+    target_mode: Option<cosmic_theme_bundle_config::Mode>,
+
     /// The display that is currently being configured.
     ///
     /// If set to `None`, all displays will have the same wallpaper.
@@ -182,9 +173,6 @@ pub struct Page {
     /// Model for selecting between display outputs.
     outputs: SingleSelectModel,
 
-    /// Current value of the slideshow rotation frequency.
-    rotation_frequency: u64,
-
     /// Model for available options for rotation frequencies.
     rotation_options: Vec<String>,
 
@@ -199,6 +187,9 @@ pub struct Page {
 
     /// When set, applys a config update after images are loaded.
     update_config: Option<(usize, HashMap<String, (String, (u32, u32))>)>,
+
+    /// Whether the next update should write the selected wallpaper to config.
+    config_dirty: bool,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -216,7 +207,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("wallpaper", "preferences-desktop-wallpaper-symbolic")
             .title(fl!("wallpaper"))
-            .description(fl!("wallpaper", "desc"))
+            .description(fl!("xdg-entry-wallpaper-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -225,8 +216,14 @@ impl page::Page<crate::pages::Message> for Page {
             return Task::none();
         }
 
+        let target_mode = self.target_mode;
+        let context = target_mode
+            .and_then(crate::pages::desktop::appearance::theme_bundles::display_background);
         let (task, on_enter_handle) = Task::future(async move {
-            let (service_config, displays) = wallpaper::config().await;
+            let (service_config, displays) = match context {
+                Some(context) => wallpaper::config_for(context).await,
+                None => wallpaper::config().await,
+            };
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
@@ -240,10 +237,12 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        self.target_mode = None;
         // Reclaim memory
         self.cached_display_handle = None;
         self.selection = Context::default();
         self.outputs = SingleSelectModel::default();
+        self.config_dirty = false;
 
         // Cancel the on_enter task if it was running.
         if let Some(handle) = self.on_enter_handle.take() {
@@ -292,11 +291,15 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl Default for Page {
     fn default() -> Self {
+        let config = Config::new();
+        let selected_rotation = Self::get_selected_rotation(config.rotation_frequency);
+
         let mut page = Page {
             entity: page::Entity::null(),
             on_enter_handle: None,
             context_view: None,
             show_tab_bar: false,
+            target_mode: None,
             active_output: None,
             cached_display_handle: None,
             categories: {
@@ -328,10 +331,9 @@ impl Default for Page {
             },
             wallpaper_service_config: wallpaper::Config::default(),
             color_model: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, Some(Color::WHITE)),
-            config: Config::new(),
+            config,
             fit_options: vec![fl!("fill"), fl!("fit-to-screen")],
             outputs: SingleSelectModel::default(),
-            rotation_frequency: 300,
             rotation_options: vec![
                 // FIX: fluent is inserting extra unicode characters in formatting
                 fl!("x-minutes", number = 5)
@@ -354,9 +356,10 @@ impl Default for Page {
                     .replace('\u{2069}', ""),
             ],
             selected_fit: 0,
-            selected_rotation: 0,
+            selected_rotation,
             selection: Context::default(),
             update_config: None,
+            config_dirty: false,
         };
 
         page.assign_recent_folders();
@@ -366,6 +369,22 @@ impl Default for Page {
 }
 
 impl Page {
+    pub fn set_target_mode(&mut self, mode: cosmic_theme_bundle_config::Mode) {
+        self.target_mode = Some(mode);
+    }
+
+    fn get_selected_rotation(rotation_frequency: u64) -> usize {
+        match rotation_frequency {
+            0..=300 => MINUTES_5,
+            301..=600 => MINUTES_10,
+            601..=900 => MINUTES_15,
+            901..=1800 => MINUTES_30,
+            1801..=3600 => HOUR_1,
+            3601..=7200 => HOUR_2,
+            _ => HOUR_2,
+        }
+    }
+
     fn add_recent_folder(&mut self, folder: PathBuf) {
         if let Err(why) = self.config.add_recent_folder(folder) {
             tracing::error!(?why, "cannot add recent folder to config");
@@ -388,23 +407,61 @@ impl Page {
         }
     }
 
+    fn target_slideshow_image(&self, output: &str) -> Option<PathBuf> {
+        let mode = self.target_mode?;
+        let context = crate::pages::desktop::appearance::theme_bundles::display_background(mode)?;
+        let config = cosmic_bg_config::Config::load(&context).ok()?;
+        let entry = if config.same_on_all {
+            &config.default_background
+        } else {
+            config.entry(output).unwrap_or(&config.default_background)
+        };
+
+        match &entry.source {
+            Source::Path(path) => wallpaper::preview_path(path),
+            Source::Color(_) => None,
+        }
+    }
+
+    fn active_image_path(&self, output: &str) -> Option<PathBuf> {
+        let inactive_mode = self.target_mode.is_some_and(|mode| {
+            mode != crate::pages::desktop::appearance::theme_bundles::on_screen_mode()
+        });
+
+        if inactive_mode {
+            self.target_slideshow_image(output)
+        } else {
+            match self.config.current_image(output)? {
+                Source::Path(path) => Some(path),
+                Source::Color(_) => None,
+            }
+        }
+    }
+
     fn cache_display_image(&mut self) {
         self.cached_display_handle = None;
 
         let choice = match self.selection.active {
             Choice::Wallpaper(id) => self.selection.display_images.get(id),
 
-            Choice::Slideshow => self
-                .config_output()
-                .and_then(|output| match self.config.current_image(output)? {
-                    Source::Path(path) => {
-                        let id = self.wallpaper_id_from_path(&path)?;
-                        Some(&self.selection.display_images[id])
-                    }
+            Choice::Slideshow => {
+                let inactive_mode = self.target_mode.is_some_and(|mode| {
+                    mode != crate::pages::desktop::appearance::theme_bundles::on_screen_mode()
+                });
 
-                    Source::Color(_color) => None,
-                })
-                .or(self.selection.display_images.values().next()),
+                self.config_output()
+                    .and_then(|output| self.active_image_path(output))
+                    .as_ref()
+                    .and_then(|path| self.wallpaper_id_from_path(path))
+                    .and_then(|id| self.selection.display_images.get(id))
+                    .or_else(|| {
+                        if inactive_mode {
+                            None
+                        } else {
+                            self.selection.display_images.values().next()
+                        }
+                    })
+            }
 
             Choice::Color(_) => None,
         };
@@ -465,7 +522,23 @@ impl Page {
 
     /// Applies the current settings to cosmic-bg.
     pub fn config_apply(&mut self) {
+        let mode = self
+            .target_mode
+            .unwrap_or_else(crate::pages::desktop::appearance::theme_bundles::on_screen_mode);
+        let Some(context) =
+            crate::pages::desktop::appearance::theme_bundles::display_background(mode)
+        else {
+            tracing::warn!("failed to get background config for mode");
+            return;
+        };
+
+        // Keep the toggle effective even if the current selection cannot be written.
+        if let Err(error) = context.set_same_on_all(self.wallpaper_service_config.same_on_all) {
+            tracing::warn!(?error, "failed to set the same-on-all background setting");
+        }
+
         let Some(output) = self.config_output().map(String::from) else {
+            self.reload_background_config(&context);
             return;
         };
 
@@ -485,7 +558,10 @@ impl Page {
             Choice::Slideshow => {
                 match self.config_wallpaper_entry(output, self.config.current_folder()) {
                     Some(entry) => entry,
-                    None => return,
+                    None => {
+                        self.reload_background_config(&context);
+                        return;
+                    }
                 }
             }
 
@@ -493,9 +569,13 @@ impl Page {
                 if let Some(path) = self.selection.paths.get(key) {
                     match self.config_wallpaper_entry(output, path.clone()) {
                         Some(entry) => entry,
-                        None => return,
+                        None => {
+                            self.reload_background_config(&context);
+                            return;
+                        }
                     }
                 } else {
+                    self.reload_background_config(&context);
                     return;
                 }
             }
@@ -503,7 +583,50 @@ impl Page {
             Choice::Color(ref color) => Entry::new(output, wallpaper::Source::Color(color.clone())),
         };
 
-        wallpaper::set(&mut self.wallpaper_service_config, entry);
+        wallpaper::set(&mut self.wallpaper_service_config, &context, entry);
+        self.reload_background_config(&context);
+        if !self.wallpaper_service_config.same_on_all {
+            self.seed_missing_output_entries(&context);
+        }
+        if let Err(error) =
+            crate::pages::desktop::appearance::theme_bundles::sync_active_background_mode(mode)
+        {
+            tracing::warn!(?error, "failed to sync the active theme bundle background");
+        }
+    }
+
+    fn seed_missing_output_entries(&mut self, context: &cosmic_bg_config::Context) {
+        let template = self.wallpaper_service_config.default_background.clone();
+        let outputs: Vec<String> = self
+            .outputs
+            .iter()
+            .filter_map(|id| {
+                self.outputs
+                    .data::<OutputName>(id)
+                    .map(|name| name.0.clone())
+            })
+            .collect();
+
+        let mut changed = false;
+        for output in outputs {
+            if self.wallpaper_service_config.entry(&output).is_some() {
+                continue;
+            }
+            let mut entry = template.clone();
+            entry.output = output;
+            wallpaper::set(&mut self.wallpaper_service_config, context, entry);
+            changed = true;
+        }
+        if changed {
+            self.reload_background_config(context);
+        }
+    }
+
+    fn reload_background_config(&mut self, context: &cosmic_bg_config::Context) {
+        if let Ok(config) = wallpaper::Config::load(context) {
+            self.wallpaper_service_config = config;
+        }
+        self.cache_display_image();
     }
 
     /// Locate the ID of a wallpaper that's already stored in memory
@@ -578,6 +701,7 @@ impl Page {
                     let _ = self.config.set_current_folder(None);
                 } else {
                     self.select_first_wallpaper();
+                    self.config_dirty = true;
                 }
             }
 
@@ -629,10 +753,10 @@ impl Page {
     }
 
     /// Changes the slideshow wallpaper rotation frequency
-    pub fn change_rotation_frequency(&mut self, option: usize) {
+    pub fn change_rotation_frequency(&mut self, option: usize) -> Result<(), cosmic_config::Error> {
         self.selected_rotation = option;
 
-        self.rotation_frequency = match self.selected_rotation {
+        let rotation_frequency = match self.selected_rotation {
             MINUTES_5 => 300,
             MINUTES_10 => 600,
             MINUTES_15 => 900,
@@ -641,6 +765,8 @@ impl Page {
             HOUR_2 => 7200,
             _ => 10800,
         };
+        self.config.change_rotation_frequency(rotation_frequency)?;
+        Ok(())
     }
 
     /// Updates configuration for wallpaper image.
@@ -661,13 +787,12 @@ impl Page {
 
         let entry = Entry::new(output, wallpaper::Source::Path(path))
             .scaling_mode(scaling_mode)
-            .rotation_frequency(self.rotation_frequency);
+            .rotation_frequency(self.config.rotation_frequency);
 
         if let Some(old_entry) = old_entry {
             entry
                 .sampling_method(old_entry.sampling_method)
                 .filter_method(old_entry.filter_method.clone())
-                .filter_by_theme(old_entry.filter_by_theme)
         } else {
             entry
         }
@@ -681,7 +806,10 @@ impl Page {
                 .width(Length::Fixed(SIMULATED_WIDTH as f32))
                 .into(),
 
-            None => cosmic::widget::Space::new(SIMULATED_WIDTH, SIMULATED_HEIGHT).into(),
+            None => cosmic::widget::Space::new()
+                .width(Length::Fixed(SIMULATED_WIDTH as f32))
+                .height(Length::Fixed(SIMULATED_HEIGHT as f32))
+                .into(),
         }
     }
 
@@ -695,27 +823,6 @@ impl Page {
             }
 
             Message::CacheDisplayImage => self.cache_display_image(),
-
-            Message::ChangeFolder(mut context) => {
-                // Reassign custom colors and images to the new context.
-                std::mem::swap(&mut context, &mut self.selection);
-
-                for color in context.custom_colors {
-                    self.selection.add_custom_color(color);
-                }
-
-                for image in context.custom_images {
-                    let path = context.paths.remove(image);
-                    let display = context.display_images.remove(image);
-                    let selection = context.selection_handles.remove(image);
-
-                    if let Some(((display, selection), path)) = display.zip(selection).zip(path) {
-                        self.selection.add_custom_image(path, display, selection);
-                    }
-                }
-
-                self.select_first_wallpaper();
-            }
 
             Message::ColorAdd(message) => {
                 match message {
@@ -790,7 +897,6 @@ impl Page {
                     remaining -= 1;
                     if remaining == 0 {
                         self.wallpaper_service_config_update(displays);
-                        self.config_apply();
                     } else {
                         self.update_config = Some((remaining, displays));
                     }
@@ -804,11 +910,11 @@ impl Page {
                         .title(fl!("wallpaper", "image-dialog"))
                         .accept_label(fl!("dialog-add"))
                         .modal(false)
-                        .open_file()
+                        .open_files()
                         .await
-                        .map(|response| response.url().to_owned());
+                        .map(|response| response.urls().to_vec());
 
-                    let message = Message::AddFile(Arc::new(dialog_result));
+                    let message = Message::AddFiles(Arc::new(dialog_result));
                     let page_message = crate::pages::Message::DesktopWallpaper(message);
                     crate::Message::PageMessage(page_message)
                 });
@@ -829,11 +935,13 @@ impl Page {
             Message::ColorSelect(color) => {
                 self.selection.active = Choice::Color(color);
                 self.cached_display_handle = None;
+                self.config_dirty = true;
             }
 
             Message::Fit(selection) => {
                 self.selected_fit = selection;
                 self.cache_display_image();
+                self.config_dirty = true;
             }
 
             Message::Output(id) => {
@@ -841,25 +949,36 @@ impl Page {
                 return Task::none();
             }
 
-            Message::RotationFrequency(pos) => self.change_rotation_frequency(pos),
+            Message::RotationFrequency(pos) => {
+                if let Err(err) = self.change_rotation_frequency(pos) {
+                    tracing::warn!("Failed to save rotation frequency: {err}");
+                }
+                self.config_dirty = true;
+            }
 
             Message::SameWallpaper(value) => {
                 self.wallpaper_service_config.same_on_all = value;
-                self.wallpaper_service_config.backgrounds.clear();
+                if value {
+                    self.wallpaper_service_config.backgrounds.clear();
+                    self.wallpaper_service_config.outputs.clear();
+                }
+                self.config_dirty = true;
             }
 
             Message::Select(id) => {
                 self.selection.active = Choice::Wallpaper(id);
                 self.cache_display_image();
+                self.config_dirty = true;
             }
 
             Message::Slideshow(enable) => {
                 if enable {
                     self.selection.active = Choice::Slideshow;
                     self.cache_display_image();
+                    self.config_dirty = true;
                 } else {
                     if let Some(output) = self.config_output()
-                        && let Some(Source::Path(path)) = self.config.current_image(output)
+                        && let Some(path) = self.active_image_path(output)
                         && let Some(entity) = self.wallpaper_id_from_path(&path)
                         && let Some(entry) = self.config_wallpaper_entry(output.to_owned(), path)
                     {
@@ -869,12 +988,18 @@ impl Page {
                     }
 
                     self.select_first_wallpaper();
+                    self.config_dirty = true;
                 }
             }
 
             #[cfg(feature = "xdg-portal")]
             Message::AddFolder(result) => {
                 let path = match dialog_response(result) {
+                    DialogResponse::Paths(_) => {
+                        // TODO find if there is a use of multi folder addition.
+                        tracing::warn!("unexpected multi-path response for folder dialog");
+                        return Task::none();
+                    }
                     DialogResponse::Path(path) => path,
                     DialogResponse::Error(why) => {
                         tracing::error!(why, "dialog response error");
@@ -900,27 +1025,30 @@ impl Page {
             }
 
             #[cfg(feature = "xdg-portal")]
-            Message::AddFile(result) => {
-                let path = match dialog_response(result) {
-                    DialogResponse::Path(path) => path,
+            Message::AddFiles(result) => {
+                let paths = match dialog_response_multi(result) {
+                    DialogResponse::Paths(paths) => paths,
+                    DialogResponse::Path(path) => vec![path], // not really but for the sake of consistency..
                     DialogResponse::Error(why) => {
                         tracing::error!(why, "dialog response error");
                         return Task::none();
                     }
                 };
 
-                if path.is_file() {
+                let tasks = paths.into_iter().filter(|path| path.is_file()).map(|path| {
                     tracing::info!(?path, "opening custom image");
 
                     // Loads a single custom image and its thumbnail for display in the backgrounds view.
-                    return cosmic::Task::future(async move {
+                    cosmic::Task::future(async move {
                         let result = wallpaper::load_image_with_thumbnail(path);
 
                         let message = Message::ImageAdd(result.map(Arc::new));
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
                         crate::Message::PageMessage(page_message)
-                    });
-                }
+                    })
+                });
+
+                return Task::batch(tasks);
             }
 
             Message::Event(event) => match event {
@@ -955,21 +1083,21 @@ impl Page {
                         _ => false,
                     };
                     if fix_active {
-                        self.selection.active =
-                            match self.wallpaper_service_config.default_background.source {
-                                Source::Path(ref path) if !path.is_dir() => self
-                                    .selection
-                                    .paths
-                                    .iter()
-                                    .find(|(_key, valid_path)| path == valid_path.as_path())
-                                    .map(|(key, _)| Choice::Wallpaper(key))
-                                    .unwrap_or_default(),
-                                Source::Path(_) => Choice::Slideshow,
-                                Source::Color(ref color) => {
-                                    self.selection.add_custom_color(color.clone());
-                                    Choice::Color(color.clone())
-                                }
+                        let source = self.active_background().source.clone();
+                        self.selection.active = match source {
+                            Source::Path(ref path) if !path.is_dir() => self
+                                .selection
+                                .paths
+                                .iter()
+                                .find(|(_key, valid_path)| path == valid_path.as_path())
+                                .map(|(key, _)| Choice::Wallpaper(key))
+                                .unwrap_or_default(),
+                            Source::Path(_) => Choice::Slideshow,
+                            Source::Color(ref color) => {
+                                self.selection.add_custom_color(color.clone());
+                                Choice::Color(color.clone())
                             }
+                        }
                     }
                 }
                 WallpaperEvent::Loaded => self.cache_display_image(),
@@ -1003,7 +1131,6 @@ impl Page {
 
                 if custom_images == 0 {
                     self.wallpaper_service_config_update(update.displays);
-                    self.config_apply();
                 } else {
                     // Make note of how many images are to be loaded, with the display update for the service config.
                     self.update_config = Some((custom_images, update.displays));
@@ -1036,8 +1163,21 @@ impl Page {
             }
         }
 
-        self.config_apply();
+        if self.config_dirty {
+            self.config_dirty = false;
+            self.config_apply();
+        }
         Task::none()
+    }
+
+    fn active_background(&self) -> &Entry {
+        if self.wallpaper_service_config.same_on_all {
+            &self.wallpaper_service_config.default_background
+        } else {
+            self.config_output()
+                .and_then(|output| self.wallpaper_service_config.entry(output))
+                .unwrap_or(&self.wallpaper_service_config.default_background)
+        }
     }
 
     /// Selects the given wallpaper entry.
@@ -1049,6 +1189,9 @@ impl Page {
                     self.cache_display_image();
                 } else if let Some(entity) = self.wallpaper_id_from_path(path) {
                     self.select_wallpaper(entry, entity, path.is_dir());
+                } else {
+                    self.selection.active = Choice::default();
+                    self.cache_display_image();
                 }
             }
 
@@ -1112,7 +1255,7 @@ impl Page {
             _ => self.selected_rotation = MINUTES_5,
         }
 
-        self.rotation_frequency = entry.rotation_frequency;
+        self.config.rotation_frequency = entry.rotation_frequency;
 
         self.cache_display_image();
     }
@@ -1160,6 +1303,10 @@ impl Context {
     }
 
     fn add_custom_image(&mut self, path: PathBuf, display: Image, selection: ImageHandle) {
+        if self.paths.values().any(|p| p == &path) {
+            return;
+        }
+
         let key = self.paths.insert(path);
         self.is_custom.insert(key, ());
         self.display_images.insert(key, display);
@@ -1191,12 +1338,12 @@ impl Context {
 
 #[allow(clippy::too_many_lines)]
 pub fn settings() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let same_label = descriptions.insert(fl!("wallpaper", "same"));
-    let fit_label = descriptions.insert(fl!("wallpaper", "fit"));
-    let slide_label = descriptions.insert(fl!("wallpaper", "slide"));
-    let change_label = descriptions.insert(fl!("wallpaper", "change"));
+    crate::slab!(descriptions {
+        same_label = fl!("wallpaper", "same");
+        fit_label = fl!("wallpaper", "fit");
+        slide_label = fl!("wallpaper", "slide");
+        change_label = fl!("wallpaper", "change");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -1205,17 +1352,11 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut children = Vec::with_capacity(3);
 
             let mut show_slideshow_toggle = true;
-            // Slideshow is enabled if the background path from cosmic-bg is a directory
-            let mut slideshow_enabled = page
-                .config_output()
-                .and_then(|output| page.wallpaper_service_config.entry(output))
-                .is_some_and(|entry| {
-                    if let Source::Path(path) = &entry.source {
-                        path.is_dir()
-                    } else {
-                        false
-                    }
-                });
+            // Slideshow is enabled if the effective background is a directory.
+            let mut slideshow_enabled = match &page.active_background().source {
+                Source::Path(path) => path.is_dir(),
+                Source::Color(_) => false,
+            };
 
             children.push(crate::widget::display_container(
                 match page.selection.active {
@@ -1255,6 +1396,7 @@ pub fn settings() -> Section<crate::pages::Message> {
             } else if page.show_tab_bar {
                 let element = tab_bar::horizontal(&page.outputs)
                     .button_alignment(Alignment::Center)
+                    .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
                     .on_activate(Message::Output);
 
                 children.push(element.into());
@@ -1271,18 +1413,17 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             children.push({
                 let mut column = list_column()
-                    .add(settings::item(
-                        &descriptions[same_label],
-                        toggler(page.wallpaper_service_config.same_on_all)
-                            .on_toggle(Message::SameWallpaper),
+                    .add(settings::item::builder(&descriptions[same_label]).toggler(
+                        page.wallpaper_service_config.same_on_all,
+                        Message::SameWallpaper,
                     ))
                     .add(settings::item(&descriptions[fit_label], wallpaper_fit));
 
                 if show_slideshow_toggle {
-                    column = column.add(settings::item(
-                        &descriptions[slide_label],
-                        toggler(slideshow_enabled).on_toggle(Message::Slideshow),
-                    ));
+                    column = column.add(
+                        settings::item::builder(&descriptions[slide_label])
+                            .toggler(slideshow_enabled, Message::Slideshow),
+                    );
                 }
 
                 // The rotation frequency dropdown should only be shown when the slideshow is enabled.
@@ -1345,7 +1486,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                         },
                     )
                     .push(category_selection)
-                    .push(cosmic::widget::horizontal_space())
+                    .push(horizontal_space())
                     .push_maybe(add_button)
                     .into(),
             );
@@ -1426,27 +1567,33 @@ pub fn settings() -> Section<crate::pages::Message> {
 enum DialogResponse {
     Error(String),
     Path(PathBuf),
+    Paths(Vec<PathBuf>),
+}
+
+#[cfg(feature = "xdg-portal")]
+fn unwrap_dialog_response<T>(result: Arc<Result<T, file_chooser::Error>>) -> Result<T, String> {
+    let Some(result) = Arc::into_inner(result) else {
+        return Err(String::from("Arc::into_inner returned None"));
+    };
+
+    result.map_err(|why| {
+        let mut source: &dyn std::error::Error = &why;
+        let mut string = format!("open dialog subscription errored\n    cause: {source}");
+
+        while let Some(new_source) = source.source() {
+            string.push_str(&format!("\n    cause: {new_source}"));
+            source = new_source;
+        }
+
+        string
+    })
 }
 
 #[cfg(feature = "xdg-portal")]
 fn dialog_response(result: Arc<Result<Url, file_chooser::Error>>) -> DialogResponse {
-    let Some(result) = Arc::into_inner(result) else {
-        return DialogResponse::Error(String::from("Arc::into_inner returned None"));
-    };
-
-    let selection = match result {
-        Ok(response) => response,
-        Err(why) => {
-            let mut source: &dyn std::error::Error = &why;
-            let mut string = format!("open dialog subscription errored\n    cause: {source}");
-
-            while let Some(new_source) = source.source() {
-                string.push_str(&format!("\n    cause: {new_source}"));
-                source = new_source;
-            }
-
-            return DialogResponse::Error(string);
-        }
+    let selection = match unwrap_dialog_response(result) {
+        Ok(selection) => selection,
+        Err(why) => return DialogResponse::Error(why),
     };
 
     let Ok(path) = selection.to_file_path() else {
@@ -1454,4 +1601,23 @@ fn dialog_response(result: Arc<Result<Url, file_chooser::Error>>) -> DialogRespo
     };
 
     DialogResponse::Path(path)
+}
+
+#[cfg(feature = "xdg-portal")]
+fn dialog_response_multi(result: Arc<Result<Vec<Url>, file_chooser::Error>>) -> DialogResponse {
+    let selections = match unwrap_dialog_response(result) {
+        Ok(selections) => selections,
+        Err(why) => return DialogResponse::Error(why),
+    };
+
+    let mut paths = Vec::with_capacity(selections.len());
+    for selection in selections {
+        let Ok(path) = selection.to_file_path() else {
+            tracing::warn!("not a valid file path: {}", selection.path());
+            continue;
+        };
+        paths.push(path);
+    }
+
+    DialogResponse::Paths(paths)
 }

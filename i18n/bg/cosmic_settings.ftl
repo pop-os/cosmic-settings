@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Кабелни
-        [wifi] Безжични
-        [vpn] ВЧМ
-       *[other] Неизвестни
-    } връзки и профили на връзките.
 add-network = Добавяне на мрежа
     .profile = Добавяне на профил
 add-vpn = Добавяне на ВЧМ
@@ -430,7 +423,6 @@ sound-alerts = Известия
     .sound = Звук на известията
 sound-applications = Програми
     .desc = Сила на звука на програмите и настройки
-profile = Профил
 
 ## Power
 

@@ -6,27 +6,25 @@ use cosmic::iced::clipboard::dnd::{
 use cosmic::iced::clipboard::mime::AsMimeTypes;
 use cosmic::iced::id::Internal;
 
-use cosmic::iced_core;
-use cosmic::iced_core::clipboard::IconSurface;
+use cosmic::iced;
+use cosmic::iced::core::clipboard::IconSurface;
 use cosmic::widget::{Column, button, column, container, icon, list_column, row, text, text_input};
 
-use cosmic::{
-    Apply, Element,
-    cosmic_config::{Config, CosmicConfigEntry},
-    iced::{
-        Alignment, Border, Color, Length, Point, Rectangle, Size, Vector, core::window, event,
-        mouse, overlay, touch,
-    },
-    iced_runtime::{Task, core::id::Id},
-    iced_widget::core::{
-        Clipboard, Shell, Widget, layout, renderer,
-        widget::{Operation, Tree, tree},
-    },
-    theme,
+use cosmic::cosmic_config::{Config, CosmicConfigEntry};
+use cosmic::iced::core::widget::{Operation, Tree, tree};
+use cosmic::iced::core::{Clipboard, Shell, Widget, layout, renderer, window};
+use cosmic::iced::runtime::Task;
+use cosmic::iced::runtime::core::id::Id;
+use cosmic::iced::{
+    Alignment, Border, Color, Length, Point, Rectangle, Size, Vector, event, mouse, overlay, touch,
 };
+use cosmic::{Apply, Element, theme};
 
+use std::borrow::Cow;
+use std::fmt::Debug;
+use std::mem;
 use std::path::{Path, PathBuf};
-use std::{borrow::Cow, fmt::Debug, mem, sync::LazyLock};
+use std::sync::LazyLock;
 
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
@@ -170,7 +168,7 @@ pub enum Message {
     ReorderCenter(Vec<Applet<'static>>),
     ReorderEnd(Vec<Applet<'static>>),
     Applets(Vec<Applet<'static>>),
-    PanelConfig(CosmicPanelConfig),
+    PanelConfig(Box<CosmicPanelConfig>),
     StartDnd(Applet<'static>),
     // DnDTask(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
     Search(String),
@@ -297,7 +295,7 @@ impl Page {
     pub fn update(&mut self, message: Message) -> Task<app::Message> {
         match message {
             Message::PanelConfig(c) => {
-                self.current_config = Some(c);
+                self.current_config = Some(*c);
             }
 
             Message::ReorderStart(start_list) => {
@@ -439,8 +437,8 @@ pub fn lists<
             return Element::from(text::body(fl!("unknown")));
         };
 
-        column::with_children(vec![
-            column::with_children(vec![
+        column::with_children([
+            column::with_children([
                 text::body(fl!("start-segment")).into(),
                 AppletReorderList::new(
                     config
@@ -471,7 +469,7 @@ pub fn lists<
             ])
             .spacing(space_xxs)
             .into(),
-            column::with_children(vec![
+            column::with_children([
                 text::body(fl!("center-segment")).into(),
                 AppletReorderList::new(
                     config
@@ -501,7 +499,7 @@ pub fn lists<
             ])
             .spacing(space_xxs)
             .into(),
-            column::with_children(vec![
+            column::with_children([
                 text::body(fl!("end-segment")).into(),
                 AppletReorderList::new(
                     config
@@ -650,7 +648,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 let is_dragged = active_dnd.as_ref().is_some_and(|dnd| dnd.id == info.id);
 
                 let content = if is_dragged {
-                    row().height(Length::Fixed(32.0))
+                    row([]).height(Length::Fixed(32.0))
                 } else {
                     row::with_children(vec![
                         icon::from_name("grip-lines-symbolic")
@@ -899,30 +897,28 @@ where
     }
 
     fn layout(
-        &self,
+        &mut self,
         tree: &mut Tree,
         renderer: &cosmic::Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        let inner_layout = self
-            .inner
-            .as_widget()
-            .layout(&mut tree.children[0], renderer, limits);
+        let inner_layout =
+            self.inner
+                .as_widget_mut()
+                .layout(&mut tree.children[0], renderer, limits);
         layout::Node::with_children(inner_layout.size(), vec![inner_layout])
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: layout::Layout<'_>,
         renderer: &cosmic::Renderer,
         operation: &mut dyn Operation<()>,
     ) {
-        let state = tree.state.downcast_mut::<ReorderWidgetState>();
+        operation.container(Some(&self.id), layout.bounds());
 
-        operation.custom(state, Some(&self.id));
-
-        self.inner.as_widget().operate(
+        self.inner.as_widget_mut().operate(
             &mut tree.children[0],
             layout.children().next().unwrap(),
             renderer,
@@ -931,31 +927,31 @@ where
     }
 
     #[allow(clippy::too_many_lines, clippy::needless_match)]
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: event::Event,
+        event: &event::Event,
         layout: layout::Layout<'_>,
         cursor_position: mouse::Cursor,
         renderer: &cosmic::Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let space_xxs = theme::spacing().space_xxs;
-        let mut ret = match self.inner.as_widget_mut().on_event(
+        self.inner.as_widget_mut().update(
             &mut tree.children[0],
-            event.clone(),
+            event,
             layout.children().next().unwrap(),
             cursor_position,
             renderer,
             clipboard,
             shell,
             viewport,
-        ) {
-            event::Status::Captured => return event::Status::Captured,
-            event::Status::Ignored => event::Status::Ignored,
-        };
+        );
+        if shell.is_event_captured() {
+            return;
+        }
 
         let height = (layout.bounds().height
             - space_xxs as f32 * (self.info.len().saturating_sub(1)) as f32)
@@ -967,15 +963,14 @@ where
                 DraggingState::Dragging(applet) => match &event {
                     event::Event::Dnd(DndEvent::Source(source_event)) => match source_event {
                         SourceEvent::Cancelled => {
-                            ret = event::Status::Captured;
+                            shell.capture_event();
                             if let Some(on_cancel) = self.on_cancel.clone() {
                                 shell.publish(on_cancel);
                             }
                             DraggingState::None
                         }
                         SourceEvent::Finished => {
-                            ret = event::Status::Captured;
-
+                            shell.capture_event();
                             DraggingState::None
                         }
                         _ => DraggingState::Dragging(applet),
@@ -989,7 +984,7 @@ where
                         | event::Event::Touch(touch::Event::FingerPressed { .. })
                             if cursor_position.is_over(layout.bounds()) =>
                         {
-                            ret = event::Status::Captured;
+                            shell.capture_event();
 
                             DraggingState::Pressed(cursor_position.position().unwrap_or_default())
                         }
@@ -1023,24 +1018,25 @@ where
                                     ));
 
                                     let p = applet.path.to_path_buf();
-                                    iced_core::clipboard::start_dnd::<
+                                    iced::core::clipboard::start_dnd::<
                                         cosmic::Theme,
                                         cosmic::Renderer,
                                     >(
                                         clipboard,
                                         false,
-                                        Some(iced_core::clipboard::DndSource::Widget(
+                                        Some(iced::core::clipboard::DndSource::Widget(
                                             self.id.clone(),
                                         )),
                                         Some(IconSurface::new(
                                             dnd_icon(applet.clone(), &layout).into(),
-                                            iced_core::widget::tree::State::new(state.clone()),
-                                            iced_core::Vector::new(0.0, 0.0),
+                                            iced::core::widget::tree::State::new(state.clone()),
+                                            iced::core::Vector::new(0.0, 0.0),
                                         )),
                                         Box::new(AppletString(p.clone())),
                                         DndAction::Move,
                                     );
-                                    ret = event::Status::Captured;
+                                    shell.capture_event();
+
                                     let reordered = self
                                         .info
                                         .iter()
@@ -1063,7 +1059,7 @@ where
                         | event::Event::Touch(
                             touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. },
                         ) => {
-                            ret = event::Status::Captured;
+                            shell.capture_event();
                             DraggingState::None
                         }
                         _ => DraggingState::Pressed(start),
@@ -1161,8 +1157,6 @@ where
                 _ => DndOfferState::HandlingOffer,
             },
         };
-
-        ret
     }
 
     fn draw(
@@ -1189,14 +1183,16 @@ where
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: layout::Layout<'_>,
+        layout: layout::Layout<'b>,
         renderer: &cosmic::Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, cosmic::Theme, cosmic::Renderer>> {
         self.inner.as_widget_mut().overlay(
             &mut tree.children[0],
             layout.children().next().unwrap(),
             renderer,
+            viewport,
             translation,
         )
     }
@@ -1243,7 +1239,7 @@ where
         _state: &Tree,
         layout: layout::Layout<'_>,
         _renderer: &cosmic::Renderer,
-        dnd_rectangles: &mut cosmic::iced_core::clipboard::DndDestinationRectangles,
+        dnd_rectangles: &mut cosmic::iced::core::clipboard::DndDestinationRectangles,
     ) {
         let Rectangle {
             x,

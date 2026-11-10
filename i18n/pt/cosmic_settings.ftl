@@ -2,6 +2,62 @@ app = Definições COSMIC
 unknown = Desconhecido
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = Sobre
+xdg-entry-about-comment = Nome do dispositivo, informações de hardware e padrões do sistema operacional
+xdg-entry-a11y = Toegankelijkheden
+xdg-entry-a11y-comment = Configurações de acessibilidade
+xdg-entry-appearance = Aparência
+xdg-entry-appearance-comment = Cores de destaque e temas
+xdg-entry-applications = Aplicativos
+xdg-entry-applications-comment = Gerenciar configurações de aplicativos
+xdg-entry-bluetooth-comment = Gerenciar dispositivos Bluetooth
+xdg-entry-date-time = Data e Hora
+xdg-entry-date-time-comment = Fuso horário, hora automática e formatação
+xdg-entry-default-apps = Aplicativos padrão
+xdg-entry-default-apps-comment = Navegador web padrão, cliente de email, gestor de arquivos e outros aplicativos
+xdg-entry-desktop = Área de Trabalho
+xdg-entry-displays = Telas
+xdg-entry-displays-comment = Opções de tela, monitores, modos gráficos e luz noturna
+xdg-entry-dock = Dock
+xdg-entry-dock-comment = Painel com aplicativos fixados e outros miniaplicativos
+xdg-entry-input = Dispositivos de Entrada
+xdg-entry-keyboard = Teclado
+xdg-entry-keyboard-comment = Métodos de entrada, entrada de caracteres especiais, atalhos
+xdg-entry-mouse = Mouse
+xdg-entry-mouse-comment = Velocidade do mouse, aceleração e rolagem natural
+xdg-entry-network = Rede e Wi-Fi
+xdg-entry-network-comment = Gerenciar conexões de rede
+xdg-entry-notifications = Notificações
+xdg-entry-notifications-comment = "Não Perturbe", notificações na tela de bloqueio e ajustes por aplicativo
+xdg-entry-panel = Panel
+xdg-entry-panel-comment = Barra superior com controles e menus
+xdg-entry-power = Energia e bateria
+xdg-entry-power-comment = Modos de energia e opções de poupança de energia
+xdg-entry-region-language = Região e Idioma
+xdg-entry-region-language-comment = Formatação de datas, horas e números baseados em sua região
+xdg-entry-sound = Som
+xdg-entry-sound-comment = Configurações de áudio para dispositivos, alertas e aplicativos
+xdg-entry-system = Sistema e Contas
+xdg-entry-time-language = Hora e Idioma
+xdg-entry-touchpad = Touchpad
+xdg-entry-touchpad-comment = Velocidade do touchpad, opções de clique, gestos
+xdg-entry-users = Usuários
+xdg-entry-users-comment = Autenticação e contas de usuário
+xdg-entry-vpn-comment = Conexões VPN e perfis de conexão
+xdg-entry-wallpaper = Papel de Parede
+xdg-entry-wallpaper-comment = Imagens de plano de fundo, cores, e opções de exibição em slide
+xdg-entry-window-management = Gerenciamento de Janelas
+xdg-entry-window-management-comment = Ação da tecla Super, opções de controle de janela e opções adicionais de janelas em mosaico
+xdg-entry-wired = Rede Cabeada
+xdg-entry-wired-comment = Conexões de rede cabeada e perfis de conexão
+xdg-entry-wireless-comment = Conexões de rede sem fio e perfis de conexão
+xdg-entry-workspaces = Áreas de Trabalho
+xdg-entry-workspaces-comment = Orientação das áreas de trabalho, visão geral e comportamento com vários monitores
+xdg-entry-x11-applications = Compatibilidade com aplicativos X11.
+xdg-entry-x11-applications-comment = Dimensionamento de aplicativos com sistema de janelas X11 e atalhos globais
+
 ## Networking: Wired
 
 wired = Por cabo
@@ -108,7 +164,6 @@ notifications = Notificações
 ## Desktop: Panel
 
 panel = Painel
-    .desc = Barra do sistema principal para menus e miniaplicativos.
 add = Adicionar
 add-applet = Adicionar miniaplicativo
 all = Todos
@@ -151,16 +206,15 @@ panel-missing = A configuração do painel está em falta
 ## Desktop: Dock
 
 dock = Doca
-    .desc = Uma barra opcional para aplicações e miniaplicativos.
 
 ## Desktop: Window management
 
 window-management = Gestão de Janelas
     .desc = Ação da tecla Super, opções de controlo de janelas, e opções adicionais de alinhamento de janelas.
-super-key = Tecla Super
-    .launcher = Abrir Lançador
-    .workspaces = Abrir Áreas de trabalho
-    .applications = Abrir Aplicações
+super-key = Ação da tecla Super
+    .launcher = Abrir lançador
+    .workspaces = Abrir áreas de trabalho
+    .applications = Abrir aplicações
     .disable = Desativar
 window-controls = Controlos de janela
     .maximize = Mostrar o botão de maximizar
@@ -170,23 +224,22 @@ window-controls = Controlos de janela
 ## Desktop: Workspaces
 
 workspaces = Áreas de trabalho
-    .desc = Definir número, comportamento e posição da área de trabalho.
-workspaces-behavior = Comportamento da área de trabalho
+workspaces-behavior = Comportamento das áreas de trabalho
     .dynamic = Áreas de trabalho dinâmicas
     .dynamic-desc = Remove automaticamente áreas de trabalho vazias.
     .fixed = Número fixo de áreas de trabalho
     .fixed-desc = Adiciona ou remove áreas de trabalho na visão geral.
 workspaces-multi-behavior = Comportamento de vários monitores
-    .span = Áreas de trabalho expandem os ecrãs
+    .span = Áreas de trabalho se expandem a todos os ecrãs
     .separate = Ecrãs têm áreas de trabalho separadas
-workspaces-overview-thumbnails = Miniaturas da visão geral da área de trabalho
-    .show-number = Mostrar número da área de trabalho
-    .show-name = Mostrar nome da área de trabalho
+workspaces-overview-thumbnails = Miniaturas da visão geral das áreas de trabalho
+    .show-number = Mostrar o número da área de trabalho
+    .show-name = Mostrar o nome da área de trabalho
 workspaces-orientation = Orientação das áreas de trabalho
     .vertical = Vertical
     .horizontal = Horizontal
 hot-corner = Canto ativo
-    .top-left-corner = Ativar o canto superior esquerdo para as áreas de trabalho
+    .top-left-corner = Ativar o canto superior esquerdo para exibir as áreas de trabalho
 
 ## Desktop: Display
 
@@ -259,7 +312,6 @@ sound-alerts = Alertas
     .sound = Som dos alertas
 sound-applications = Aplicações
     .desc = Volumes e definições das aplicações
-profile = Perfil
 
 ## Power
 
@@ -401,7 +453,7 @@ manage-windows = Gerir janelas
     .resize-inwards = Redimensionar janela para dentro
     .resize-outwards = Redimensionar janela para fora
     .toggle-sticky = Tornar janela fixa
-move-windows = Mover Janelas
+move-windows = Mover janelas
     .direction =
         Mover janela { $direction ->
            *[down] para baixo
@@ -426,7 +478,7 @@ move-windows = Mover Janelas
     .workspace-num = Mover janela para a área de trabalho { $num }
     .prev-workspace = Mover janela para a área de trabalho anterior
     .next-workspace = Mover janela para a área de trabalho seguinte
-    .last-workspace = Mover janela para a última área de trabalho
+    .last-workspace = Mover janela para o última área de trabalho
     .next-display = Mover janela para o ecrã seguinte
     .prev-display = Mover janela para o ecrã anterior
     .send-to-prev-workspace = Mover janela para a área de trabalho anterior
@@ -440,7 +492,7 @@ system-shortcut = Sistema
     .keyboard-brightness-down = Diminuir o brilho do teclado
     .keyboard-brightness-up = Aumentar o brilho do teclado
     .launcher = Abrir o lançador
-    .log-out = Sair
+    .log-out = Terminar sessão
     .lock-screen = Bloquear o ecrã
     .mute = Silenciar saída de áudio
     .mute-mic = Silenciar entrada do microfone
@@ -449,8 +501,9 @@ system-shortcut = Sistema
     .play-prev = Faixa anterior
     .poweroff = Desligar
     .screenshot = Tirar uma captura de ecrã
+    .suspend = Suspender
     .terminal = Abrir o terminal
-    .touchpad-toggle = Ativar painel tátil
+    .touchpad-toggle = Ativar ou desativar o painel tátil
     .volume-lower = Diminuir o volume da saída do áudio
     .volume-raise = Aumentar o volume da saída do áudio
     .web-browser = Abrir um navegador de Internet
@@ -525,7 +578,6 @@ time-format = Formato de Data e Hora
     .sunday = Domingo
     .monday = Segunda-feira
 time-region = Região e Idioma
-    .desc = Formatar datas, horas e números baseado na sua região.
 
 ## System
 
@@ -569,13 +621,6 @@ password = Palavra-passe
 username = Nome de utilizador
 dbus-connection-error = Falha de ligação no DBus
 ok = OK
-connections-and-profiles =
-    { $variant ->
-        [wired] Ligações por cabo
-        [wifi] Ligações Wi-Fi
-        [vpn] Ligações VPN
-       *[other] Ligações desconhecidas
-    } e perfis de ligação.
 add-network = Adicionar rede
     .profile = Adicionar perfil
 add-vpn = Adicionar VPN
@@ -804,3 +849,11 @@ full-name = Nome completo
 invalid-username = Nome de utilizador inválido.
 password-mismatch = A palavra-passe e a confirmação devem ser iguais.
 save = Guardar
+xdg-entry-desktop-comment = Papel de parede, aparência, painel, doca, gestão de janelas e definições de áreas de trabalho
+xdg-entry-workspaces-keywords = COSMIC;Área;Trabalho;Orientação;Visão;Geral;Monitor;Ecrã;
+workspaces-overview = Visão geral das áreas de trabalho
+    .action-on-typing = Ação ao digitar
+    .none = Nenhuma
+    .launcher = Abrir lançador
+    .applications = Abrir aplicações
+xdg-entry-power-keywords = COSMIC;Energia;Bateria

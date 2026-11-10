@@ -18,13 +18,6 @@ cable-unplugged = Kabel frakoblet
 connect = Koble til
 connected = Tilkoblet
 connecting = Kobler til…
-connections-and-profiles =
-    { $variant ->
-        [wired] Kablet
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Ukjent
-    } tilkoblinger og tilkoblingsprofiler.
 disconnect = Koble fra
 forget = Glem
 known-networks = Kjente nettverk
@@ -58,7 +51,6 @@ vpn-error = VPN-feil
             [password] passord
             [password-flags] passordflagg
         } med nmcli
-profile = Profil
 forget-dialog = Glem dette Wi-Fi-nettverket?
     .description = Du må skrive inn passordet på nytt for å bruke dette Wi-Fi-nettverket i fremtiden.
 network-device-state =

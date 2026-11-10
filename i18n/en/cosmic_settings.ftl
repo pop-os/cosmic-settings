@@ -1,19 +1,142 @@
-app = COSMIC Settings
-
 dbus-connection-error = Failed to connect to DBus
 ok = OK
 unknown = Unknown
 
 number = { $number }
 
-## Network & Wireless
+## Freedesktop desktop entries
 
-connections-and-profiles = { $variant ->
-    [wired] Wired
-    [wifi] Wi-Fi
-    [vpn] VPN
-    *[other] Unknown
-} connections and connection profiles.
+app = COSMIC Settings
+xdg-entry-comment = Settings application for the COSMIC desktop
+xdg-entry-keywords = COSMIC;Settings;
+
+xdg-entry-about = About
+xdg-entry-about-comment = Device name, hardware information, operating system defaults
+xdg-entry-about-keywords = COSMIC;About
+
+xdg-entry-a11y = Accessibility
+xdg-entry-a11y-comment = Screen reader, magnifier, high contrast, and color filters
+xdg-entry-a11y-keywords = COSMIC;Accessibility;A11y;Screen;Reader;Magnifier;Contrast;Color;
+
+xdg-entry-appearance = Appearance
+xdg-entry-appearance-comment = Accent colors and theming
+xdg-entry-appearance-keywords = COSMIC;Accent;Color;Icon;Font;Theme
+
+xdg-entry-applications = Applications
+xdg-entry-applications-comment = Default applications, startup applications, and X11 application compatibility settings
+xdg-entry-applications-keywords = COSMIC;Default;Application;Startup;X11;Compatibility
+
+xdg-entry-bluetooth-comment = Manage Bluetooth devices
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
+
+xdg-entry-date-time = Date & Time
+xdg-entry-date-time-comment = Time zone, automatic clock settings, and time formatting
+xdg-entry-date-time-keywords = COSMIC;Time;Zone;
+
+xdg-entry-default-apps = Default Applications
+xdg-entry-default-apps-comment = Default web browser, mail client, file browser, and other applications
+xdg-entry-default-apps-keywords = COSMIC;Default;Application
+
+xdg-entry-desktop = Desktop
+xdg-entry-desktop-comment = Wallpaper, appearance, panel, dock, window management and workspace settings
+xdg-entry-desktop-keywords = COSMIC;Desktop;
+
+xdg-entry-displays = Displays
+xdg-entry-displays-comment = Manage display configuration settings
+xdg-entry-displays-keywords = COSMIC;Display;
+
+xdg-entry-dock = Dock
+xdg-entry-dock-comment = An optional bar for apps and applets
+xdg-entry-dock-keywords = COSMIC;Dock;Panel;Applet
+
+xdg-entry-input = Input Devices
+xdg-entry-input-comment = Keyboard and mouse settings
+xdg-entry-input-keywords = COSMIC;Input;Keyboard;Mouse;Mice;
+
+xdg-entry-keyboard = Keyboard
+xdg-entry-keyboard-comment = Input sources, switching, special character entry, shortcuts
+xdg-entry-keyboard-keywords = COSMIC;Keyboard;Input;Source;Shortcuts;
+
+xdg-entry-mouse = Mouse
+xdg-entry-mouse-comment = Mouse speed, acceleration, and natural scrolling
+xdg-entry-mouse-keywords = COSMIC;Mouse;Acceleration;Scrolling;
+
+xdg-entry-drawing-tablet = Drawing tablet
+xdg-entry-drawing-tablet-comment = Display mapping
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablet;Drawing;Sensitivity;
+
+xdg-entry-network = Network & Wireless
+xdg-entry-network-comment = Manage network connections
+xdg-entry-network-keywords = COSMIC;Network;Wireless;WiFi;VPN;
+
+xdg-entry-notifications = Notifications
+xdg-entry-notifications-comment = Do Not Disturb, lockscreen notifications, and per-application settings
+xdg-entry-notifications-keywords = COSMIC;Notification;Lock;
+
+xdg-entry-panel = Panel
+xdg-entry-panel-comment = Primary system bar for menus and applets
+xdg-entry-panel-keywords = COSMIC;Panel;Applet
+
+xdg-entry-power = Power & Battery
+xdg-entry-power-comment = Power modes and power saving options
+xdg-entry-power-keywords = COSMIC;Power;Battery
+
+xdg-entry-region-language = Region & Language
+xdg-entry-region-language-comment = Format dates, times, and numbers based on your region
+xdg-entry-region-language-keywords = COSMIC;Region;Language;Date;Format;Time;Locale;Localization;
+
+xdg-entry-sound = Sound
+xdg-entry-sound-comment = Audio settings for devices, alerts, and applications
+xdg-entry-sound-keywords = COSMIC;Sound;Audio;Alert;Pipewire;
+
+xdg-entry-startup-apps = Startup Applications
+xdg-entry-startup-apps-comment = Configure applications which run on login
+xdg-entry-startup-apps-keywords = COSMIC;Startup;Application;
+
+xdg-entry-system = System & Accounts
+xdg-entry-system-comment = System information, accounts, and firmware updates
+xdg-entry-system-keywords = COSMIC;System;Info;Accounts;Firmware;
+
+xdg-entry-time-language = Time & Language
+xdg-entry-time-language-comment = Manage system date, time, region, and language
+xdg-entry-time-language-keywords = COSMIC;System;Time;Date;Region;Language;
+
+xdg-entry-touchpad = Touchpad
+xdg-entry-touchpad-comment = Touchpad speed, click options, and gestures
+xdg-entry-touchpad-keywords = COSMIC;Touchpad;Gesture;
+
+xdg-entry-users = Users
+xdg-entry-users-comment = Authentication and user accounts
+xdg-entry-users-keywords = COSMIC;User;Account;
+
+xdg-entry-vpn-comment = VPN connections and connection profiles
+xdg-entry-vpn-keywords = COSMIC;VPN;Network;Connection;OpenVPN;OpenConnect;
+
+xdg-entry-wallpaper = Wallpaper
+xdg-entry-wallpaper-comment = Wallpaper images, colors, and slideshow options
+xdg-entry-wallpaper-keywords = COSMIC;Wallpaper;Background;Slideshow;
+
+xdg-entry-window-management = Window Management
+xdg-entry-window-management-comment = Super key action, window control options, and additional window tiling options
+xdg-entry-window-management-keywords = COSMIC;Window;Management;Tiling;Super;Key;
+
+xdg-entry-wired = Wired
+xdg-entry-wired-comment = Wired connections and connection profiles
+xdg-entry-wired-keywords = COSMIC;Wired;LAN;Network;Connection;
+
+xdg-entry-wireless = Wi-Fi
+xdg-entry-wireless-comment = Wi-Fi connections and connection profiles
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Network;Connection;
+
+xdg-entry-workspaces = Workspaces
+xdg-entry-workspaces-comment = Workspace orientation, overview, and multi-monitor behavior
+xdg-entry-workspaces-keywords = COSMIC;Workspace;Orientation;Overview;Monitor;
+
+xdg-entry-x11-applications = X11 Applications Compatibility
+xdg-entry-x11-applications-comment = X11 window system application scaling, primary display, and global shortcuts
+xdg-entry-x11-applications-keywords = COSMIC;X11;Application;Game;Compatibility;
+
+## Network & Wireless
 
 add-network = Add network
     .profile = Add profile
@@ -33,6 +156,7 @@ no-vpn = No VPN connections available.
 password = Password
 password-confirm = Confirm password
 qr-code-unavailable = QR code not available
+edit = Edit
 remove = Remove
 scan-to-connect-description = Scan the QR code to connect to this network.
 settings = Settings
@@ -79,6 +203,8 @@ vpn-error = VPN Error
     .connect = Failed to connect to VPN
     .connection-editor = Connection editor failed
     .connection-settings = Failed to get settings for active connections
+    .openvpn-config-path = Invalid file path for OpenVPN config
+    .openvpn-config-path-desc = Chosen file must be on a local file system.
     .updating-state = Failed to update network manager state
     .wireguard-config-path = Invalid file path for WireGuard config
     .wireguard-config-path-desc = Chosen file must be on a local file system.
@@ -112,9 +238,9 @@ online-accounts = Online accounts
 activate = Activate
 confirm = Confirm
 enable = Enable
+rename = Rename
 
 bluetooth = Bluetooth
-    .desc = Manage Bluetooth devices
     .status = This system is visible as { $aliases } while Bluetooth settings are open.
     .connected = Connected
     .connecting = Connecting
@@ -134,6 +260,14 @@ bluetooth-paired = Previously connected devices
 bluetooth-confirm-pin = Confirm Bluetooth PIN
     .description = Please confirm that the following PIN matches the one displayed on { $device }
 
+bluetooth-display-passkey = Bluetooth Pairing
+    .description = Please type the following passkey on { $device }, then press Enter
+
+bluetooth-display-pin = Bluetooth Pairing
+    .description = Please type the following PIN on { $device }, then press Enter
+
+bluetooth-rename-device = Rename Device
+
 bluetooth-available = Nearby devices
 
 bluetooth-adapters = Bluetooth adapters
@@ -149,6 +283,8 @@ accessibility = Accessibility
     .high-contrast = High contrast mode
     .invert-colors = Invert colors
     .color-filters = Color filters
+    .shake-cursor = Shake pointer to find it
+    .shake-cursor-desc = Quickly shake the mouse to temporarily enlarge the pointer
 
 hearing = Hearing
     .mono = Play stereo audio as mono
@@ -181,6 +317,14 @@ color-filter = Color filter type
     .protanopia = Red/Green (red weakness, Protanopia)
     .tritanopia = Blue/Yellow (blue weakness, Tritanopia)
 
+mobility = Mobility
+
+on-screen-keyboard = On-screen keyboard
+    .always-show = Always show on-screen-keyboard
+    .icon-on-panel = Icon on panel
+    .show-on-gamepad-shortcut = Show on-screen keyboard with a gamepad by pressing the Start and Select/Back buttons at the same time
+    .show-on-text-input = Show on-screen keyboard when selecting a text field
+
 ## Desktop
 
 desktop = Desktop
@@ -189,7 +333,6 @@ desktop = Desktop
 
 wallpaper = Wallpaper
     .change = Change image every
-    .desc = Wallpaper images, colors, and slideshow options
     .fit = Wallpaper fit
     .folder-dialog = Choose wallpaper folder
     .image-dialog = Choose wallpaper image
@@ -220,8 +363,10 @@ never = Never
 ## Desktop: Appearance
 
 appearance = Appearance
-    .desc = Accent colors and theming
+    .title = Customize theme
+    .description = Wallpaper, colors, and the shape of the look on screen
 
+change-wallpaper = Change wallpaper
 accent-color = Accent color
 app-background = Window background
 auto = Auto
@@ -234,10 +379,22 @@ export = Export
 hex = Hex
 import = Import
 light = Light
-mode-and-colors = Mode and colors
+mode = Mode
 recent-colors = Recent colors
 reset-to-default = Reset to default
 rgb = RGB
+theme-bundles-archive = Theme bundle
+theme-bundles-theme-file = Legacy theme file
+theme-bundles-dark = Dark theme
+theme-bundles-empty = No saved themes yet
+theme-bundles-import = Import theme
+theme-bundles-import-file = Select file
+theme-bundles-import-input-label = Theme name
+theme-bundles-import-title = Import theme
+theme-bundles-light = Light theme
+theme-bundles-rename-title = Rename theme
+theme-bundles-save-as = Save as...
+theme-bundles-save-as-title = Save theme as
 window-hint-accent = Active window hint color
 window-hint-accent-toggle = Use theme accent color as active window hint
 
@@ -246,6 +403,12 @@ auto-switch = Automatically switch between light and dark modes
     .sunset = Switches to dark mode at sunset
     .next-sunrise = Switches to light mode at next sunrise
     .next-sunset = Switches to dark mode at next sunset
+
+shadows-floating = Floating windows
+    .clip = Match system corners and apply shadows
+shadows-tiling = Tiled windows
+    .clip = Match system corners
+    .shadow = Apply shadows
 
 container-background = Container background
     .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, container background color is automatically derived from the window background.
@@ -271,6 +434,22 @@ style = Style
     .round = Round
     .slightly-round = Slightly round
     .square = Square
+    .frosty = Frosty
+    .glassy = Glassy
+    .custom = Custom
+    .frosted-glass = Frosted glass
+    .frosted-system-interface = System interface
+    .frosted-system-interface-desc = Applies frosted glass to Launcher, application library, workspace overview, on-screen controls
+    .frosted-windows = Windows
+    .frosted-windows-desc = Applies frosted glass to windows and dialogs
+    .frosted-panels = Panels
+    .frosted-panels-desc = Applies frosted glass to panel and dock
+    .frosted-applets = Applets
+    .frosted-applets-desc = Applies frosted glass to applet menus on panel and dock
+    .frosted-thickness = Frost thickness
+    .less = less
+    .more = more
+    .glass-opacity = Glass opacity
 
 interface-density = Interface density
     .comfortable = Comfortable
@@ -281,22 +460,22 @@ window-management-appearance = Window management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
-### Experimental
+### Fonts and icons
 
-experimental-settings = Experimental settings
-icons-and-toolkit = Icons and toolkit theming
+font-and-icons = Font and icons
+icons-theme = Icons theme
+toolkit-theming = Toolkit theming
 interface-font = System font
 monospace-font = Monospace font
+shadow-and-corners = Window shadow and corners
 
 ## Desktop: Notifications
 
 notifications = Notifications
-    .desc = Do Not Disturb, lockscreen notifications, and per-application settings
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Primary system bar for menus and applets
 
 add = Add
 add-applet = Add applet
@@ -346,18 +525,19 @@ panel-missing = Panel configuration is missing
 ## Desktop: Dock
 
 dock = Dock
-    .desc = An optional bar for apps and applets
 
 ## Desktop: Window management
 
 window-management = Window management
-    .desc = Super key action, window control options, and additional window tiling options
 
 super-key = Super key action
     .launcher = Open Launcher
     .workspaces = Open Workspaces
     .applications = Open Applications
-    .disable = Disable
+    .none = None
+
+decoration-preference = Use system window headers when possible
+    .desc = Applications may use their own window headers in some cases
 
 edge-gravity = Floating windows gravitate to nearby edges
 
@@ -374,7 +554,12 @@ focus-navigation = Focus navigation
 ## Desktop: Workspaces
 
 workspaces = Workspaces
-    .desc = Workspace orientation and behavior
+
+workspaces-overview = Workspaces overview
+    .action-on-typing = Action on typing
+    .none = None
+    .launcher = Open Launcher
+    .applications = Open Applications
 
 workspaces-behavior = Workspace behavior
     .dynamic = Dynamic workspaces
@@ -397,6 +582,9 @@ workspaces-orientation = Workspaces orientation
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
 
+workspaces-navigation = Navigation
+    .wraparound = Move between first and last workspace using keyboard shortcuts and gestures
+
 ## Displays
 
 -requires-restart = Requires restart
@@ -408,7 +596,6 @@ color = Color
     .temperature = Color temperature
 
 display = Displays
-    .desc = Manage displays and night light
     .arrangement = Display arrangement
     .arrangement-desc = Drag displays to rearrange them
     .enable = Enable display
@@ -461,7 +648,6 @@ dialog = Dialog
 ## Sound
 
 sound = Sound
-    .desc = N/A
 
 sound-output = Output
     .volume = Output volume
@@ -486,13 +672,18 @@ sound-alerts = Alerts
 
 sound-applications = Applications
     .desc = Application volumes and settings
+    .none = No applications are using sound
 
-profile = Profile
+# No speaker, headphones, or microphone plugged into sound card port
+sound-device-port-unplugged = Unplugged
+sound-hd-audio = HD Audio
+sound-usb-audio = USB Audio
 
-## Power
+# Profiles for sound card devices
+sound-device-profiles = Device profiles
 
+# Power & Battery settings page
 power = Power & battery
-    .desc = Manage power settings
 
 battery = Battery
   .minute = { $value } { $value ->
@@ -539,7 +730,7 @@ acceleration-desc = Automatically adjusts tracking sensitivity based on speed
 disable-while-typing = Disable while typing
 
 input-devices = Input devices
-    .desc = Input devices
+
 
 primary-button = Primary button
     .desc = Sets the order of physical buttons
@@ -560,7 +751,6 @@ fast = Fast
 short = Short
 long = Long
 keyboard = Keyboard
-    .desc = Input sources, switching, special character entry, shortcuts
 
 keyboard-sources = Input Sources
     .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
@@ -576,6 +766,22 @@ keyboard-special-char = Special Character Entry
     .compose = Compose key
     .compose-desc = The compose key allows a wide variety of characters to be entered. To use it, press compose and then a sequence of characters. For example, compose key followed by C and o will enter ©, while compose key followed by a and ‘ will enter á.
     .caps = Caps Lock key
+    .ctrl = Control
+    .ctrl-right = Right Ctrl
+    .swap-with-ctrl = Swap with Control
+    .alt = Alt
+    .alt-left = Left Alt
+    .alt-right = Right Alt
+    .super = Super
+    .super-left = Left Super
+    .super-right = Right Super
+    .menu = Menu key
+    .backspace = Backspace
+    .escape = Escape
+    .swap-with-escape = Swap with Escape
+    .print-screen = Print Screen
+    .scroll-lock = Scroll Lock
+    .none = None
 
 keyboard-typing-assist = Typing
     .repeat-rate = Repeat rate
@@ -590,6 +796,7 @@ keyboard-numlock-boot = Numlock
 
 added = Added
 type-to-search = Type to search...
+no-search-results = No networks match your search.
 show-extended-input-sources = Show extended input sources
 
 ## Input: Keyboard: Shortcuts
@@ -704,6 +911,7 @@ system-shortcut = System
     .play-prev = Previous track
     .poweroff = Power off
     .screenshot = Take a screenshot
+    .suspend = Suspend
     .terminal = Open a terminal
     .touchpad-toggle = Toggle touchpad
     .volume-lower = Decrease audio output volume
@@ -731,7 +939,6 @@ zoom-out = Zoom Out
 ## Input: Mouse
 
 mouse = Mouse
-    .desc = Mouse speed, acceleration, natural scrolling
     .speed = Mouse speed
     .acceleration = Enable mouse acceleration
 
@@ -747,9 +954,12 @@ pinch-to-zoom = Pinch to zoom
 tap-to-click = Tap to click
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click
 
+tap-and-drag = Tap and drag
+
+drag-lock = Drag lock
+
 touchpad = Touchpad
     .acceleration = Enable touchpad acceleration
-    .desc = Touchpad speed, click options, gestures
     .speed = Touchpad speed
 
 ## Input: Gestures
@@ -769,13 +979,19 @@ switch-between-windows = Switch between windows
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
 
+## Input: Tablet
+
+drawing-tablet = Drawing tablet
+    .no-devices-detected = No drawing tablets or pen devices detected
+    .map-to-display = Map to display
+    .not-set = Not Set
+    .enabled = Enabled
+
 ## Time & language
 
 time = Time & language
-    .desc = N/A
 
 time-date = Date & time
-    .desc = Time zone, automatic clock settings, and time formatting
     .auto = Set automatically
     .auto-ntp = Date & time will update automatically when the time zone is set
 
@@ -785,16 +1001,19 @@ time-zone = Time zone
 
 time-format = Date & time format
     .twenty-four = 24-hour time
-    .show-seconds = Show seconds
+    .show-seconds = Seconds
+    .show-weekday = Day of week
     .first = First day of week
-    .show-date = Show date in the time applet
+    .date = Date
     .friday = Friday
     .saturday = Saturday
     .sunday = Sunday
     .monday = Monday
 
+date-time-applet-settings-title = Date & time applet
+date-time-applet-settings-label = Date & time applet settings
+
 time-region = Region & language
-    .desc = Format dates, times, and numbers based on your region
 
 formatting = Formatting
     .dates = Dates
@@ -819,7 +1038,6 @@ applications = Applications
 ## Applications: Default applications
 
 default-apps = Default Applications
-    .desc = Default web browser, mail client, file browser, and other applications
     .web-browser = Web browser
     .file-manager = File manager
     .mail-client = Mail client
@@ -830,11 +1048,12 @@ default-apps = Default Applications
     .terminal = Terminal
     .other-associations = Other associations
     .text-editor = Text Editor
+    .not-installed = Not installed
+
 
 ## Applications: Startup applications
 
 startup-apps = Startup applications
-    .desc = Configure applications which run on login
     .add = Add app
     .user = Applications launched when you log in
     .none = No startup applications added
@@ -845,7 +1064,6 @@ startup-apps = Startup applications
 ## Applications: Legacy applications
 
 legacy-applications = X11 applications compatibility
-    .desc = X11 Window system application scaling and Global shortcuts
 
 legacy-app-global-shortcuts = Global shortcuts in X11 applications
     .desc = Global shortcuts allows keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, Global shortcuts is disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
@@ -872,7 +1090,6 @@ system = System & accounts
 ## System: About
 
 about = About
-    .desc = Device name, hardware information, operating system defaults
 
 about-device = Device name
     .desc = This name appears to other network or Bluetooth devices
@@ -897,12 +1114,10 @@ about-related = Related settings
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmware details
 
 ## System: Users
 
 users = Users
-    .desc = Authentication and user accounts
     .admin = Admin
     .standard = Standard
     .profile-add = Choose profile image
@@ -917,3 +1132,26 @@ full-name = Full name
 invalid-username = Invalid username
 password-mismatch = Password and confirmation must match
 save = Save
+
+## System: Updates
+
+frequency-daily = Daily
+frequency-weekly = Weekly
+frequency-monthly = Monthly
+time-am = AM
+time-friday = Friday
+time-hour = Hour
+time-minute = Minute
+time-monday = Monday
+time-pm = PM
+time-saturday = Saturday
+time-sunday = Sunday
+time-thursday = Thursday
+time-tuesday = Tuesday
+time-wednesday = Wednesday
+time-weekdays = Weekdays
+
+system-and-app-updates = System & application updates
+    .schedule = Automatic update schedule
+    .automatic-toggle = Enable automatic updates
+    .notifications-toggle = Update notifications

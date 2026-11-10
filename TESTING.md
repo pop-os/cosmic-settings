@@ -10,6 +10,12 @@ This document provides a regression testing checklist for COSMIC Settings and th
 
 - [ ] Able to disconnect from and connect to a network.
 
+#### Bluetooth
+
+- [ ] Bluetooth device connects.
+- [ ] Paired device can be disconnected & reconnected.
+- [ ] Paired device can be forgotten & connecting again works.
+
 ### Desktop
 
 #### Wallpaper
@@ -32,17 +38,24 @@ This document provides a regression testing checklist for COSMIC Settings and th
 #### Dock
 
 - [ ] Enable tiling. "Automatically hide dock" takes effect immediately.
-- [ ] Disable tiling; maximize a window. "Autommatically hide dock" takes effect immediately.
+- [ ] Disable tiling; maximize a window. "Automatically hide dock" takes effect immediately.
 - [ ] Changing position on screen works.
 - [ ] All Style settings take effect as expected.
 
 ### Displays
 
 - [ ] Plug in a second display. Displays can be rearranged via dragging.
+- [ ] Display mirroring works.
 
 ### Sound
 
-TBD after devices/profiles are fixed.
+- [ ] Output & Input volume sliders work independently
+- [ ] Output balance slider works & doesn't get reset by volume slider
+- [ ] Amplification toggles work as expected
+- [ ] Device profiles can be changed & reflect as expected on the main Sound page
+- [ ] Applications using sound appear on the Applications sub-page
+- [ ] Application volume and mute controls only affect the selected playback stream
+- [ ] Closing an playback stream removes it from the Applications sub-page
 
 ### Power & Battery
 
@@ -63,13 +76,13 @@ TBD after devices/profiles are fixed.
 
 #### X11 Applications Compatibility
 
-- [ ] Global Shortcuts in X11 Applications works (in e.g. Discord).
+- [ ] Global Shortcuts in X11 Applications work (in e.g. Discord).
 
 ### Time & Language
 
 #### Date & Time
 
-- [ ] Changing time zome works.
+- [ ] Changing time zone works.
 - [ ] Toggling 24-hour time takes effect in Settings preview, on top panel, and on the lock screen.
 - [ ] Toggling seconds takes effect in Settings preview and on top panel.
 - [ ] Changing first day of week takes effect in Calendar applet.

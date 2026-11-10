@@ -1,20 +1,16 @@
 use std::collections::HashSet;
 use std::fmt::Write;
 
-use cosmic::{
-    Apply,
-    iced::{Element, Length},
-    iced_core::text::Wrapping,
-    surface,
-    widget::{self, icon, settings, svg, text},
-};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::{Element, Length, stream};
+use cosmic::widget::{self, icon, settings, svg, text};
+use cosmic::{Apply, surface};
 use cosmic_comp_config::{ZoomConfig, ZoomMovement};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, shortcuts};
-use cosmic_settings_page::{
-    self as page, Entity,
-    section::{self, Section},
-};
+use cosmic_settings_page::section::{self, Section};
+use cosmic_settings_page::{self as page, Entity};
+use futures::SinkExt;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -38,6 +34,7 @@ pub struct Page {
 #[derive(Debug, Clone)]
 pub enum Message {
     Event(wayland::AccessibilityEvent),
+    CompConfigUpdate(Box<cosmic_comp_config::CosmicCompConfig>),
     ProtocolUnavailable,
     SetMagnifier(bool),
     SetMouseShortcuts(bool),
@@ -45,7 +42,7 @@ pub enum Message {
     SetIncrement(usize),
     SetSignin(bool),
     SetMovement(ZoomMovement),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl Default for Page {
@@ -127,18 +124,19 @@ impl page::Page<crate::pages::Message> for Page {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
-                    return cosmic::Task::stream(async_fn_stream::fn_stream(
-                        |emitter| async move {
+                    return cosmic::Task::stream(stream::channel(
+                        1,
+                        |mut sender: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
                             while let Some(event) = rx.recv().await {
-                                let _ = emitter
-                                    .emit(crate::pages::Message::AccessibilityMagnifier(
+                                let _ = sender
+                                    .send(crate::pages::Message::AccessibilityMagnifier(
                                         Message::Event(event),
                                     ))
                                     .await;
                             }
 
-                            let _ = emitter
-                                .emit(crate::pages::Message::AccessibilityMagnifier(
+                            let _ = sender
+                                .send(crate::pages::Message::AccessibilityMagnifier(
                                     Message::ProtocolUnavailable,
                                 ))
                                 .await;
@@ -216,19 +214,18 @@ pub fn magnifier(
                 .add(
                     settings::item::builder(&descriptions[magnifier])
                         .description(&descriptions[controls])
-                        .control(
-                            widget::toggler(page.magnifier_state).on_toggle(Message::SetMagnifier),
-                        ),
+                        .toggler(page.magnifier_state, Message::SetMagnifier),
                 )
-                .add(settings::item(
-                    &descriptions[scroll_controls],
-                    widget::toggler(page.zoom_config.enable_mouse_zoom_shortcuts)
-                        .on_toggle(Message::SetMouseShortcuts),
-                ))
-                .add(settings::item(
-                    &descriptions[show_overlay],
-                    widget::toggler(page.zoom_config.show_overlay).on_toggle(Message::SetOverlay),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[scroll_controls]).toggler(
+                        page.zoom_config.enable_mouse_zoom_shortcuts,
+                        Message::SetMouseShortcuts,
+                    ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[show_overlay])
+                        .toggler(page.zoom_config.show_overlay, Message::SetOverlay),
+                )
                 .add(settings::item(
                     &descriptions[increment],
                     widget::dropdown::popup_dropdown(
@@ -244,10 +241,10 @@ pub fn magnifier(
                         },
                     ),
                 ))
-                .add(settings::item(
-                    &descriptions[signin],
-                    widget::toggler(page.zoom_config.start_on_login).on_toggle(Message::SetSignin),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[signin])
+                        .toggler(page.zoom_config.start_on_login, Message::SetSignin),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::AccessibilityMagnifier)
         })
@@ -297,36 +294,21 @@ pub fn view_movement() -> section::Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(widget::settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[continuous]),
-                        ZoomMovement::Continuously,
-                        Some(page.zoom_config.view_moves),
-                        Message::SetMovement,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
-                .add(widget::settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[onedge]),
-                        ZoomMovement::OnEdge,
-                        Some(page.zoom_config.view_moves),
-                        Message::SetMovement,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
-                .add(widget::settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[centered]),
-                        ZoomMovement::Centered,
-                        Some(page.zoom_config.view_moves),
-                        Message::SetMovement,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                .add(settings::item::builder(&descriptions[continuous]).radio(
+                    ZoomMovement::Continuously,
+                    Some(page.zoom_config.view_moves),
+                    Message::SetMovement,
+                ))
+                .add(settings::item::builder(&descriptions[onedge]).radio(
+                    ZoomMovement::OnEdge,
+                    Some(page.zoom_config.view_moves),
+                    Message::SetMovement,
+                ))
+                .add(settings::item::builder(&descriptions[centered]).radio(
+                    ZoomMovement::Centered,
+                    Some(page.zoom_config.view_moves),
+                    Message::SetMovement,
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::AccessibilityMagnifier)
         })
@@ -339,6 +321,23 @@ impl Page {
         message: Message,
     ) -> cosmic::iced::Task<crate::app::Message> {
         match message {
+            Message::CompConfigUpdate(comp_config) => {
+                if self.zoom_config.show_overlay != comp_config.accessibility_zoom.show_overlay {
+                    self.zoom_config.show_overlay = comp_config.accessibility_zoom.show_overlay;
+                }
+                if self.zoom_config.increment != comp_config.accessibility_zoom.increment {
+                    self.zoom_config.increment = comp_config.accessibility_zoom.increment;
+
+                    self.increment_idx = self.increment_values.iter().position(|s| {
+                        s.split('%').next().and_then(|val| str::parse(val).ok())
+                            == Some(self.zoom_config.increment)
+                    });
+                }
+
+                if self.zoom_config.view_moves != comp_config.accessibility_zoom.view_moves {
+                    self.zoom_config.view_moves = comp_config.accessibility_zoom.view_moves;
+                }
+            }
             Message::Event(AccessibilityEvent::Magnifier(value)) => {
                 self.magnifier_state = value;
             }

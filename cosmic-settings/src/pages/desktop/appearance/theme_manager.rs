@@ -1,10 +1,10 @@
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{Srgb, Srgba};
 use cosmic::cosmic_theme::{
-    CornerRadii, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID, Spacing, Theme, ThemeBuilder,
-    ThemeMode,
+    AlphaMap, BlurStrength, CornerRadii, DARK_THEME_BUILDER_ID, FontConfig, LIGHT_THEME_BUILDER_ID,
+    Spacing, Theme, ThemeBuilder, ThemeMode,
 };
-use cosmic::iced_core::Color;
+use cosmic::iced::core::Color;
 
 use cosmic::Task;
 use cosmic::theme::ThemeType;
@@ -72,9 +72,7 @@ impl From<(Option<Config>, Option<Config>, Option<Vec<Srgba>>)> for ThemeCustomi
             .destructive(theme.destructive.base.color)
             .spacing(theme.spacing)
             .success(theme.success.base.color)
-            .warning(theme.warning.base.color)
-            .neutral_tint(theme.palette.neutral_5.color)
-            .text_tint(theme.background.on.color);
+            .warning(theme.warning.base.color);
 
         theme_builder.gaps = theme.gaps;
 
@@ -160,20 +158,6 @@ impl Default for Manager {
 
 impl Manager {
     pub fn build_theme(&mut self, stage: ThemeStaged) -> Task<app::Message> {
-        macro_rules! theme_transaction {
-            ($config:ident, $current_theme:ident, $new_theme:ident, { $($name:ident;)+ }) => {
-                let tx = $config.transaction();
-
-                $(
-                    if $current_theme.$name != $new_theme.$name {
-                        _ = tx.set(stringify!($name), $new_theme.$name.clone());
-                    }
-                )+
-
-                _ = tx.commit();
-            }
-        }
-
         let map_data_fn = |customizer: &ThemeCustomizer| {
             (customizer.builder.0.clone(), customizer.theme.1.clone())
         };
@@ -195,36 +179,100 @@ impl Manager {
         };
 
         let mut data = std::iter::once(current).chain(other);
+        let mut sync_modes = vec![cosmic_theme_bundle_config::Mode::from_is_dark(
+            self.mode.0.is_dark,
+        )];
+        if let ThemeStaged::Both = stage {
+            sync_modes.push(cosmic_theme_bundle_config::Mode::from_is_dark(
+                !self.mode.0.is_dark,
+            ));
+        }
 
         cosmic::task::future(async move {
             for (builder, config) in data.by_ref() {
                 if let Some(config) = config {
-                    let current_theme = match Theme::get_entry(&config) {
+                    let cur = match Theme::get_entry(&config) {
                         Ok(theme) => theme,
                         Err((_errs, theme)) => theme,
                     };
 
-                    let new_theme = builder.build();
-                    theme_transaction!(config, current_theme, new_theme, {
-                        accent;
-                        accent_button;
-                        background;
-                        button;
-                        destructive;
-                        destructive_button;
-                        link_button;
-                        icon_button;
-                        palette;
-                        primary;
-                        secondary;
-                        shade;
-                        success;
-                        text_button;
-                        warning;
-                        warning_button;
-                        window_hint;
-                        accent_text;
-                    });
+                    let new = builder.build();
+
+                    // do this without the macro
+                    let tx = config.transaction();
+
+                    if cur.accent != new.accent {
+                        _ = tx.set("accent", new.accent.clone());
+                    }
+                    if cur.accent_button != new.accent_button {
+                        _ = tx.set("accent_button", new.accent_button.clone());
+                    }
+                    if cur.background(false) != new.background(false) {
+                        _ = tx.set("background", new.background(false).clone());
+                    }
+                    if cur.background(true) != new.background(true) {
+                        _ = tx.set("transparent_background", new.background(true).clone());
+                    }
+                    if cur.button != new.button {
+                        _ = tx.set("button", new.button.clone());
+                    }
+                    if cur.destructive != new.destructive {
+                        _ = tx.set("destructive", new.destructive.clone());
+                    }
+                    if cur.destructive_button != new.destructive_button {
+                        _ = tx.set("destructive_button", new.destructive_button.clone());
+                    }
+                    if cur.link_button != new.link_button {
+                        _ = tx.set("link_button", new.link_button.clone());
+                    }
+                    if cur.icon_button != new.icon_button {
+                        _ = tx.set("icon_button", new.icon_button.clone());
+                    }
+                    if cur.palette != new.palette {
+                        _ = tx.set("palette", new.palette.clone());
+                    }
+                    if cur.primary(false) != new.primary(false) {
+                        _ = tx.set("primary", new.primary(false).clone());
+                    }
+                    if cur.secondary(false) != new.secondary(false) {
+                        _ = tx.set("secondary", new.secondary(false).clone());
+                    }
+                    if cur.primary(true) != new.primary(true) {
+                        _ = tx.set("transparent_primary", new.primary(true).clone());
+                    }
+                    if cur.secondary(true) != new.secondary(true) {
+                        _ = tx.set("transparent_secondary", new.secondary(true).clone());
+                    }
+                    if cur.shade != new.shade {
+                        _ = tx.set("shade", new.shade);
+                    }
+                    if cur.success != new.success {
+                        _ = tx.set("success", new.success.clone());
+                    }
+                    if cur.text_button != new.text_button {
+                        _ = tx.set("text_button", new.text_button.clone());
+                    }
+                    if cur.warning != new.warning {
+                        _ = tx.set("warning", new.warning.clone());
+                    }
+                    if cur.warning_button != new.warning_button {
+                        _ = tx.set("warning_button", new.warning_button.clone());
+                    }
+                    if cur.window_hint != new.window_hint {
+                        _ = tx.set("window_hint", new.window_hint);
+                    }
+                    if cur.accent_text != new.accent_text {
+                        _ = tx.set("accent_text", new.accent_text);
+                    }
+                    _ = tx.commit();
+                }
+            }
+
+            if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
+                for mode in sync_modes {
+                    if let Err(err) = store.sync_active(mode) {
+                        tracing::warn!(?err, ?mode, "failed to sync the active theme bundle");
+                    }
                 }
             }
 
@@ -258,6 +306,13 @@ impl Manager {
     #[inline]
     pub fn mode(&self) -> &ThemeMode {
         &self.mode.0
+    }
+
+    /// Update the locally cached `ThemeMode` from an external source (daemon / config watcher).
+    ///
+    /// This must not write back to config, since the daemon is the source of truth.
+    pub fn sync_mode(&mut self, mode: ThemeMode) {
+        self.mode.0 = mode;
     }
 
     #[inline]
@@ -325,6 +380,24 @@ impl Manager {
         }
     }
 
+    pub fn set_mono_font(&mut self, mono_font: FontConfig) {
+        let selected_customizer = self.selected_customizer_mut();
+        selected_customizer.builder.0.mono_font = mono_font.clone();
+        selected_customizer.theme.0.mono_font = mono_font.clone();
+    }
+
+    pub fn set_font(&mut self, font: FontConfig) {
+        let selected_customizer = self.selected_customizer_mut();
+        selected_customizer.builder.0.font = font.clone();
+        selected_customizer.theme.0.font = font.clone();
+    }
+
+    pub fn set_icon_theme(&mut self, icon_theme: String) {
+        let selected_customizer = self.selected_customizer_mut();
+        selected_customizer.builder.0.icon_theme = icon_theme.clone();
+        selected_customizer.theme.0.icon_theme = icon_theme;
+    }
+
     // TODO: Make it rollback if the first operation succeeds and the second
     // one fails?
     pub fn set_active_hint(&mut self, active_hint: u32) -> Option<ThemeStaged> {
@@ -341,15 +414,42 @@ impl Manager {
         Some(ThemeStaged::Both)
     }
 
-    pub fn set_corner_radii(&mut self, radii: CornerRadii) -> Option<ThemeStaged> {
-        self.dark.set_corner_radii(radii)?;
-        self.light.set_corner_radii(radii)?;
-        Some(ThemeStaged::Both)
-    }
-
     pub fn set_gap_size(&mut self, gap: u32) -> Option<ThemeStaged> {
         self.dark.set_gap_size(gap)?;
         self.light.set_gap_size(gap)?;
+        Some(ThemeStaged::Both)
+    }
+
+    pub fn set_frosted(&mut self, frosted: BlurStrength) -> Option<ThemeStaged> {
+        self.dark.set_frosted(frosted)?;
+        self.light.set_frosted(frosted)?;
+        Some(ThemeStaged::Both)
+    }
+
+    pub fn set_glass(&mut self, alpha_map: AlphaMap) -> Option<ThemeStaged> {
+        self.dark.set_glass(alpha_map)?;
+        self.light.set_glass(alpha_map)?;
+        Some(ThemeStaged::Both)
+    }
+
+    pub fn set_frosted_panel(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        self.dark.set_frosted_panel(enabled)?;
+        self.light.set_frosted_panel(enabled)?;
+        Some(ThemeStaged::Both)
+    }
+    pub fn set_frosted_applets(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        self.dark.set_frosted_applets(enabled)?;
+        self.light.set_frosted_applets(enabled)?;
+        Some(ThemeStaged::Both)
+    }
+    pub fn set_frosted_system_interface(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        self.dark.set_frosted_system_interface(enabled)?;
+        self.light.set_frosted_system_interface(enabled)?;
+        Some(ThemeStaged::Both)
+    }
+    pub fn set_frosted_windows(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        self.dark.set_frosted_windows(enabled)?;
+        self.light.set_frosted_windows(enabled)?;
         Some(ThemeStaged::Both)
     }
 
@@ -477,6 +577,10 @@ impl ThemeCustomizer {
         let config = self.builder.1.as_ref()?;
 
         self.builder.0.set_text_tint(config, color).ok()?;
+        self.theme
+            .0
+            .set_text_tint(self.theme.1.as_ref()?, color)
+            .ok()?;
         Some(ThemeStaged::Current)
     }
 
@@ -484,6 +588,10 @@ impl ThemeCustomizer {
         let config = self.builder.1.as_ref()?;
 
         self.builder.0.set_neutral_tint(config, color).ok()?;
+        self.theme
+            .0
+            .set_control_tint(self.theme.1.as_ref()?, color)
+            .ok()?;
         Some(ThemeStaged::Current)
     }
 
@@ -533,6 +641,81 @@ impl ThemeCustomizer {
         Some(ThemeStaged::Current)
     }
 
+    pub fn set_frosted(&mut self, frosted: BlurStrength) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_frosted(config, frosted).ok()?;
+        self.theme
+            .0
+            .set_frosted(self.theme.1.as_ref()?, frosted)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_glass(&mut self, alpha_map: AlphaMap) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_alpha_map(config, alpha_map).ok()?;
+        self.theme
+            .0
+            .set_alpha_map(self.theme.1.as_ref()?, alpha_map)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted_windows(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_frosted_windows(config, enabled).ok()?;
+        self.theme
+            .0
+            .set_frosted_windows(self.theme.1.as_ref()?, enabled)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted_system_interface(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder
+            .0
+            .set_frosted_system_interface(config, enabled)
+            .ok()?;
+        self.theme
+            .0
+            .set_frosted_system_interface(self.theme.1.as_ref()?, enabled)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted_applets(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_frosted_applets(config, enabled).ok()?;
+        self.theme
+            .0
+            .set_frosted_applets(self.theme.1.as_ref()?, enabled)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted_panel(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_frosted_panel(config, enabled).ok()?;
+        self.theme
+            .0
+            .set_frosted_panel(self.theme.1.as_ref()?, enabled)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
     // set active hints is set on all themes to be consistent between dark & light themes.
     pub fn set_active_hint(&mut self, active_hint: u32) -> Option<ThemeStaged> {
         let config = self.builder.1.as_ref()?;
@@ -548,7 +731,7 @@ impl ThemeCustomizer {
             let mut gaps = builder.gaps;
             gaps.1 = active_hint;
             if builder.set_gaps(config, gaps).unwrap_or_default() {
-                let _ = self.theme.0.set_active_hint(self.theme.1.as_ref()?, gaps.1);
+                let _ = self.theme.0.set_gaps(self.theme.1.as_ref()?, gaps);
             }
         }
 

@@ -2,29 +2,28 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::rc::Rc;
 use std::sync::Arc;
 
+use crate::widget::selection_context_item;
 use cosmic::app::{ContextDrawer, context_drawer};
-use cosmic::iced::{Alignment, Border, Color, Length};
-use cosmic::iced_core::text::Wrapping;
-use cosmic::widget::{self, button, container};
-use cosmic::{Apply, Element, theme};
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{self, button};
+use cosmic::{Apply, Element};
 use cosmic_config::{ConfigGet, ConfigSet};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use eyre::Context;
-use icu::{
-    calendar::{types::Weekday, week},
-    datetime::{
-        DateTimeFormatter, DateTimeFormatterPreferences, fieldsets,
-        input::{Date, DateTime, Time},
-    },
-    decimal::{DecimalFormatter, input::Decimal},
-    locale::Locale,
-};
+use icu::calendar::types::Weekday;
+use icu::calendar::week;
+use icu::datetime::input::{Date, DateTime, Time};
+use icu::datetime::{DateTimeFormatter, DateTimeFormatterPreferences, fieldsets};
+use icu::decimal::DecimalFormatter;
+use icu::decimal::input::Decimal;
+use icu::locale::Locale;
 use locales_rs as locale;
+use regex::Regex;
 use slotmap::{DefaultKey, SlotMap};
+
+static GNOME_LANGUAGE_SELECTOR: &str = "gnome-language-selector";
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -99,6 +98,7 @@ pub struct PageRefresh {
     region: Option<SystemLocale>,
     available_languages: SlotMap<DefaultKey, SystemLocale>,
     system_locales: BTreeMap<String, SystemLocale>,
+    language_selector_available: bool,
 }
 
 #[derive(Default)]
@@ -113,6 +113,8 @@ pub struct Page {
     registry: Option<locale::Registry>,
     expanded_source_popover: Option<usize>,
     add_language_search: String,
+    /// Whether gnome-language-selector is in the path.
+    language_selector_available: bool,
     /// Cached LC_NUMERIC locale in icu locale format.
     numeric_locale: Option<Locale>,
     /// Cached LC_TIME locale in icu locale format.
@@ -137,7 +139,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("time-region", "preferences-region-and-language-symbolic")
             .title(fl!("time-region"))
-            .description(fl!("time-region", "desc"))
+            .description(fl!("xdg-entry-region-language-comment"))
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
@@ -160,30 +162,35 @@ impl page::Page<crate::pages::Message> for Page {
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         Some(match self.context.as_ref()? {
             ContextView::AddLanguage => {
-                let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
+                let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
                     .apply(Element::from)
                     .map(crate::pages::Message::from);
-                let install_additional_button =
-                    widget::button::standard(fl!("install-additional-languages"))
-                        .on_press(Message::InstallAdditionalLanguages)
-                        .apply(widget::container)
-                        .width(Length::Fill)
-                        .align_x(Alignment::End)
-                        .apply(Element::from)
-                        .map(crate::pages::Message::from);
-
-                context_drawer(
+                let drawer = context_drawer(
                     self.add_language_view().map(crate::pages::Message::from),
                     crate::pages::Message::CloseContextDrawer,
                 )
                 .title(fl!("add-language", "context"))
-                .header(search)
-                .footer(install_additional_button)
+                .header(search);
+
+                if self.language_selector_available {
+                    let install_additional_button =
+                        widget::button::standard(fl!("install-additional-languages"))
+                            .on_press(Message::InstallAdditionalLanguages)
+                            .apply(widget::container)
+                            .width(Length::Fill)
+                            .align_x(Alignment::End)
+                            .apply(Element::from)
+                            .map(crate::pages::Message::from);
+
+                    drawer.footer(install_additional_button)
+                } else {
+                    drawer
+                }
             }
             ContextView::Region => {
-                let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
+                let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
                     .apply(Element::from)
@@ -233,9 +240,7 @@ impl Page {
                     let region = region.lang_code.clone();
 
                     return cosmic::task::future(async move {
-                        if let Ok(exit_status) = set_locale(lang, region.clone()).await
-                            && exit_status.success()
-                        {
+                        if set_locale(lang, region.clone()).await.is_ok() {
                             update_time_settings_after_region_change(region);
                         }
 
@@ -259,7 +264,7 @@ impl Page {
 
             Message::InstallAdditionalLanguages => {
                 return cosmic::task::future(async move {
-                    _ = tokio::process::Command::new("gnome-language-selector")
+                    _ = tokio::process::Command::new(GNOME_LANGUAGE_SELECTOR)
                         .status()
                         .await;
 
@@ -275,6 +280,7 @@ impl Page {
                     self.language = page_refresh.language;
                     self.region = page_refresh.region;
                     self.registry = Some(page_refresh.registry.0);
+                    self.language_selector_available = page_refresh.language_selector_available;
                     self.numeric_locale = self.icu_locale_from_env("LC_NUMERIC");
                     self.time_locale = self.icu_locale_from_env("LC_TIME");
                 }
@@ -313,6 +319,9 @@ impl Page {
 
                     _ = config.set("system_locales", &locales);
 
+                    // Build the LANGUAGE string for AccountsService (colon-separated locales)
+                    let language_list = build_language_list(locales);
+
                     if let Some(language_code) = locales.first()
                         && let Some(language) = self
                             .available_languages
@@ -329,6 +338,14 @@ impl Page {
                                 region.unwrap_or(language).lang_code.clone(),
                             )
                             .await;
+
+                            // Set the LANGUAGE variable via AccountsService
+                            if let Err(why) = set_user_language(language_list).await {
+                                tracing::error!(
+                                    ?why,
+                                    "failed to set user language via AccountsService"
+                                );
+                            }
                         });
                     }
                 }
@@ -339,13 +356,8 @@ impl Page {
     }
 
     fn add_language_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
-        let mut list = widget::list_column();
-
+        let mut list = widget::list_column::with_capacity(self.available_languages.len());
         let search_input = &self.add_language_search.trim().to_lowercase();
-
-        let svg_accent = Rc::new(|theme: &cosmic::Theme| cosmic::widget::svg::Style {
-            color: Some(theme.cosmic().accent_text_color().into()),
-        });
 
         for (id, available_language) in &self.available_languages {
             if search_input.is_empty()
@@ -359,37 +371,15 @@ impl Page {
                     .as_ref()
                     .is_some_and(|(_, locales)| locales.contains(&available_language.lang_code));
 
-                let button = widget::settings::item_row(vec![
-                    widget::text::body(&available_language.display_name)
-                        .class(if is_installed {
-                            cosmic::theme::Text::Accent
-                        } else {
-                            cosmic::theme::Text::Default
-                        })
-                        .wrapping(Wrapping::Word)
-                        .width(Length::Fill)
-                        .into(),
+                list = list.add(selection_context_item(
+                    &available_language.display_name,
+                    is_installed,
                     if is_installed {
-                        widget::icon::from_name("object-select-symbolic")
-                            .size(16)
-                            .icon()
-                            .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
-                            .into()
+                        Message::RemoveLanguage(id)
                     } else {
-                        widget::horizontal_space().width(16).into()
+                        Message::AddLanguage(id)
                     },
-                ])
-                .apply(widget::container)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press(if is_installed {
-                    Message::RemoveLanguage(id)
-                } else {
-                    Message::AddLanguage(id)
-                });
-
-                list = list.add(button)
+                ))
             }
         }
 
@@ -470,12 +460,7 @@ impl Page {
     }
 
     fn region_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
-        let svg_accent = Rc::new(|theme: &cosmic::Theme| {
-            let color = theme.cosmic().accent_text_color().into();
-            cosmic::widget::svg::Style { color: Some(color) }
-        });
-
-        let mut list = widget::list_column();
+        let mut list = widget::list_column::with_capacity(self.available_languages.len());
 
         let search_input = &self.add_language_search.trim().to_lowercase();
 
@@ -487,37 +472,15 @@ impl Page {
                     .as_ref()
                     .is_some_and(|l| l.lang_code == locale.lang_code);
 
-                let button = widget::settings::item_row(vec![
-                    widget::text::body(&locale.region_name)
-                        .class(if is_selected {
-                            cosmic::theme::Text::Accent
-                        } else {
-                            cosmic::theme::Text::Default
-                        })
-                        .wrapping(Wrapping::Word)
-                        .width(Length::Fill)
-                        .into(),
+                list = list.add(selection_context_item(
+                    &locale.region_name,
+                    is_selected,
                     if is_selected {
-                        widget::icon::from_name("object-select-symbolic")
-                            .size(16)
-                            .icon()
-                            .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
-                            .into()
+                        None
                     } else {
-                        widget::horizontal_space().width(16).into()
+                        Some(Message::SelectRegion(id))
                     },
-                ])
-                .apply(widget::container)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press_maybe(if is_selected {
-                    None
-                } else {
-                    Some(Message::SelectRegion(id))
-                });
-
-                list = list.add(button)
+                ))
             }
         }
 
@@ -531,11 +494,8 @@ mod preferred_languages {
     use crate::pages::time::region::localized_iso_codes;
 
     use super::Message;
-    use cosmic::{
-        Apply,
-        iced::{Alignment, Length},
-        widget,
-    };
+    use cosmic::iced::{Alignment, Length};
+    use cosmic::{Apply, widget};
     use cosmic_settings_page::Section;
 
     pub fn section() -> Section<crate::pages::Message> {
@@ -693,7 +653,7 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
 
     let registry = locale::Registry::new().wrap_err("failed to get locale registry")?;
 
-    let system_locales: BTreeMap<String, SystemLocale> = locale1::locale1Proxy::new(&conn)
+    let system_locales: BTreeMap<String, SystemLocale> = locale1_zbus::locale1Proxy::new(&conn)
         .await
         .wrap_err("locale1 proxy connect error")?
         .locale()
@@ -743,20 +703,26 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
 
     let mut available_languages_set = BTreeSet::new();
 
-    let output = tokio::process::Command::new("localectl")
-        .arg("list-locales")
+    // Use 'locale -a' instead of 'localectl list-locales' for OpenRC compatibility
+    let output_result = tokio::process::Command::new("locale")
+        .arg("-a")
         .output()
-        .await
-        .expect("Failed to run localectl");
+        .await;
 
-    let output = String::from_utf8(output.stdout).unwrap_or_default();
-    for line in output.lines() {
-        if line == "C.UTF-8" {
-            continue;
+    let locale_list = match output_result {
+        Ok(output) => {
+            let output_str = String::from_utf8(output.stdout).unwrap_or_default();
+            parse_locale_output(&output_str)
         }
+        Err(why) => {
+            tracing::error!(?why, "failed to list available locales using 'locale -a'");
+            Vec::new()
+        }
+    };
 
-        if let Some(locale) = registry.locale(line) {
-            available_languages_set.insert(localized_locale(&locale, line.to_owned()));
+    for line in locale_list {
+        if let Some(locale) = registry.locale(&line) {
+            available_languages_set.insert(localized_locale(&locale, line));
         }
     }
 
@@ -765,6 +731,8 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         available_languages.insert(language);
     }
 
+    let language_selector_available = which::which(GNOME_LANGUAGE_SELECTOR).is_ok();
+
     Ok(PageRefresh {
         config,
         registry: Registry(registry),
@@ -772,6 +740,7 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         region,
         available_languages,
         system_locales,
+        language_selector_available,
     })
 }
 
@@ -817,6 +786,7 @@ fn popover_button(id: usize, expanded: bool) -> Element<'static, Message> {
 
     if expanded {
         widget::popover(button)
+            .position(widget::popover::Position::Bottom)
             .popup(popover_menu(id))
             .on_close(Message::ExpandLanguagePopover(None))
             .into()
@@ -826,38 +796,31 @@ fn popover_button(id: usize, expanded: bool) -> Element<'static, Message> {
 }
 
 fn popover_menu(id: usize) -> Element<'static, Message> {
-    widget::column::with_children(vec![
+    widget::column::with_children([
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-up"),
             SourceContext::MoveUp,
         ),
-        cosmic::widget::divider::horizontal::default().into(),
+        widget::divider::horizontal::default()
+            .apply(widget::container)
+            .padding([0, 8])
+            .into(),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-down"),
             SourceContext::MoveDown,
         ),
-        cosmic::widget::divider::horizontal::default().into(),
+        widget::divider::horizontal::default()
+            .apply(widget::container)
+            .padding([0, 8])
+            .into(),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding(8)
-    .width(Length::Shrink)
-    .height(Length::Shrink)
-    .apply(cosmic::widget::container)
-    .class(cosmic::theme::Container::custom(|theme| {
-        let cosmic = theme.cosmic();
-        container::Style {
-            icon_color: Some(theme.cosmic().background.on.into()),
-            text_color: Some(theme.cosmic().background.on.into()),
-            background: Some(Color::from(theme.cosmic().background.base).into()),
-            border: Border {
-                radius: cosmic.corner_radii.radius_m.into(),
-                ..Default::default()
-            },
-            shadow: Default::default(),
-        }
-    }))
+    .width(Length::Fixed(200.0))
+    .apply(widget::container)
+    .padding(cosmic::theme::spacing().space_xxs)
+    .class(cosmic::theme::Container::Dropdown)
     .into()
 }
 
@@ -866,42 +829,62 @@ fn popover_menu_row(
     label: String,
     message: impl Fn(usize) -> SourceContext + 'static,
 ) -> cosmic::Element<'static, Message> {
+    let spacing = cosmic::theme::spacing();
     widget::text::body(label)
-        .apply(widget::container)
-        .class(cosmic::theme::Container::custom(|theme| {
-            widget::container::Style {
-                background: None,
-                ..widget::container::Catalog::style(theme, &cosmic::theme::Container::List)
-            }
-        }))
+        .align_y(Alignment::Center)
         .apply(button::custom)
-        .on_press(())
-        .class(theme::Button::Transparent)
+        .padding([spacing.space_xxxs, spacing.space_xs])
+        .width(Length::Fill)
+        .class(cosmic::theme::Button::MenuItem)
+        .on_press(Message::SourceContext(message(id)))
         .apply(Element::from)
-        .map(move |()| Message::SourceContext(message(id)))
 }
 
-pub async fn set_locale(
-    lang: String,
-    region: String,
-) -> Result<std::process::ExitStatus, std::io::Error> {
-    eprintln!("setting locale lang={lang}, region={region}");
-    tokio::process::Command::new("localectl")
-        .arg("set-locale")
-        .args(&[
-            ["LANG=", &lang].concat(),
-            ["LC_ADDRESS=", &region].concat(),
-            ["LC_IDENTIFICATION=", &region].concat(),
-            ["LC_MEASUREMENT=", &region].concat(),
-            ["LC_MONETARY=", &region].concat(),
-            ["LC_NAME=", &region].concat(),
-            ["LC_NUMERIC=", &region].concat(),
-            ["LC_PAPER=", &region].concat(),
-            ["LC_TELEPHONE=", &region].concat(),
-            ["LC_TIME=", &region].concat(),
-        ])
-        .status()
+/// Sets the system locale using D-Bus instead of localectl for OpenRC compatibility.
+pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
+    tracing::debug!("setting locale lang={lang}, region={region}");
+
+    let conn = zbus::Connection::system()
         .await
+        .wrap_err("failed to connect to system D-Bus")?;
+
+    let proxy = locale1_zbus::locale1Proxy::new(&conn)
+        .await
+        .wrap_err("failed to create locale1 D-Bus proxy")?;
+
+    let locale_settings = build_locale_settings(&lang, &region);
+    let locale_strs: Vec<&str> = locale_settings.iter().map(|s| s.as_str()).collect();
+
+    proxy
+        .set_locale(&locale_strs, true)
+        .await
+        .wrap_err("failed to set locale via D-Bus")?;
+
+    tracing::debug!("successfully set locale via D-Bus");
+    Ok(())
+}
+
+/// Sets the user's preferred language list via AccountsService D-Bus.
+/// This updates the LANGUAGE environment variable for gettext-based applications.
+/// The language_list should be a colon-separated string like "de_DE:de:en_US:en".
+pub async fn set_user_language(language_list: String) -> eyre::Result<()> {
+    let conn = zbus::Connection::system()
+        .await
+        .wrap_err("zbus system connection error")?;
+
+    let uid = rustix::process::getuid().as_raw() as u64;
+
+    let user_proxy = accounts_zbus::UserProxy::from_uid(&conn, uid)
+        .await
+        .wrap_err("failed to create AccountsService user proxy")?;
+
+    user_proxy
+        .set_language(&language_list)
+        .await
+        .wrap_err("failed to set language via AccountsService")?;
+
+    tracing::debug!("set user language via AccountsService: {language_list}");
+    Ok(())
 }
 
 fn parse_locale(locale: &str) -> Option<Locale> {
@@ -981,5 +964,258 @@ fn update_time_settings_after_region_change(region: String) {
             ?why,
             "Failed to update first_day_of_week after region change"
         );
+    }
+}
+
+/// Builds a colon-separated language list for the LANGUAGE environment variable.
+/// Converts locales like ["de_DE.UTF-8", "en_US.UTF-8"] to "de_DE:de:en_US:en".
+///
+/// Important: The list stops at English locales since English is typically the
+/// source language and doesn't need translation files. This prevents fallback
+/// to other languages when English is selected.
+fn build_language_list(locales: &[String]) -> String {
+    let mut parts = Vec::new();
+
+    for locale in locales {
+        // Parse locale: language_TERRITORY[.CODESET][@MODIFIER]
+        // We want to extract "language_TERRITORY" without codeset or modifier
+        let base = strip_locale_suffix(locale);
+
+        // Get the language-only code (e.g., "de" from "de_DE")
+        let lang = base.split('_').next().unwrap_or(&base);
+
+        // Add the full locale code (e.g., "de_DE")
+        parts.push(base.clone());
+
+        // Add the language-only code as fallback if different
+        if lang != base {
+            parts.push(lang.to_string());
+        }
+
+        // Stop after English - it's the source language and needs no translation
+        // This matches gnome-language-selector's behavior
+        if lang == "en" {
+            break;
+        }
+    }
+
+    parts.join(":")
+}
+
+/// Strips the codeset (.UTF-8) and modifier (@latin) from a locale string.
+/// "de_DE.UTF-8" -> "de_DE"
+/// "sr_RS@latin" -> "sr_RS"
+/// "sr_RS.UTF-8@latin" -> "sr_RS"
+fn strip_locale_suffix(locale: &str) -> String {
+    // First strip the codeset (everything from '.' onwards)
+    let without_codeset = locale.split('.').next().unwrap_or(locale);
+    // Then strip the modifier (everything from '@' onwards)
+    without_codeset
+        .split('@')
+        .next()
+        .unwrap_or(without_codeset)
+        .to_string()
+}
+
+/// Parses the output from `locale -a` command and returns a vector of locale strings.
+/// Filters out pseudo-locales (C, POSIX) and accepts only allowed character encodings.
+fn parse_locale_output(output: &str) -> Vec<String> {
+    // Regex to match pseudo-locales: C or POSIX, optionally followed by .anything
+    let pseudo_locale_re = Regex::new(r"^(C|POSIX)(\.|$)").unwrap();
+
+    // Regex to match UTF-8 encoded locales (case-insensitive)
+    // Supports optional modifiers after encoding (e.g., @euro, @valencia)
+    let utf8_encoding_re = Regex::new(r"(?i)\.(utf-?8)(@.*)?$").unwrap();
+
+    output
+        .lines()
+        .map(|line| line.trim())
+        .filter(|line| !pseudo_locale_re.is_match(line))
+        .filter(|line| utf8_encoding_re.is_match(line))
+        .map(|line| line.to_string())
+        .collect()
+}
+
+/// Builds the locale settings array for D-Bus SetLocale call.
+/// Sets LANG to the language parameter and all LC_* variables to the region parameter.
+fn build_locale_settings(lang: &str, region: &str) -> Vec<String> {
+    vec![
+        format!("LANG={}", lang),
+        format!("LC_ADDRESS={}", region),
+        format!("LC_IDENTIFICATION={}", region),
+        format!("LC_MEASUREMENT={}", region),
+        format!("LC_MONETARY={}", region),
+        format!("LC_NAME={}", region),
+        format!("LC_NUMERIC={}", region),
+        format!("LC_PAPER={}", region),
+        format!("LC_TELEPHONE={}", region),
+        format!("LC_TIME={}", region),
+    ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_locale_output_handles_empty_input() {
+        let output = "";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_parse_locale_output_preserves_locale_strings() {
+        let output = "en_US.utf8\nde_DE.utf8\nfr_FR.utf8\n";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 3);
+        assert!(result.contains(&"en_US.utf8".to_string()));
+    }
+
+    #[test]
+    fn test_build_locale_settings_includes_all_lc_variables() {
+        let lang = "en_US.UTF-8";
+        let region = "de_DE.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        assert_eq!(settings.len(), 10);
+        assert!(settings.contains(&format!("LANG={}", lang)));
+        assert!(settings.contains(&format!("LC_ADDRESS={}", region)));
+        assert!(settings.contains(&format!("LC_IDENTIFICATION={}", region)));
+        assert!(settings.contains(&format!("LC_MEASUREMENT={}", region)));
+        assert!(settings.contains(&format!("LC_MONETARY={}", region)));
+        assert!(settings.contains(&format!("LC_NAME={}", region)));
+        assert!(settings.contains(&format!("LC_NUMERIC={}", region)));
+        assert!(settings.contains(&format!("LC_PAPER={}", region)));
+        assert!(settings.contains(&format!("LC_TELEPHONE={}", region)));
+        assert!(settings.contains(&format!("LC_TIME={}", region)));
+    }
+
+    #[test]
+    fn test_build_locale_settings_uses_correct_values() {
+        let lang = "fr_FR.UTF-8";
+        let region = "en_GB.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        // LANG should use the lang parameter
+        assert!(settings.iter().any(|s| s == "LANG=fr_FR.UTF-8"));
+        // LC_* variables should use the region parameter
+        assert!(settings.iter().any(|s| s == "LC_TIME=en_GB.UTF-8"));
+    }
+
+    #[test]
+    fn test_parse_locale_output_filters_pseudo_locales() {
+        let output = "C\nC.utf8\nC.UTF-8\nPOSIX\nen_US.utf8\nde_DE.UTF-8\n";
+        let result = parse_locale_output(output);
+
+        // Should filter out all C and POSIX variants
+        assert!(!result.contains(&"C".to_string()));
+        assert!(!result.contains(&"C.utf8".to_string()));
+        assert!(!result.contains(&"C.UTF-8".to_string()));
+        assert!(!result.contains(&"POSIX".to_string()));
+
+        // Should keep actual locales
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"de_DE.UTF-8".to_string()));
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_locale_output_accepts_only_utf8_locales() {
+        let output =
+            "en_US\nen_US.utf8\nen_US.UTF-8\nar_IN\nar_IN.utf8\nde_DE.iso88591\nfr_FR.UTF-8\n";
+        let result = parse_locale_output(output);
+
+        // Should accept UTF-8 variants
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"en_US.UTF-8".to_string()));
+        assert!(result.contains(&"ar_IN.utf8".to_string()));
+        assert!(result.contains(&"fr_FR.UTF-8".to_string()));
+
+        // Should filter out non-UTF-8 encoded locales
+        assert!(!result.contains(&"en_US".to_string()));
+        assert!(!result.contains(&"ar_IN".to_string()));
+        assert!(!result.contains(&"de_DE.iso88591".to_string()));
+
+        assert_eq!(result.len(), 4);
+    }
+
+    #[test]
+    fn test_parse_locale_output_filters_any_c_posix_variant() {
+        let output = "C\nC.iso88591\nC.anything\nPOSIX\nPOSIX.utf8\nen_US.utf8\n";
+        let result = parse_locale_output(output);
+
+        // Should filter out any C or POSIX variant regardless of encoding
+        assert!(!result.contains(&"C".to_string()));
+        assert!(!result.contains(&"C.iso88591".to_string()));
+        assert!(!result.contains(&"C.anything".to_string()));
+        assert!(!result.contains(&"POSIX".to_string()));
+        assert!(!result.contains(&"POSIX.utf8".to_string()));
+
+        // Should keep actual locales
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_whitespace() {
+        let output = "  en_US.utf8  \n\t de_DE.UTF-8\t\n   fr_FR.utf8   \n";
+        let result = parse_locale_output(output);
+
+        // Should handle leading/trailing whitespace
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"de_DE.UTF-8".to_string()));
+        assert!(result.contains(&"fr_FR.utf8".to_string()));
+        assert_eq!(result.len(), 3);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_empty_lines() {
+        let output = "en_US.utf8\n\n\nde_DE.UTF-8\n\n";
+        let result = parse_locale_output(output);
+
+        // Should skip empty lines
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"de_DE.UTF-8".to_string()));
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_locale_output_catalan_not_filtered_as_pseudo() {
+        let output = "C\nca_ES.UTF-8\nca_ES.utf8\ncs_CZ.UTF-8\nen_US.utf8\n";
+        let result = parse_locale_output(output);
+
+        // Should filter out C but not Catalan (ca_*) or Czech (cs_*)
+        assert!(!result.contains(&"C".to_string()));
+        assert!(result.contains(&"ca_ES.UTF-8".to_string()));
+        assert!(result.contains(&"ca_ES.utf8".to_string()));
+        assert!(result.contains(&"cs_CZ.UTF-8".to_string()));
+        assert_eq!(result.len(), 4);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_locale_modifiers() {
+        let output = "en_US.UTF-8@euro\nca_ES.UTF-8@valencia\nde_DE.utf8\n";
+        let result = parse_locale_output(output);
+
+        // Locales with modifiers should be accepted
+        assert!(result.contains(&"en_US.UTF-8@euro".to_string()));
+        assert!(result.contains(&"ca_ES.UTF-8@valencia".to_string()));
+        assert!(result.contains(&"de_DE.utf8".to_string()));
+        assert_eq!(result.len(), 3);
+    }
+
+    #[test]
+    fn test_parse_locale_output_case_variations() {
+        let output = "en_US.UTF-8\nen_US.utf-8\nen_US.utf8\nen_US.UTF8\nde_DE.Utf8\n";
+        let result = parse_locale_output(output);
+
+        // All case variations should be accepted (case-insensitive regex)
+        assert!(result.contains(&"en_US.UTF-8".to_string()));
+        assert!(result.contains(&"en_US.utf-8".to_string()));
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"en_US.UTF8".to_string()));
+        assert!(result.contains(&"de_DE.Utf8".to_string()));
+        assert_eq!(result.len(), 5);
     }
 }

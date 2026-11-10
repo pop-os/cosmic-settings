@@ -1,39 +1,46 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length, color};
-use cosmic::iced_core::text::Wrapping;
+use cosmic::widget::space::horizontal as horizontal_space;
 use cosmic::widget::{self, settings, text};
 use cosmic::{Apply, Element, Task, theme};
 use cosmic_settings_bluetooth_subscription::*;
 use cosmic_settings_page::{self as page, Section, section};
-use futures::StreamExt;
 use futures::channel::oneshot;
-use slab::Slab;
+use futures::{SinkExt, StreamExt};
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use std::time::Duration;
-use zbus::zvariant::OwnedObjectPath;
+use zbus::OwnedObjectPath;
+
+#[cfg(test)]
+use crate::service_manager::MockServiceManager;
+use crate::service_manager::ServiceManagerHandle;
+
+static BLUETOOTH_PAGE_LABEL: LazyLock<String> = LazyLock::new(|| fl!("bluetooth"));
 
 enum Dialog {
-    // RequestAuthorization {
-    //     device: OwnedObjectPath,
-    //     response: oneshot::Sender<bool>,
-    // },
     RequestConfirmation {
         device: String,
         passkey: u32,
         response: oneshot::Sender<bool>,
     },
-    // RequestPasskey {
-    //     device: OwnedObjectPath,
-    //     response: oneshot::Sender<Option<u32>>,
-    // },
-    // RequestPinCode {
-    //     device: OwnedObjectPath,
-    //     response: oneshot::Sender<Option<String>>,
-    // },
+    DisplayPasskey {
+        device: String,
+        passkey: u32,
+        entered: u16,
+    },
+    DisplayPinCode {
+        device: String,
+        pincode: String,
+    },
+    RenameDevice {
+        path: OwnedObjectPath,
+        name: String,
+    },
 }
 
 #[derive(Default)]
@@ -161,13 +168,28 @@ pub struct Page {
     service_is_active: bool,
 
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
+
+    service_manager: ServiceManagerHandle,
 }
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("bluetooth", "bluetooth-symbolic")
             .title(fl!("bluetooth"))
-            .description(fl!("bluetooth", "desc"))
+            .description(fl!("xdg-entry-bluetooth-comment"))
+    }
+
+    fn header(&self) -> Option<Element<'_, crate::pages::Message>> {
+        if self.model.adapters.len() > 1 {
+            let (_, adapter) = self.model.get_selected_adapter()?;
+            return Some(crate::widget::sub_page_header(
+                &adapter.alias,
+                BLUETOOTH_PAGE_LABEL.as_str(),
+                Message::SelectAdapter(None).into(),
+            ));
+        }
+
+        None
     }
 
     fn content(
@@ -238,7 +260,7 @@ impl page::Page<crate::pages::Message> for Page {
                 let control = widget::column::with_capacity(2)
                     .push(description)
                     .push(pin)
-                    .spacing(theme::active().cosmic().space_xxs());
+                    .spacing(theme::spacing().space_xxs);
 
                 let confirm_button =
                     widget::button::suggested(fl!("confirm")).on_press(Message::PinConfirm);
@@ -250,6 +272,108 @@ impl page::Page<crate::pages::Message> for Page {
                     .title(fl!("bluetooth-confirm-pin"))
                     .control(control)
                     .primary_action(confirm_button)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
+
+            Dialog::DisplayPasskey {
+                device,
+                passkey,
+                entered,
+            } => {
+                let description = widget::text::body(fl!(
+                    "bluetooth-display-passkey",
+                    "description",
+                    device = device
+                ))
+                .wrapping(Wrapping::Word);
+
+                let passkey_str = format!("{passkey:06}");
+                let entered = *entered as usize;
+
+                let pin = widget::text::title1(passkey_str)
+                    .width(Length::Fill)
+                    .align_x(Alignment::Center)
+                    .wrapping(Wrapping::None);
+
+                let mut control = widget::column::with_capacity(3).push(description).push(pin);
+
+                // Only show the key progress counter when the device actually
+                // reports keypress notifications. Most keyboards don't support
+                // this, so entered stays at 0 for the entire pairing process.
+                if entered > 0 {
+                    let progress = widget::text::body(format!("{entered} / 6 keys entered"))
+                        .width(Length::Fill)
+                        .align_x(Alignment::Center)
+                        .wrapping(Wrapping::None);
+                    control = control.push(progress);
+                }
+
+                let control = control.spacing(theme::spacing().space_xxs);
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::PinCancel);
+
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-display-passkey"))
+                    .control(control)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
+
+            Dialog::DisplayPinCode { device, pincode } => {
+                let description = widget::text::body(fl!(
+                    "bluetooth-display-pin",
+                    "description",
+                    device = device
+                ))
+                .wrapping(Wrapping::Word);
+
+                let pin = widget::text::title1(pincode.clone())
+                    .width(Length::Fill)
+                    .align_x(Alignment::Center)
+                    .wrapping(Wrapping::None);
+
+                let control = widget::column::with_capacity(2)
+                    .push(description)
+                    .push(pin)
+                    .spacing(theme::spacing().space_xxs);
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::PinCancel);
+
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-display-pin"))
+                    .control(control)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
+
+            Dialog::RenameDevice { name, .. } => {
+                let is_valid = is_valid_bluetooth_alias(name);
+                let input = widget::text_input("", name)
+                    .on_input(Message::RenameDeviceInput)
+                    .on_submit(|_| Message::RenameDeviceConfirm);
+
+                let rename_button = widget::button::suggested(fl!("rename"))
+                    .on_press_maybe(is_valid.then_some(Message::RenameDeviceConfirm));
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::RenameDeviceCancel);
+
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-rename-device"))
+                    .control(input)
+                    .primary_action(rename_button)
                     .secondary_action(cancel_button)
                     .apply(Element::from)
                     .map(Into::into);
@@ -272,6 +396,10 @@ pub enum Message {
     PinConfirm,
     PopupDevice(Option<OwnedObjectPath>),
     PopupSetting(bool),
+    RenameDevice(OwnedObjectPath),
+    RenameDeviceInput(String),
+    RenameDeviceConfirm,
+    RenameDeviceCancel,
     SelectAdapter(Option<OwnedObjectPath>),
     ServiceActivate,
     ServiceEnable,
@@ -310,6 +438,30 @@ impl From<Event> for Message {
 }
 
 impl Page {
+    fn update_heading(&mut self) {
+        self.heading = if let Some((_, adapter)) = self.model.get_selected_adapter() {
+            fl!(
+                "bluetooth",
+                "status",
+                aliases = format!("“{}”", adapter.alias)
+            )
+        } else {
+            fl!(
+                "bluetooth",
+                "status",
+                aliases = self
+                    .model
+                    .adapters
+                    .values()
+                    .map(|adapter| format!("“{}”", adapter.alias))
+                    .collect::<HashSet<String>>()
+                    .into_iter()
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            )
+        };
+    }
+
     pub fn update(&mut self, message: Message) -> cosmic::Task<crate::Message> {
         let span = tracing::span!(tracing::Level::INFO, "bluetooth::update");
         let _span = span.enter();
@@ -355,28 +507,7 @@ impl Page {
 
                 Event::SetAdapters(adapters) => {
                     let select_adapter = self.model.set_adapters(adapters);
-
-                    if let Some((_, adapter)) = self.model.get_selected_adapter() {
-                        self.heading = fl!(
-                            "bluetooth",
-                            "status",
-                            aliases = format!("“{}”", adapter.alias)
-                        );
-                    } else {
-                        self.heading = fl!(
-                            "bluetooth",
-                            "status",
-                            aliases = self
-                                .model
-                                .adapters
-                                .values()
-                                .map(|adapter| format!("“{}”", adapter.alias))
-                                .collect::<HashSet<String>>()
-                                .into_iter()
-                                .collect::<Vec<String>>()
-                                .join(", ")
-                        );
-                    }
+                    self.update_heading();
 
                     if let Some(adapter) = select_adapter {
                         return cosmic::task::message(Message::SelectAdapter(Some(adapter)));
@@ -402,6 +533,19 @@ impl Page {
                 }
 
                 Event::UpdatedDevice(path, update) => {
+                    // Dismiss passkey/pin display dialogs when pairing completes,
+                    // since BlueZ may not always send Cancel after a successful pair.
+                    if update
+                        .iter()
+                        .any(|u| matches!(u, DeviceUpdate::Paired(true)))
+                        && matches!(
+                            self.dialog,
+                            Some(Dialog::DisplayPasskey { .. } | Dialog::DisplayPinCode { .. })
+                        )
+                    {
+                        self.dialog = None;
+                    }
+
                     if let Some(existing) = self.model.devices.get_mut(&path) {
                         tracing::debug!("Device {} updated", existing.address);
                         existing.update(update);
@@ -435,7 +579,18 @@ impl Page {
                 }
 
                 Event::DBusServiceUnknown => {
-                    self.bluez_service_unknown = true;
+                    // D-Bus activation for org.bluez is absent.  On systemd this usually
+                    // means bluez isn't installed; on OpenRC it may be installed but lack
+                    // the D-Bus service file.  Check the service manager to disambiguate.
+                    if self.service_manager.is_installed() {
+                        // Service manager confirms the service exists — query its real state.
+                        self.bluez_service_unknown = false;
+                        self.service_is_active = self.service_manager.is_active();
+                        self.service_is_enabled = self.service_manager.is_enabled();
+                    } else {
+                        // Genuinely not installed — let status() show the unknown message.
+                        self.bluez_service_unknown = true;
+                    }
                 }
 
                 Event::Agent(message) => {
@@ -444,11 +599,14 @@ impl Page {
                     };
 
                     match message {
-                        bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
+                        cosmic_bluez_zbus::agent1::Message::RequestAuthorization {
+                            response,
+                            ..
+                        } => {
                             _ = response.send(true);
                         }
 
-                        bluez_zbus::agent1::Message::RequestConfirmation {
+                        cosmic_bluez_zbus::agent1::Message::RequestConfirmation {
                             device,
                             passkey,
                             response,
@@ -465,20 +623,65 @@ impl Page {
                             });
                         }
 
-                        bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
+                        cosmic_bluez_zbus::agent1::Message::DisplayPasskey {
+                            device,
+                            passkey,
+                            entered,
+                        } => {
+                            let device = self.model.devices.get(&device).map_or_else(
+                                || device.to_string(),
+                                |device| device.alias_or_addr().to_owned(),
+                            );
+
+                            self.dialog = Some(Dialog::DisplayPasskey {
+                                device,
+                                passkey,
+                                entered,
+                            });
+                        }
+
+                        cosmic_bluez_zbus::agent1::Message::DisplayPinCode { device, pincode } => {
+                            let device = self.model.devices.get(&device).map_or_else(
+                                || device.to_string(),
+                                |device| device.alias_or_addr().to_owned(),
+                            );
+
+                            self.dialog = Some(Dialog::DisplayPinCode { device, pincode });
+                        }
+
+                        cosmic_bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
                             _ = response.send(None);
                         }
 
-                        bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
+                        cosmic_bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
                             _ = response.send(None);
                         }
 
-                        bluez_zbus::agent1::Message::Cancel => {
+                        cosmic_bluez_zbus::agent1::Message::Cancel => {
                             self.dialog = None;
+                        }
+
+                        cosmic_bluez_zbus::agent1::Message::AuthorizeService {
+                            device,
+                            response,
+                            ..
+                        } => {
+                            let Some(connection) = self.connection.clone() else {
+                                return Task::none();
+                            };
+
+                            return cosmic::task::future(async move {
+                                _ = response.send(is_paired(connection, device).await);
+                                Event::Ok
+                            });
                         }
 
                         _ => (),
                     }
+                }
+
+                Event::DeviceRenameFailed(path) => {
+                    tracing::warn!("Failed to rename device {path}");
                 }
             },
 
@@ -553,8 +756,8 @@ impl Page {
             }
 
             Message::DBusConnect(connection) => {
-                self.service_is_active = systemd::is_bluetooth_active();
-                self.service_is_enabled = systemd::is_bluetooth_enabled();
+                self.service_is_active = self.service_manager.is_active();
+                self.service_is_enabled = self.service_manager.is_enabled();
                 self.connection = Some(connection.clone());
 
                 let get_adapters_fut = get_adapters(connection.clone());
@@ -562,33 +765,34 @@ impl Page {
                 if self.subscription.is_none() {
                     let connection = connection.clone();
 
-                    let (cancellation, task) = crate::utils::forward_event_loop(move |emitter| {
-                        let connection = connection.clone();
+                    let (cancellation, task) =
+                        crate::utils::forward_event_loop(move |mut sender| {
+                            let connection = connection.clone();
 
-                        async move {
-                            let (tx, mut rx) = futures::channel::mpsc::channel(1);
+                            async move {
+                                let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
-                            let watchers = std::pin::pin!(async move {
-                                _ = futures::future::join(
-                                    subscription::watch(connection.clone(), tx.clone()),
-                                    agent::watch(connection, tx),
-                                )
-                                .await;
-                            });
+                                let watchers = std::pin::pin!(async move {
+                                    _ = futures::future::join(
+                                        subscription::watch(connection.clone(), tx.clone()),
+                                        agent::watch(connection, tx),
+                                    )
+                                    .await;
+                                });
 
-                            let forwarder = std::pin::pin!(async move {
-                                while let Some(message) = rx.next().await {
-                                    _ = emitter
-                                        .emit(crate::pages::Message::Bluetooth(
-                                            Message::BluetoothEvent(message),
-                                        ))
-                                        .await;
-                                }
-                            });
+                                let forwarder = std::pin::pin!(async move {
+                                    while let Some(message) = rx.next().await {
+                                        _ = sender
+                                            .send(crate::pages::Message::Bluetooth(
+                                                Message::BluetoothEvent(message),
+                                            ))
+                                            .await;
+                                    }
+                                });
 
-                            futures::future::select(watchers, forwarder).await;
-                        }
-                    });
+                                futures::future::select(watchers, forwarder).await;
+                            }
+                        });
 
                     self.subscription = Some(cancellation);
                     return cosmic::task::batch(vec![cosmic::task::future(get_adapters_fut), task]);
@@ -608,6 +812,7 @@ impl Page {
             Message::SelectAdapter(adapter_maybe) => {
                 tracing::debug!("Adapter selected: {adapter_maybe:?}");
                 self.model.selected_adapter = adapter_maybe;
+                self.update_heading();
                 self.model.update_status();
                 let Some(connection) = self.connection.as_ref() else {
                     tracing::error!("No DBus connection ready");
@@ -684,9 +889,46 @@ impl Page {
                 }
             }
 
+            Message::RenameDevice(path) => {
+                self.model.popup_device = None;
+                let name = self
+                    .model
+                    .devices
+                    .get(&path)
+                    .map_or_else(String::new, |d| d.alias_or_addr().to_owned());
+                self.dialog = Some(Dialog::RenameDevice { path, name });
+            }
+
+            Message::RenameDeviceInput(new_name) => {
+                if let Some(Dialog::RenameDevice { name, .. }) = &mut self.dialog {
+                    *name = new_name;
+                }
+            }
+
+            Message::RenameDeviceCancel => {
+                if matches!(self.dialog, Some(Dialog::RenameDevice { .. })) {
+                    self.dialog = None;
+                }
+            }
+
+            Message::RenameDeviceConfirm => {
+                if let Some(Dialog::RenameDevice { path, name }) = self.dialog.take() {
+                    if let Some(connection) = self.connection.clone() {
+                        return cosmic::task::future(rename_device(
+                            connection,
+                            path,
+                            name.trim().into(),
+                        ));
+                    } else {
+                        tracing::warn!("No DBus connection ready");
+                    }
+                }
+            }
+
             Message::ServiceActivate => {
-                return cosmic::task::future(async {
-                    systemd::activate_bluetooth().await;
+                let activate_future = self.service_manager.activate();
+                return cosmic::task::future(async move {
+                    activate_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -697,8 +939,9 @@ impl Page {
             }
 
             Message::ServiceEnable => {
-                return cosmic::task::future(async {
-                    systemd::enable_bluetooth().await;
+                let enable_future = self.service_manager.enable();
+                return cosmic::task::future(async move {
+                    enable_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -724,9 +967,9 @@ impl Page {
 }
 
 fn status() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let bluetooth = descriptions.insert(fl!("bluetooth"));
+    crate::slab!(descriptions {
+        bluetooth = fl!("bluetooth");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -757,7 +1000,7 @@ fn status() -> Section<crate::pages::Message> {
                 return bluetooth_service_issue(
                     fl!("bluetooth", "inactive"),
                     fl!("activate"),
-                    Message::ServiceEnable,
+                    Message::ServiceActivate,
                 );
             }
 
@@ -772,23 +1015,25 @@ fn status() -> Section<crate::pages::Message> {
             }
 
             widget::list_column()
-                .add(
-                    bluetooth_toggle.control(
-                        widget::toggler(matches!(status, Active::Enabling | Active::Enabled))
-                            .on_toggle(|active| Message::SetActive(active).into()),
-                    ),
-                )
+                .add(bluetooth_toggle.toggler(
+                    matches!(status, Active::Enabling | Active::Enabled),
+                    |active| Message::SetActive(active).into(),
+                ))
                 .apply(Element::from)
         })
 }
 
+fn is_valid_bluetooth_alias(name: &str) -> bool {
+    let trimmed = name.trim();
+    !trimmed.is_empty() && trimmed.len() <= 248
+}
+
 fn popup_button(message: Option<Message>, text: &str) -> Element<'_, Message> {
-    let theme = theme::active();
-    let theme = theme.cosmic();
+    let spacing = theme::spacing();
     widget::text::body(text)
         .align_y(Alignment::Center)
         .apply(widget::button::custom)
-        .padding([theme.space_xxxs(), theme.space_xs()])
+        .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
         .class(theme::Button::MenuItem)
         .on_press_maybe(message)
@@ -803,6 +1048,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
         device_connect = fl!("bluetooth", "connect");
         device_disconnect = fl!("bluetooth", "disconnect");
         device_forget = fl!("bluetooth", "forget");
+        device_rename = fl!("rename");
     });
 
     Section::default()
@@ -812,7 +1058,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
             page.model.selected_adapter.as_ref().map(|adapter| {
                 page.model
                     .devices_for_adapter(adapter)
-                    .any(|(_, device)| device.paired)
+                    .any(|(_, device)| device.paired || device.is_connected())
             }) == Some(true)
                 && page.model.active != Active::Disabled
         })
@@ -823,7 +1069,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
             page.model
                 .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
-                    if !device.paired {
+                    if !(device.paired || device.is_connected()) {
                         return None;
                     }
 
@@ -839,24 +1085,29 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         )
                         .position(widget::popover::Position::Bottom)
                         .on_close(Message::PopupDevice(None))
-                        .popup({
-                            widget::container(
-                                widget::column()
-                                    .push_maybe(device.is_connected().then(|| {
-                                        popup_button(
-                                            Some(Message::DisconnectDevice(path.clone())),
-                                            &descriptions[device_disconnect],
-                                        )
-                                    }))
-                                    .push(popup_button(
+                        .popup(
+                            widget::column::with_capacity(3)
+                                .push_maybe(device.is_connected().then(|| {
+                                    popup_button(
+                                        Some(Message::DisconnectDevice(path.clone())),
+                                        &descriptions[device_disconnect],
+                                    )
+                                }))
+                                .push(popup_button(
+                                    Some(Message::RenameDevice(path.clone())),
+                                    &descriptions[device_rename],
+                                ))
+                                .push_maybe(device.paired.then(|| {
+                                    popup_button(
                                         Some(Message::ForgetDevice(path.clone())),
                                         &descriptions[device_forget],
-                                    )),
-                            )
-                            .width(Length::Fixed(200.0))
-                            .padding(theme::active().cosmic().space_xxxs())
-                            .class(theme::Container::Dialog)
-                        })
+                                    )
+                                }))
+                                .width(Length::Fixed(200.0))
+                                .apply(widget::container)
+                                .padding(theme::spacing().space_xxs)
+                                .class(theme::Container::Dropdown),
+                        )
                         .into()
                     } else {
                         widget::button::icon(widget::icon::from_name("view-more-symbolic"))
@@ -880,7 +1131,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                 .wrapping(Wrapping::Word)
                                 .into()
                         },
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                         match device.enabled {
                             Active::Enabled => widget::text(&descriptions[device_connected]).into(),
                             Active::Enabling => widget::text(&descriptions[device_connecting])
@@ -904,9 +1155,10 @@ fn connected_devices() -> Section<crate::pages::Message> {
 }
 
 fn available_devices() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let device_connecting = descriptions.insert(fl!("bluetooth", "connecting"));
+    crate::slab!(descriptions {
+        device_connect = fl!("bluetooth", "connect");
+        device_connecting = fl!("bluetooth", "connecting");
+    });
 
     Section::default()
         .title(fl!("bluetooth-available"))
@@ -915,7 +1167,7 @@ fn available_devices() -> Section<crate::pages::Message> {
             page.model.selected_adapter.as_ref().map(|adapter| {
                 page.model
                     .devices_for_adapter(adapter)
-                    .any(|(_, device)| !device.paired)
+                    .any(|(_, device)| !device.paired || !device.is_connected())
             }) == Some(true)
                 && page.model.active != Active::Disabled
         })
@@ -926,7 +1178,7 @@ fn available_devices() -> Section<crate::pages::Message> {
             page.model
                 .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
-                    if device.paired {
+                    if device.paired || device.is_connected() {
                         return None::<Element<'_, Message>>;
                     }
 
@@ -937,21 +1189,26 @@ fn available_devices() -> Section<crate::pages::Message> {
                     let mut items = vec![
                         widget::icon::from_name(device.icon).size(16).into(),
                         text(device.alias_or_addr()).wrapping(Wrapping::Word).into(),
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                     ];
 
-                    if device.enabled == Active::Enabling {
+                    if device.enabled == Active::Disabled {
+                        items.push(
+                            widget::button::text(&descriptions[device_connect])
+                                .on_press(Message::ConnectDevice(path.clone()))
+                                .into(),
+                        )
+                    }
+
+                    if device.enabled == Active::Enabling || device.enabled == Active::Enabled {
                         items.push(
                             text(&descriptions[device_connecting])
                                 .class(theme::Text::Color(color!(128, 128, 128)))
                                 .into(),
                         );
                     }
-                    Some(
-                        widget::mouse_area(settings::item_row(items))
-                            .on_press(Message::ConnectDevice(path.clone()))
-                            .into(),
-                    )
+
+                    Some(widget::mouse_area(settings::item_row(items)).into())
                 })
                 .fold(section, settings::Section::add)
                 .apply(Element::from)
@@ -960,9 +1217,9 @@ fn available_devices() -> Section<crate::pages::Message> {
 }
 
 fn multiple_adapter() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let device_connected = descriptions.insert(fl!("bluetooth", "connected"));
+    crate::slab!(descriptions {
+        device_connected = fl!("bluetooth", "connected");
+    });
 
     Section::default()
         .title(fl!("bluetooth-adapters"))
@@ -982,11 +1239,9 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
                         widget::icon::from_name("bluetooth-symbolic")
                             .size(20)
                             .into(),
-                        widget::horizontal_space()
-                            .width(theme::active().cosmic().space_xxs())
-                            .into(),
+                        horizontal_space().width(theme::spacing().space_xxs).into(),
                         text(&adapter.alias).wrapping(Wrapping::Word).into(),
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                         widget::icon::from_name("go-next-symbolic").into(),
                     ];
                     if page.model.adapter_connected(path) {
@@ -1008,36 +1263,110 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-mod systemd {
-    use futures::FutureExt;
+impl Page {
+    #[cfg(test)]
+    fn with_service_manager(service_manager: ServiceManagerHandle) -> Self {
+        Self {
+            service_manager,
+            ..Page::default()
+        }
+    }
+}
 
-    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "start", "bluetooth"])
-            .status()
-            .map(|_| ())
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cosmic_settings_page::Page as _;
+
+    fn adapter(path: &str, alias: &str) -> (OwnedObjectPath, Adapter) {
+        (
+            OwnedObjectPath::try_from(path).unwrap(),
+            Adapter {
+                alias: alias.to_owned(),
+                ..Adapter::default()
+            },
+        )
     }
 
-    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "enable", "--now", "bluetooth"])
-            .status()
-            .map(|_| ())
+    fn page_with_two_adapters() -> Page {
+        let mut page = Page::default();
+        let adapters = [
+            adapter("/org/bluez/hci0", "Adapter 0"),
+            adapter("/org/bluez/hci1", "Adapter 1"),
+        ]
+        .into_iter()
+        .collect();
+        let _task = page.update(Message::BluetoothEvent(Event::SetAdapters(adapters)));
+        page
     }
 
-    pub fn is_bluetooth_enabled() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-enabled", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+    #[test]
+    fn bluetooth_header_is_absent_at_adapter_chooser() {
+        let page = page_with_two_adapters();
+
+        assert!(page.header().is_none());
     }
 
-    pub fn is_bluetooth_active() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-active", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+    #[test]
+    fn bluetooth_header_tracks_adapter_selection_and_clearing() {
+        let mut page = page_with_two_adapters();
+        let selected = OwnedObjectPath::try_from("/org/bluez/hci1").unwrap();
+
+        let _task = page.update(Message::SelectAdapter(Some(selected)));
+        assert!(page.header().is_some());
+        assert!(page.heading.contains("Adapter 1"));
+
+        let _task = page.update(Message::SelectAdapter(None));
+        assert!(page.header().is_none());
+        assert!(page.heading.contains("Adapter 0"));
+        assert!(page.heading.contains("Adapter 1"));
+    }
+
+    #[test]
+    fn test_dbus_service_unknown_with_installed_service_queries_manager() {
+        let bluetooth = MockServiceManager::new(true, false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+
+        assert!(page.service_is_enabled);
+        assert!(!page.service_is_active);
+        assert!(!page.bluez_service_unknown);
+    }
+
+    #[test]
+    fn test_dbus_service_unknown_with_uninstalled_service_sets_bluez_unknown() {
+        let bluetooth = MockServiceManager::new(true, true).with_installed(false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+
+        assert!(page.bluez_service_unknown);
+        assert!(!page.service_is_enabled);
+        assert!(!page.service_is_active);
+    }
+
+    #[test]
+    fn test_dbus_service_unknown_clears_previously_set_bluez_service_unknown() {
+        // Simulate a stale state and verify the handler re-checks via is_installed().
+        let bluetooth = MockServiceManager::new(true, true);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        page.bluez_service_unknown = true;
+
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+
+        assert!(!page.bluez_service_unknown);
+    }
+
+    #[tokio::test]
+    async fn test_service_activate_calls_through_to_service_manager() {
+        let bluetooth = MockServiceManager::new(false, false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::ServiceActivate);
+    }
+
+    #[tokio::test]
+    async fn test_service_enable_calls_through_to_service_manager() {
+        let bluetooth = MockServiceManager::new(false, false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::ServiceEnable);
     }
 }

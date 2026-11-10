@@ -31,9 +31,15 @@ pub enum Message {
     Accessibility(accessibility::Message),
     #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier(accessibility::magnifier::Message),
+    #[cfg(feature = "page-accessibility")]
+    AccessibilityOsk(accessibility::osk::Message),
+    #[cfg(feature = "page-input")]
+    AccessibilityShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-about")]
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
+    AppearanceTheme(desktop::appearance::Message),
+    AppearancePreview(Option<cosmic::theme::Theme>),
     Applications(applications::Message),
     #[cfg(feature = "page-bluetooth")]
     Bluetooth(bluetooth::Message),
@@ -60,6 +66,8 @@ pub enum Message {
     #[cfg(feature = "page-input")]
     Input(input::Message),
     #[cfg(feature = "page-input")]
+    DrawingTablet(input::drawing_tablet::Message),
+    #[cfg(feature = "page-input")]
     Keyboard(input::keyboard::Message),
     #[cfg(feature = "page-input")]
     KeyboardShortcuts(input::keyboard::shortcuts::Message),
@@ -84,7 +92,13 @@ pub enum Message {
     Region(time::region::Message),
     #[cfg(feature = "page-sound")]
     Sound(sound::Message),
+    #[cfg(feature = "page-sound")]
+    SoundApplications(sound::applications::Message),
+    #[cfg(feature = "page-sound")]
+    SoundDeviceProfiles(sound::device_profiles::Message),
     StartupApps(applications::startup_apps::Message),
+    #[cfg(feature = "pop-os")]
+    Updates(system::os_updates::Message),
     #[cfg(feature = "page-users")]
     User(system::users::Message),
     #[cfg(feature = "page-input")]
@@ -99,6 +113,8 @@ pub enum Message {
     WindowManagement(desktop::window_management::Message),
     #[cfg(feature = "page-networking")]
     Wired(networking::wired::Message),
+    #[cfg(feature = "page-workspaces")]
+    Workspaces(desktop::workspaces::Message),
 
     // Common page functionality
     CloseContextDrawer,

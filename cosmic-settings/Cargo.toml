@@ -1,24 +1,32 @@
 [package]
 name = "cosmic-settings"
-version = "0.1.0"
+version = "1.11.0"
 edition = "2024"
 license = "GPL-3.0-only"
 publish = false
 
+[build-dependencies]
+xdgen = "0.1"
+
 [dependencies]
+
+zbus_polkit = { version = "6.0.0", optional = true }
 accounts-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 anyhow = "1.0"
 ashpd = { version = "0.12", default-features = false, features = [
     "tokio",
 ], optional = true }
-chrono = "0.4.42"
-clap = { version = "4.5.51", features = ["derive"] }
+chrono = "0.4"
+jiff = "0.2"
+clap = { version = "4.6.4", features = ["derive"] }
 color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
-cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 cosmic-idle-config.workspace = true
+cosmic-osk-config = { git = "https://github.com/pop-os/cosmic-osk", features = [
+    "subscription",
+] }
 cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-randr-shell.workspace = true
@@ -29,72 +37,78 @@ cosmic-settings-accessibility-subscription = { path = "../subscriptions/accessib
 cosmic-settings-a11y-manager-subscription = { path = "../subscriptions/a11y-manager", optional = true }
 cosmic-settings-airplane-mode-subscription = { path = "../subscriptions/airplane-mode", optional = true }
 cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", optional = true }
-cosmic-settings-network-manager-subscription = { path = "../subscriptions/network-manager", optional = true }
+cosmic-settings-sound = { path = "../pages/sound", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
-cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true }
-cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
-derive_setters = "0.1.8"
+cosmic-theme-bundle-config = { path = "../theme-bundle-config" }
+derive_setters = "0.1.9"
 dirs = "6.0.0"
 eyre = "0.6.12"
-freedesktop-desktop-entry = "0.7.19"
-futures = "0.3.31"
+freedesktop-desktop-entry = "0.8.1"
+futures = "0.3.33"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-i18n-embed-fl = "0.10.0"
-image = { version = "0.25", default-features = false, features = [
-    "jpeg",
-    "png",
-    "rayon",
-    "webp",
-    "hdr",
-] }
-indexmap = "2.12.0"
+i18n-embed-fl = "0.10.1"
+image.workspace = true
+jxl-image-rs-integration.workspace = true
+indexmap = "2.14.0"
 itertools = "0.14.0"
-itoa = "1.0.15"
+itoa = "1.0.18"
 libcosmic.workspace = true
-locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
-# TODO: updating notify beyond this hangs the app
-notify = "6.1.1"
-regex = "1.12.2"
-ron = "0.11"
-rust-embed = "8.9.0"
-sctk = { workspace = true, optional = true }
-secure-string = "0.3.0"
-serde = { version = "1.0.228", features = ["derive"] }
-slab = "0.4.11"
-slotmap = "1.0.7"
-static_init = "1.0.4"
-sunrise = "2.1.0"
-tachyonix = "0.3.1"
-timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-tokio = { workspace = true, features = ["fs", "io-util", "sync"] }
-tracing = "0.1.41"
-tracing-subscriber = "0.3.20"
-udev = { version = "0.9.3", optional = true }
-upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-url = "2.5.7"
-xkb-data = "0.2.1"
-xkeysym = { version = "0.2.1", optional = true }
-zbus = { version = "5.12.0", default-features = false, features = [
+iced_winit.workspace = true
+locale1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+pop-system-updater-zbus = { git = "https://github.com/pop-os/system-updater", optional = true }
+sysinfo = { version = "=0.38.0", optional = true }
+mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = [
     "tokio",
 ], optional = true }
-zbus_polkit = { version = "5.0.0", optional = true }
-fontdb = "0.23.0"
+notify = "8.2.0"
+nmrs = { version = "3.5.3", optional = true }
+regex = "1.13.1"
+ron = "0.12"
+rust-embed = "8.12.0"
+sctk = { workspace = true, optional = true }
+secure-string = "0.3.0"
+secret-service = { version = "5.1.0", features = [
+    "rt-tokio-crypto-rust",
+], optional = true }
+serde = { version = "1.0.229", features = ["derive"] }
+slab = "0.4.12"
+slotmap = "1.1.1"
+static_init = "1.0.4"
+sunrise = "3.0.0"
+timedate1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+tokio = { workspace = true, features = ["fs", "io-util", "process", "sync"] }
+tracing.workspace = true
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+udev = { version = "0.9.3", optional = true }
+upower-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+cosmic-bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+url = "2.5.8"
+xkb-data = "0.2.2"
+xkeysym = { version = "0.2.1", optional = true }
+zbus = { version = "6.0", default-features = false, features = [
+    "tokio",
+], optional = true }
+fontdb.workspace = true
 mime = "0.3.17"
-rustix = { version = "1.1.2", features = ["process"] }
+rustix = { version = "1.1.4", features = ["process"] }
 gettext-rs = { version = "0.7.7", features = [
     "gettext-system",
 ], optional = true }
-async-fn-stream = "0.3"
 num-traits = "0.2"
 pwhash = "1"
+which = "8.0.5"
+intmap = "3.1.3"
+
+[dependencies.cosmic-settings-audio-client]
+git = "https://github.com/pop-os/cosmic-settings-daemon"
+features = ["codec"]
+optional = true
 
 [dependencies.icu]
-version = "2.1.1"
+version = "2.2.0"
 features = ["compiled_data"]
 
 [dependencies.i18n-embed]
@@ -107,11 +121,15 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "linux", "single-instance", "wgpu"]
+default = ["a11y", "avif", "linux", "single-instance", "wgpu", "systemd"]
+avif = ["image/avif-native"]
 gettext = ["dep:gettext-rs"]
+systemd = []
+openrc = []
 
 # Default features for Linux
 linux = [
+    "cosmic-comp-config",
     "page-accessibility",
     "page-about",
     "page-bluetooth",
@@ -131,53 +149,62 @@ linux = [
     "wayland",
 ]
 
+pop-os = ["dep:pop-system-updater-zbus"]
+
 # Pages
 page-accessibility = [
+    "cosmic-comp-config",
     "dep:sctk",
     "dep:cosmic-protocols",
-    "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:cosmic-settings-daemon-config",
     "dep:cosmic-settings-accessibility-subscription",
     "dep:cosmic-settings-a11y-manager-subscription",
 ]
-page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
+page-about = ["dep:hostname1-zbus", "dep:sysinfo", "dep:zbus"]
 page-bluetooth = [
     "dep:cosmic-settings-bluetooth-subscription",
     "dep:zbus",
-    "dep:bluez-zbus",
+    "dep:cosmic-bluez-zbus",
 ]
-page-date = ["dep:timedate-zbus", "dep:zbus"]
+page-date = ["dep:timedate1-zbus", "dep:zbus"]
 page-default-apps = ["dep:cosmic-settings-config", "dep:mime-apps"]
 page-display = ["dep:udev"]
 page-input = [
+    "cosmic-comp-config",
     "gettext",
-    "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:udev",
     "dep:xkeysym",
     "wayland",
 ]
-page-legacy-applications = ["dep:cosmic-comp-config"]
-page-networking = [
-    "dep:cosmic-settings-network-manager-subscription",
-    "xdg-portal",
-    "dep:cosmic-dbus-networkmanager",
+page-legacy-applications = ["cosmic-comp-config", "dep:cosmic-randr"]
+page-networking = ["xdg-portal", "dep:nmrs", "dep:secret-service", "dep:zbus"]
+page-power = ["dep:upower-zbus", "dep:zbus"]
+page-region = [
+    "gettext",
+    "dep:locales-rs",
+    "dep:locale1-zbus",
     "dep:zbus",
+    "dep:accounts-zbus",
 ]
-page-power = ["dep:upower_dbus", "dep:zbus"]
-page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus"]
-page-sound = ["dep:cosmic-settings-sound-subscription"]
+page-sound = ["dep:cosmic-settings-audio-client", "dep:cosmic-settings-sound"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
-page-window-management = ["dep:cosmic-settings-config"]
-page-workspaces = ["dep:cosmic-comp-config"]
+page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
+page-workspaces = ["cosmic-comp-config"]
 
 # Other features
 a11y = ["libcosmic/a11y"]
 ashpd = ["dep:ashpd"]
+cosmic-comp-config = ["dep:cosmic-comp-config"]
 dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
 single-instance = ["libcosmic/single-instance"]
 test = []
-wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
+wayland = [
+    "libcosmic/wayland",
+    "dep:cosmic-panel-config",
+    "dep:cosmic-randr",
+    "iced_winit/wayland",
+]
 wgpu = ["libcosmic/wgpu"]
 xdg-portal = ["ashpd", "libcosmic/xdg-portal"]

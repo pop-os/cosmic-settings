@@ -10,7 +10,6 @@
 /usr/share/applications/com.system76.CosmicSettings.Desktop.desktop
 /usr/share/applications/com.system76.CosmicSettings.Displays.desktop
 /usr/share/applications/com.system76.CosmicSettings.Dock.desktop
-/usr/share/applications/com.system76.CosmicSettings.Firmware.desktop
 /usr/share/applications/com.system76.CosmicSettings.Input.desktop
 /usr/share/applications/com.system76.CosmicSettings.Keyboard.desktop
 /usr/share/applications/com.system76.CosmicSettings.LegacyApplications.desktop
@@ -40,4 +39,5 @@
 /usr/share/cosmic/com.system76.CosmicTheme.Light
 /usr/share/cosmic/com.system76.CosmicTheme.Light.Builder
 /usr/share/cosmic/com.system76.CosmicTheme.Mode
+/usr/share/cosmic/com.system76.CosmicComp/v1/input_touchpad
 /usr/share/icons/hicolor

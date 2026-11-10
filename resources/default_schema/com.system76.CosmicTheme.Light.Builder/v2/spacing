@@ -1,0 +1,12 @@
+(
+    space_none: 0,
+    space_xxxs: 4,
+    space_xxs: 8,
+    space_xs: 12,
+    space_s: 16,
+    space_m: 24,
+    space_l: 32,
+    space_xl: 48,
+    space_xxl: 64,
+    space_xxxl: 128,
+)

@@ -5,7 +5,9 @@ mod binder;
 pub use binder::{AutoBind, Binder};
 
 mod insert;
-use cosmic::{Element, Task, app::ContextDrawer, iced::Subscription};
+use cosmic::app::ContextDrawer;
+use cosmic::iced::Subscription;
+use cosmic::{Element, Task};
 use downcast_rs::{Downcast, impl_downcast};
 pub use insert::Insert;
 

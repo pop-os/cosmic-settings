@@ -1,99 +1,61 @@
-use cosmic::{
-    iced::{Subscription, stream},
-    iced_futures::futures::{self, SinkExt},
-};
-use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
+use cosmic::iced::futures::{self, SinkExt};
+use cosmic::iced::{Subscription, stream};
+use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::fmt::Debug;
 use std::hash::Hash;
-use tokio::sync::mpsc::{UnboundedReceiver, unbounded_channel};
-
-#[derive(Debug)]
-pub enum State {
-    Ready,
-    Waiting {
-        watcher: RecommendedWatcher,
-        rx: UnboundedReceiver<notify::Result<Event>>,
-    },
-    Finished,
-}
+use tokio::sync::mpsc;
 
 #[derive(Debug, Clone, Copy)]
-pub enum DesktopFileEvent {
+pub enum Event {
     Changed,
 }
 
 pub fn desktop_files<I: 'static + Hash + Copy + Send + Sync + Debug>(
     id: I,
-) -> cosmic::iced::Subscription<DesktopFileEvent> {
-    Subscription::run_with_id(
-        id,
-        stream::channel(50, move |mut output| async move {
-            let mut state = State::Ready;
+) -> cosmic::iced::Subscription<Event> {
+    Subscription::run_with(id, |_| {
+        stream::channel(
+            1,
+            move |mut output: futures::channel::mpsc::Sender<Event>| async move {
+                let handle = tokio::runtime::Handle::current();
+                let (tx, mut rx) = mpsc::channel(4);
+                let mut last_update = std::time::Instant::now();
 
-            loop {
-                state = start_watching(state, &mut output).await;
-            }
-        }),
-    )
-}
+                // Automatically select the best implementation for your platform.
+                // You can also access each implementation directly e.g. INotifyWatcher.
+                let watcher = RecommendedWatcher::new(
+                    move |res: Result<notify::Event, notify::Error>| {
+                        if let Ok(event) = res {
+                            match event.kind {
+                                EventKind::Create(_)
+                                | EventKind::Modify(_)
+                                | EventKind::Remove(_) => {
+                                    let now = std::time::Instant::now();
+                                    if now.duration_since(last_update).as_secs() > 3 {
+                                        _ = handle.block_on(tx.send(()));
+                                        last_update = now;
+                                    }
+                                }
 
-async fn start_watching(
-    state: State,
-    output: &mut futures::channel::mpsc::Sender<DesktopFileEvent>,
-) -> State {
-    match state {
-        State::Ready => {
-            let paths = freedesktop_desktop_entry::default_paths();
-            // TODO log errors
-            if let Ok((mut watcher, rx)) = async_watcher() {
-                for path in paths {
-                    let _ = watcher.watch(path.as_ref(), RecursiveMode::Recursive);
+                                _ => (),
+                            }
+                        }
+                    },
+                    Config::default(),
+                );
+
+                if let Ok(mut watcher) = watcher {
+                    for path in cosmic::desktop::fde::default_paths() {
+                        let _ = watcher.watch(path.as_ref(), RecursiveMode::Recursive);
+                    }
+
+                    while rx.recv().await.is_some() {
+                        _ = output.send(Event::Changed).await;
+                    }
                 }
 
-                _ = output.send(DesktopFileEvent::Changed).await;
-                State::Waiting { watcher, rx }
-            } else {
-                State::Finished
-            }
-        }
-        State::Waiting { watcher, rx } => {
-            if let Some(rx) = async_watch(rx).await {
-                _ = output.send(DesktopFileEvent::Changed).await;
-                State::Waiting { watcher, rx }
-            } else {
-                State::Finished
-            }
-        }
-        State::Finished => cosmic::iced::futures::future::pending().await,
-    }
-}
-
-fn async_watcher() -> notify::Result<(RecommendedWatcher, UnboundedReceiver<notify::Result<Event>>)>
-{
-    let (tx, rx) = unbounded_channel();
-
-    // Automatically select the best implementation for your platform.
-    // You can also access each implementation directly e.g. INotifyWatcher.
-    let watcher = RecommendedWatcher::new(
-        move |res| {
-            _ = tx.send(res);
-        },
-        Config::default(),
-    )?;
-
-    Ok((watcher, rx))
-}
-
-async fn async_watch(
-    mut rx: UnboundedReceiver<notify::Result<Event>>,
-) -> Option<UnboundedReceiver<notify::Result<Event>>> {
-    // TODO log errors
-    if let Some(res) = rx.recv().await {
-        match res {
-            Ok(_) => return Some(rx),
-            Err(_) => return None,
-        }
-    }
-
-    None
+                futures::future::pending().await
+            },
+        )
+    })
 }

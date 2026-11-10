@@ -1,22 +1,47 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
-use eyre::eyre;
 use fast_image_resize::SrcCropping;
 use futures_lite::Stream;
 use futures_util::StreamExt;
 use image::imageops::FilterType;
-use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
-use jxl_oxide::integration::JxlDecoder;
-use std::fs::File;
+use image::{DynamicImage, ImageBuffer, ImageDecoder, ImageResult, Limits, Rgba, RgbaImage};
+use std::borrow::Cow;
+use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
-use std::{
-    borrow::Cow,
-    collections::{HashMap, hash_map::DefaultHasher},
-    hash::{Hash, Hasher},
-    io::Read,
-    path::{Path, PathBuf},
-    pin::Pin,
-};
+use std::path::{Path, PathBuf};
+use std::pin::Pin;
 use walkdir::WalkDir;
+
+/// Pick a representative image for a wallpaper source.
+/// Needed for when a slideshow background is not for the active mode.
+#[must_use]
+pub fn preview_path(path: &Path) -> Option<PathBuf> {
+    if path.is_file() {
+        return Some(path.to_path_buf());
+    }
+    if !path.is_dir() {
+        return None;
+    }
+
+    let mut images = WalkDir::new(path)
+        .max_depth(3)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_file())
+        .map(walkdir::DirEntry::into_path)
+        .filter(|path| {
+            image::ImageReader::open(path)
+                .ok()
+                .and_then(|reader| reader.with_guessed_format().ok())
+                .is_some_and(|reader| reader.format().is_some_and(|format| format.can_read()))
+        })
+        .collect::<Vec<_>>();
+    images.sort();
+    images.into_iter().next()
+}
 
 pub const DEFAULT_COLORS: &[Color] = &[
     Color::Single([0.580, 0.922, 0.922]),
@@ -56,6 +81,13 @@ pub const DEFAULT_COLORS: &[Color] = &[
 ];
 
 pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
+    let context = cosmic_bg_config::context().expect("failed to get helper for cosmic bg config");
+    config_for(context).await
+}
+
+pub async fn config_for(
+    context: cosmic_bg_config::Context,
+) -> (Config, HashMap<String, (String, (u32, u32))>) {
     let mut displays = HashMap::new();
 
     if let Ok(list) = cosmic_randr_shell::list().await {
@@ -63,8 +95,6 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
             displays.insert(output.name, (output.model, output.physical));
         }
     }
-
-    let context = cosmic_bg_config::context().expect("failed to get helper for cosmic bg config");
 
     let config = match Config::load(&context) {
         Ok(conf) => conf,
@@ -77,13 +107,28 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
     (config, displays)
 }
 
-pub fn set(config: &mut Config, entry: Entry) {
-    if let Ok(context) = cosmic_bg_config::context() {
-        let _res = context.set_same_on_all(config.same_on_all);
-
-        if let Err(why) = config.set_entry(&context, entry) {
-            tracing::error!(?why, "failed to set background");
+pub fn upsert_entry(config: &mut Config, entry: Entry) {
+    if entry.output == "all" {
+        config.default_background = entry;
+    } else {
+        config.outputs.insert(entry.output.clone());
+        if let Some(existing) = config
+            .backgrounds
+            .iter_mut()
+            .find(|existing| existing.output == entry.output)
+        {
+            *existing = entry;
+        } else {
+            config.backgrounds.push(entry);
         }
+    }
+}
+
+pub fn set(config: &mut Config, context: &cosmic_bg_config::Context, entry: Entry) {
+    let _res = context.set_same_on_all(config.same_on_all);
+
+    if let Err(why) = config.set_entry(context, entry) {
+        tracing::error!(?why, "failed to set background");
     }
 }
 
@@ -98,12 +143,12 @@ pub fn cache_dir() -> Option<PathBuf> {
 }
 
 /// Loads wallpapers in parallel by spawning tasks with a rayon thread pool.
-#[must_use]
 pub async fn load_each_from_path(
     path: PathBuf,
 ) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
     let candidate_paths: Vec<_> = WalkDir::new(path)
         .max_depth(3)
+        .follow_links(true)
         .into_iter()
         .filter_map(Result::ok)
         .filter(|entry| entry.file_type().is_file())
@@ -134,7 +179,7 @@ pub async fn load_each_from_path(
         })
         .buffered(4)
         .filter_map(|value| async { value.ok().flatten() })
-        .take(100);
+        .take(500);
 
     Box::pin(future)
 }
@@ -210,29 +255,29 @@ fn load_thumbnail(
     cache_dir: Option<&Path>,
     path: &Path,
 ) -> Option<ImageOperation> {
-    if let Some(cache_dir) = cache_dir {
-        if let Ok(ctime) = path.metadata().and_then(|meta| meta.created()) {
-            // Search for thumbnail by a unique hash string.
-            let mut hasher = DefaultHasher::new();
-            path.hash(&mut hasher);
-            ctime.hash(&mut hasher);
-            let hash = hasher.finish();
+    if let Some(cache_dir) = cache_dir
+        && let Ok(ctime) = path.metadata().and_then(|meta| meta.created())
+    {
+        // Search for thumbnail by a unique hash string.
+        let mut hasher = DefaultHasher::new();
+        path.hash(&mut hasher);
+        ctime.hash(&mut hasher);
+        let hash = hasher.finish();
 
-            let thumbnail_path = cache_dir.join(format!("{hash:x}.png"));
+        let thumbnail_path = cache_dir.join(format!("{hash:x}.png"));
 
-            if thumbnail_path.exists() {
-                if let Some(image) = open_image(input_buffer, &thumbnail_path) {
-                    return Some(ImageOperation::Cached(image));
-                }
-
-                let _res = std::fs::remove_file(&thumbnail_path);
+        if thumbnail_path.exists() {
+            if let Some(image) = open_image(input_buffer, &thumbnail_path) {
+                return Some(ImageOperation::Cached(image));
             }
 
-            return Some(ImageOperation::GenerateThumbnail {
-                path: Some(thumbnail_path),
-                image: open_image(input_buffer, path)?,
-            });
+            let _res = std::fs::remove_file(&thumbnail_path);
         }
+
+        return Some(ImageOperation::GenerateThumbnail {
+            path: Some(thumbnail_path),
+            image: open_image(input_buffer, path)?,
+        });
     }
 
     if let Some(image) = open_image(input_buffer, path) {
@@ -243,19 +288,10 @@ fn load_thumbnail(
 }
 
 fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
-    if path.extension().map(|ext| ext == "jxl").unwrap_or_default() {
-        return match decode_jpegxl(path) {
-            Ok(image) => Some(image),
-            Err(why) => {
-                tracing::error!(?path, ?why, "image decode failed");
-                None
-            }
-        };
-    }
-
     const SUPPORTED_FORMATS: &[&[u8]] = &[
         "jpg".as_bytes(),
         "jpeg".as_bytes(),
+        "jxl".as_bytes(),
         "png".as_bytes(),
         "avif".as_bytes(),
         "webp".as_bytes(),
@@ -304,13 +340,31 @@ fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
         return None;
     };
 
-    match image_decoder.decode() {
+    match decode(image_decoder) {
         Ok(image) => Some(image),
         Err(why) => {
             tracing::error!(?path, ?why, "image decode failed");
             None
         }
     }
+}
+
+fn decode(
+    mut reader: image::ImageReader<std::io::Cursor<&mut Vec<u8>>>,
+) -> ImageResult<DynamicImage> {
+    let mut limits = Limits::default();
+    reader.limits(limits.clone());
+
+    let mut decoder = reader.into_decoder()?;
+    let orientation = decoder.orientation()?;
+
+    limits.reserve(decoder.total_bytes())?;
+    decoder.set_limits(limits)?;
+
+    let mut image = DynamicImage::from_decoder(decoder)?;
+    image.apply_orientation(orientation);
+
+    Ok(image)
 }
 
 // https://users.rust-lang.org/t/how-to-trim-image-to-circle-image-without-jaggy/70374/2
@@ -396,7 +450,7 @@ fn border_radius(
                 p += (2 * x + 2) as i32;
             } else {
                 // draw when moving to next pixel in y-direction
-                if y % 16 == 0 {
+                if y.is_multiple_of(16) {
                     draw(img, alpha, x / 16, y / 16);
                     draw(img, alpha, y / 16, x / 16);
                     skip_draw = true;
@@ -428,17 +482,6 @@ fn border_radius(
             img[coordinates(r0 - i, r0 - j)].0[3] = 0;
         }
     }
-}
-
-/// Decodes JPEG XL image files into `image::DynamicImage` via `jxl-oxide`.
-pub fn decode_jpegxl(path: &std::path::Path) -> eyre::Result<DynamicImage> {
-    let file = File::open(path).map_err(|why| eyre!("failed to open jxl image file: {why}"))?;
-
-    let decoder =
-        JxlDecoder::new(file).map_err(|why| eyre!("failed to read jxl image header: {why}"))?;
-
-    image::DynamicImage::from_decoder(decoder)
-        .map_err(|why| eyre!("failed to decode jxl image: {why}"))
 }
 
 /// Use `fast-image-resize` crate for faster thumbnail generation.

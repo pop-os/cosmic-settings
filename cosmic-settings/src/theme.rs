@@ -1,7 +1,8 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::{iced_core::Border, theme};
+use cosmic::iced::Border;
+use cosmic::theme;
 
 #[must_use]
 pub fn display_container_frame() -> cosmic::theme::Container<'static> {
@@ -17,6 +18,7 @@ pub fn display_container_frame() -> cosmic::theme::Container<'static> {
                 width: 3.0,
             },
             shadow: Default::default(),
+            snap: true,
         }
     })
 }
@@ -35,6 +37,7 @@ pub fn display_container_screen() -> cosmic::theme::Container<'static> {
                 width: 0.0,
             },
             shadow: Default::default(),
+            snap: true,
         }
     })
 }

@@ -1,24 +1,21 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::{
-    Apply, Element,
-    iced::Length,
-    surface,
-    widget::{self, settings, toggler},
-};
+use cosmic::iced::Length;
+use cosmic::widget::{self, settings};
+use cosmic::{Apply, Element, surface};
 
+use cosmic_comp_config::{CosmicCompConfig, DecorationPreference};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
-use slab::Slab;
+use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
 
 #[derive(Clone, Debug)]
 pub enum Message {
     SuperKey(usize),
+    CompConfigUpdate(Box<CosmicCompConfig>),
     SetFocusFollowsCursor(bool),
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
@@ -27,7 +24,8 @@ pub enum Message {
     ShowMaximizeButton(bool),
     ShowMinimizeButton(bool),
     SetEdgeSnapThreshold(u32),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
+    SetDecorationPreference(DecorationPreference),
 }
 
 pub struct Page {
@@ -40,6 +38,7 @@ pub struct Page {
     cursor_follows_focus: bool,
     show_active_hint: bool,
     edge_snap_threshold: u32,
+    decoration_preference: DecorationPreference,
 }
 
 impl Default for Page {
@@ -89,12 +88,21 @@ impl Default for Page {
             })
             .unwrap_or(0);
 
+        let decoration_preference = comp_config
+            .get("decoration_preference")
+            .inspect_err(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'decoration_preference'")
+                }
+            })
+            .unwrap_or(DecorationPreference::ServerSide);
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
                 fl!("super-key", "workspaces"),
                 fl!("super-key", "applications"),
-                fl!("super-key", "disable"),
+                fl!("super-key", "none"),
             ],
             super_key_active: super_key_active_config(),
             comp_config,
@@ -104,6 +112,7 @@ impl Default for Page {
             cursor_follows_focus,
             show_active_hint,
             edge_snap_threshold,
+            decoration_preference,
         }
     }
 }
@@ -182,6 +191,11 @@ impl Page {
                     error!(?err, "Failed to set config 'active_hint'");
                 }
             }
+            Message::CompConfigUpdate(comp_config) => {
+                if comp_config.active_hint != self.show_active_hint {
+                    self.show_active_hint = comp_config.active_hint;
+                }
+            }
             Message::SetEdgeSnapThreshold(value) => {
                 self.edge_snap_threshold = value;
                 if let Err(err) = self.comp_config.set("edge_snap_threshold", value) {
@@ -190,6 +204,15 @@ impl Page {
             }
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+            Message::SetDecorationPreference(preference) => {
+                self.decoration_preference = preference;
+                if let Err(err) = self
+                    .comp_config
+                    .set("decoration_preference", self.decoration_preference)
+                {
+                    tracing::error!(?err, "Failed to set config 'decoration_preference'");
+                }
             }
         };
         cosmic::iced::Task::none()
@@ -215,22 +238,23 @@ impl page::Page<crate::pages::Message> for Page {
             "preferences-window-management-symbolic",
         )
         .title(fl!("window-management"))
-        .description(fl!("window-management", "desc"))
+        .description(fl!("xdg-entry-window-management-comment"))
     }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 pub fn window_management() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let super_key = descriptions.insert(fl!("super-key"));
-    let _launcher = descriptions.insert(fl!("super-key", "launcher"));
-    let _workspaces = descriptions.insert(fl!("super-key", "workspaces"));
-    let _applications = descriptions.insert(fl!("super-key", "applications"));
-    let _disable = descriptions.insert(fl!("super-key", "disable"));
-
-    let edge_gravity = descriptions.insert(fl!("edge-gravity"));
+    crate::slab!(descriptions {
+        super_key = fl!("super-key");
+        _launcher = fl!("super-key", "launcher");
+        _workspaces = fl!("super-key", "workspaces");
+        _applications = fl!("super-key", "applications");
+        _none = fl!("super-key", "none");
+        edge_gravity = fl!("edge-gravity");
+        decoration_preference = fl!("decoration-preference");
+        decoration_preference_desc = fl!("decoration-preference", "desc");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -253,23 +277,37 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         },
                     ),
                 ))
-                .add(settings::flex_item(
-                    &descriptions[edge_gravity],
-                    toggler(page.edge_snap_threshold != 0).on_toggle(|is_enabled| {
-                        Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
-                    }),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[edge_gravity])
+                        .toggler(page.edge_snap_threshold != 0, |is_enabled| {
+                            Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
+                        }),
+                )
+                .add(
+                    settings::item::builder(&descriptions[decoration_preference])
+                        .description(&descriptions[decoration_preference_desc])
+                        .toggler(
+                            page.decoration_preference == DecorationPreference::ServerSide,
+                            |is_enabled| {
+                                Message::SetDecorationPreference(if is_enabled {
+                                    DecorationPreference::ServerSide
+                                } else {
+                                    DecorationPreference::ClientSide
+                                })
+                            },
+                        ),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })
 }
 
 pub fn window_controls() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let maximize = descriptions.insert(fl!("window-controls", "maximize"));
-    let minimize = descriptions.insert(fl!("window-controls", "minimize"));
-    let active_window_hint = descriptions.insert(fl!("window-controls", "active-window-hint"));
+    crate::slab!(descriptions {
+        maximize = fl!("window-controls", "maximize");
+        minimize = fl!("window-controls", "minimize");
+        active_window_hint = fl!("window-controls", "active-window-hint");
+    });
 
     Section::default()
         .title(fl!("window-controls"))
@@ -279,30 +317,29 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[active_window_hint],
-                    toggler(page.show_active_hint).on_toggle(Message::ShowActiveWindowHint),
-                ))
-                .add(settings::item(
-                    &descriptions[maximize],
-                    toggler(cosmic::config::show_maximize()).on_toggle(Message::ShowMaximizeButton),
-                ))
-                .add(settings::item(
-                    &descriptions[minimize],
-                    toggler(cosmic::config::show_minimize()).on_toggle(Message::ShowMinimizeButton),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[active_window_hint])
+                        .toggler(page.show_active_hint, Message::ShowActiveWindowHint),
+                )
+                .add(
+                    settings::item::builder(&descriptions[maximize])
+                        .toggler(cosmic::config::show_maximize(), Message::ShowMaximizeButton),
+                )
+                .add(
+                    settings::item::builder(&descriptions[minimize])
+                        .toggler(cosmic::config::show_minimize(), Message::ShowMinimizeButton),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })
 }
 
 pub fn focus_navigation() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let focus_follows_cursor = descriptions.insert(fl!("focus-navigation", "focus-follows-cursor"));
-    let focus_follows_cursor_delay =
-        descriptions.insert(fl!("focus-navigation", "focus-follows-cursor-delay"));
-    let cursor_follows_focus = descriptions.insert(fl!("focus-navigation", "cursor-follows-focus"));
+    crate::slab!(descriptions {
+        focus_follows_cursor = fl!("focus-navigation", "focus-follows-cursor");
+        focus_follows_cursor_delay = fl!("focus-navigation", "focus-follows-cursor-delay");
+        cursor_follows_focus = fl!("focus-navigation", "cursor-follows-focus");
+    });
 
     Section::default()
         .title(fl!("focus-navigation"))
@@ -312,10 +349,10 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[focus_follows_cursor],
-                    toggler(page.focus_follows_cursor).on_toggle(Message::SetFocusFollowsCursor),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[focus_follows_cursor])
+                        .toggler(page.focus_follows_cursor, Message::SetFocusFollowsCursor),
+                )
                 .add(settings::item(
                     &descriptions[focus_follows_cursor_delay],
                     widget::editable_input("", &page.focus_delay_text, false, |editing| {
@@ -326,10 +363,10 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     .on_submit(|_| Message::SaveFocusFollowsCursorDelay(true))
                     .width(Length::Fixed(80.0)),
                 ))
-                .add(settings::item(
-                    &descriptions[cursor_follows_focus],
-                    toggler(page.cursor_follows_focus).on_toggle(Message::SetCursorFollowsFocus),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[cursor_follows_focus])
+                        .toggler(page.cursor_follows_focus, Message::SetCursorFollowsFocus),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })

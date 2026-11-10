@@ -3,12 +3,11 @@ mod backend;
 use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
 
-use chrono::TimeDelta;
-use cosmic::iced::{self, Alignment, Length};
-use cosmic::iced_widget::{column, row};
-use cosmic::widget::{self, radio, settings, text};
-use cosmic::{Apply, surface};
-use cosmic::{Task, iced_futures};
+use cosmic::iced::core::text::{Ellipsize, EllipsizeHeightLimit};
+use cosmic::iced::widget::{column, row};
+use cosmic::iced::{self, Alignment, Length, stream};
+use cosmic::widget::{self, settings, space, text};
+use cosmic::{Apply, Task, surface};
 use cosmic_config::{Config, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, Section, section};
@@ -16,9 +15,10 @@ use futures::{SinkExt, StreamExt};
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
+use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
-use upower_dbus::DeviceProxy;
+use upower_zbus::DeviceProxy;
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60),
@@ -101,7 +101,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("power", "preferences-power-and-battery-symbolic")
             .title(fl!("power"))
-            .description(fl!("power", "desc"))
+            .description(fl!("xdg-entry-power-comment"))
     }
 
     fn content(
@@ -143,7 +143,7 @@ impl page::Page<crate::pages::Message> for Page {
 
         // A subscription for the system battery.
         let system_battery = iced::Subscription::run(|| {
-            iced_futures::stream::channel(1, |sender| async move {
+            stream::channel(1, |sender| async move {
                 if let Ok(proxy) = backend::get_device_proxy().await {
                     receive_battery_changes(proxy, String::new(), sender, |_, b| {
                         Message::UpdateBattery(b)
@@ -154,24 +154,50 @@ impl page::Page<crate::pages::Message> for Page {
         });
 
         // Subscriptions for all connected device batteries.
-        let device_batteries = self
-            .connected_devices
-            .iter()
-            .filter_map(|device| {
-                device
-                    .proxy
-                    .clone()
-                    .map(|p| (device.device_path.clone(), p))
-            })
-            .map(|(path, proxy)| {
-                iced::Subscription::run_with_id(
-                    path.clone(),
-                    iced_futures::stream::channel(1, |sender| async move {
-                        receive_battery_changes(proxy, path, sender, Message::UpdateDeviceBattery)
-                            .await
-                    }),
-                )
-            });
+        let device_batteries =
+            self.connected_devices
+                .iter()
+                .filter_map(|device| {
+                    device
+                        .proxy
+                        .clone()
+                        .map(|p| (device.device_path.clone(), p))
+                })
+                .map(|(path, proxy)| {
+                    #[derive(Clone)]
+                    struct DeviceBatterySubscriptionData {
+                        proxy: DeviceProxy<'static>,
+                        path: String,
+                    }
+
+                    impl Hash for DeviceBatterySubscriptionData {
+                        fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+                            self.path.hash(state);
+                        }
+                    }
+
+                    iced::Subscription::run_with(
+                        DeviceBatterySubscriptionData { proxy, path },
+                        |DeviceBatterySubscriptionData { proxy, path }| {
+                            let path = path.clone();
+                            let proxy = proxy.clone();
+                            stream::channel(
+                                1,
+                                move |sender: futures::channel::mpsc::Sender<
+                                    crate::pages::Message,
+                                >| async move {
+                                    receive_battery_changes(
+                                        proxy,
+                                        path,
+                                        sender,
+                                        Message::UpdateDeviceBattery,
+                                    )
+                                    .await
+                                },
+                            )
+                        },
+                    )
+                });
 
         iced::Subscription::batch(std::iter::once(system_battery).chain(device_batteries))
     }
@@ -200,47 +226,56 @@ impl page::Page<crate::pages::Message> for Page {
                 }
             }),
             cosmic::Task::run(
-                iced_futures::stream::channel(1, |mut emitter| async move {
-                    let span = tracing::span!(tracing::Level::INFO, "power::device_stream task");
-                    let _span_handle = span.enter();
+                stream::channel(
+                    1,
+                    |mut emitter: futures::channel::mpsc::Sender<Message>| async move {
+                        let span =
+                            tracing::span!(tracing::Level::INFO, "power::device_stream task");
+                        let _span_handle = span.enter();
 
-                    let Ok(connection) = zbus::Connection::system().await else {
-                        tracing::error!("could not established zbus connection to system");
-                        return;
-                    };
+                        let Ok(connection) = zbus::Connection::system().await else {
+                            tracing::error!("could not established zbus connection to system");
+                            return;
+                        };
 
-                    let added_stream = ConnectedDevice::device_added_stream(&connection).await;
-                    let removed_stream = ConnectedDevice::device_removed_stream(&connection).await;
+                        let added_stream = ConnectedDevice::device_added_stream(&connection).await;
+                        let removed_stream =
+                            ConnectedDevice::device_removed_stream(&connection).await;
 
-                    let mut sender = emitter.clone();
-                    let added_future = std::pin::pin!(async {
-                        match added_stream {
-                            Ok(stream) => {
-                                let mut stream = std::pin::pin!(stream);
-                                while let Some(device) = stream.next().await {
-                                    tracing::debug!(device = device.model, "device added");
-                                    _ = sender.send(Message::DeviceConnect(device)).await;
+                        let mut sender = emitter.clone();
+                        let added_future = std::pin::pin!(async {
+                            match added_stream {
+                                Ok(stream) => {
+                                    let mut stream = std::pin::pin!(stream);
+                                    while let Some(device) = stream.next().await {
+                                        tracing::debug!(device = device.model, "device added");
+                                        _ = sender.send(Message::DeviceConnect(device)).await;
+                                    }
+                                }
+                                Err(err) => tracing::error!(?err, "cannot establish added stream"),
+                            }
+                        });
+
+                        let removed_future = std::pin::pin!(async {
+                            match removed_stream {
+                                Ok(stream) => {
+                                    let mut stream = std::pin::pin!(stream);
+                                    while let Some(device_path) = stream.next().await {
+                                        tracing::debug!(device_path, "device removed");
+                                        _ = emitter
+                                            .send(Message::DeviceDisconnect(device_path))
+                                            .await;
+                                    }
+                                }
+                                Err(err) => {
+                                    tracing::error!(?err, "cannot establish removed stream")
                                 }
                             }
-                            Err(err) => tracing::error!(?err, "cannot establish added stream"),
-                        }
-                    });
+                        });
 
-                    let removed_future = std::pin::pin!(async {
-                        match removed_stream {
-                            Ok(stream) => {
-                                let mut stream = std::pin::pin!(stream);
-                                while let Some(device_path) = stream.next().await {
-                                    tracing::debug!(device_path, "device removed");
-                                    _ = emitter.send(Message::DeviceDisconnect(device_path)).await;
-                                }
-                            }
-                            Err(err) => tracing::error!(?err, "cannot establish removed stream"),
-                        }
-                    });
-
-                    futures::future::select(added_future, removed_future).await;
-                }),
+                        futures::future::select(added_future, removed_future).await;
+                    },
+                ),
                 |msg| msg,
             ),
         ];
@@ -277,7 +312,7 @@ pub enum Message {
     SuspendOnBatteryTimeChange(Option<Duration>),
     BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
     CurrentPowerProfileUpdate(PowerProfile),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::app::Message {
@@ -423,11 +458,11 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         widget::icon::from_name(connected_device.battery.icon_name.clone());
 
                     let battery_percent_and_time = widget::text(
-                        if connected_device.battery.remaining_duration > TimeDelta::zero() {
+                        if connected_device.battery.remaining_duration.is_positive() {
                             format!(
                                 "{}% - {}",
                                 connected_device.battery.percent,
-                                &connected_device.battery.remaining_time()
+                                connected_device.battery.remaining_time()
                             )
                         } else {
                             format!("{}%", connected_device.battery.percent)
@@ -437,7 +472,10 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         row!(
                             widget::icon::from_name(connected_device.device_icon).size(48),
                             column!(
-                                text::heading(&connected_device.model).height(20.0),
+                                text::heading(&connected_device.model)
+                                    .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
+                                    .height(20.0)
+                                    .width(Length::Fill),
                                 row!(battery_icon, battery_percent_and_time)
                                     .spacing(4)
                                     .align_y(Alignment::Center),
@@ -450,7 +488,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         .width(Length::Fill)
                         .height(Length::Fill),
                     )
-                    .height(64)
+                    .height(64.)
                     .class(cosmic::theme::Container::List)
                     .into()
                 })
@@ -460,7 +498,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                 .spacing(8)
                 .push(text::heading(&section.title))
                 .push(
-                    widget::column()
+                    widget::column::with_capacity(devices.len())
                         .extend(
                             devices
                                 .into_iter()
@@ -469,16 +507,8 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                 .map(|mut device_row| {
                                     cosmic::Element::from(
                                         row!(
-                                            device_row.next().unwrap_or(
-                                                widget::horizontal_space()
-                                                    .width(Length::Fill)
-                                                    .into()
-                                            ),
-                                            device_row.next().unwrap_or(
-                                                widget::horizontal_space()
-                                                    .width(Length::Fill)
-                                                    .into()
-                                            ),
+                                            device_row.next().unwrap_or(space::horizontal().into()),
+                                            device_row.next().unwrap_or(space::horizontal().into()),
                                         )
                                         .spacing(8),
                                     )
@@ -491,9 +521,9 @@ fn connected_devices() -> Section<crate::pages::Message> {
 }
 
 fn profiles() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let _power_desc = descriptions.insert(fl!("power", "desc"));
+    crate::slab!(descriptions {
+        _power_desc = fl!("xdg-entry-power-comment");
+    });
 
     Section::default()
         .title(fl!("power-mode"))
@@ -508,18 +538,9 @@ fn profiles() -> Section<crate::pages::Message> {
                     section = profiles
                         .into_iter()
                         .map(|profile| {
-                            settings::item_row(vec![
-                                radio(
-                                    widget::column::with_capacity(2)
-                                        .push(text::body(profile.title()))
-                                        .push(text::caption(profile.description())),
-                                    profile,
-                                    Some(current_profile),
-                                    Message::PowerProfileChange,
-                                )
-                                .width(Length::Fill)
-                                .into(),
-                            ])
+                            settings::item::builder(profile.title())
+                                .description(profile.description())
+                                .radio(profile, Some(current_profile), Message::PowerProfileChange)
                         })
                         .fold(section, settings::Section::add);
                 }

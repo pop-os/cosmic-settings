@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::{Active, Event};
-use std::{
-    collections::HashMap,
-    convert::Infallible,
-    hash::{Hash, Hasher},
-    path::PathBuf,
-    time::Duration,
-};
-use zbus::zvariant::OwnedObjectPath;
+use std::collections::HashMap;
+use std::convert::Infallible;
+use std::hash::{Hash, Hasher};
+use std::path::PathBuf;
+use std::time::Duration;
+use zbus::OwnedObjectPath;
 
 #[derive(Default, Debug, Clone)]
 pub struct Adapter {
@@ -35,7 +33,7 @@ impl Eq for Adapter {}
 
 impl Adapter {
     pub async fn from_device(
-        proxy: &bluez_zbus::adapter1::Adapter1Proxy<'_>,
+        proxy: &cosmic_bluez_zbus::adapter1::Adapter1Proxy<'_>,
     ) -> zbus::Result<Self> {
         let (address, alias, scanning, enabled) = futures::try_join!(
             proxy.address(),
@@ -102,29 +100,25 @@ pub enum AdapterUpdate {
 
 impl AdapterUpdate {
     #[must_use]
-    pub fn from_update(update: HashMap<&'_ str, zbus::zvariant::Value<'_>>) -> Vec<Self> {
+    pub fn from_update(update: HashMap<&'_ str, zbus::Variant<'_>>) -> Vec<Self> {
         update
             .into_iter()
             .filter_map(|(key, value)| {
                 match (key, value) {
-                    ("Alias", zbus::zvariant::Value::Str(value)) => Some(Self::Alias(value.into())),
-                    ("Discovering" | "Discoverable", zbus::zvariant::Value::Bool(value)) => {
+                    ("Alias", zbus::Variant::Str(value)) => Some(Self::Alias(value.into())),
+                    ("Discovering" | "Discoverable", zbus::Variant::Bool(value)) => {
                         Some(Self::Scanning(if value {
                             Active::Enabled
                         } else {
                             Active::Disabled
                         }))
                     }
-                    ("Powered", zbus::zvariant::Value::Bool(value)) => {
-                        Some(Self::Enabled(if value {
-                            Active::Enabled
-                        } else {
-                            Active::Disabled
-                        }))
-                    }
-                    ("Address", zbus::zvariant::Value::Str(value)) => {
-                        Some(Self::Address(value.into()))
-                    }
+                    ("Powered", zbus::Variant::Bool(value)) => Some(Self::Enabled(if value {
+                        Active::Enabled
+                    } else {
+                        Active::Disabled
+                    })),
+                    ("Address", zbus::Variant::Str(value)) => Some(Self::Address(value.into())),
                     // Battery
                     (message, value) => {
                         tracing::error!(message, ?value, "adapter update");
@@ -139,7 +133,7 @@ impl AdapterUpdate {
 pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
     let result: zbus::Result<()> = Ok(());
 
-    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
+    let adapter = match cosmic_bluez_zbus::get_adapter(&connection, adapter_path).await {
         Err(why) => {
             tracing::error!("Unable to get the adapter: {why}");
             return Event::DBusError(why);
@@ -179,7 +173,7 @@ pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedOb
 pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
     let result: zbus::Result<()> = Ok(());
 
-    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
+    let adapter = match cosmic_bluez_zbus::get_adapter(&connection, adapter_path).await {
         Err(why) => return Event::DBusError(why),
         Ok(adapter) => adapter,
     };
@@ -233,7 +227,7 @@ pub async fn change_adapter_status(
     active: bool,
 ) -> Event {
     // rfkill will be persisted after reboot
-    let adapter = bluez_zbus::get_adapter(&connection, adapter_path.clone())
+    let adapter = cosmic_bluez_zbus::get_adapter(&connection, adapter_path.clone())
         .await
         .map_err(|err| Ok::<_, Infallible>(Event::DBusError(err)))
         .unwrap();
@@ -298,7 +292,7 @@ pub async fn change_adapter_status(
 pub async fn get_adapters(connection: zbus::Connection) -> Event {
     let result: zbus::Result<HashMap<OwnedObjectPath, Adapter>> = async {
         futures::future::join_all(
-            bluez_zbus::get_adapters(&connection)
+            cosmic_bluez_zbus::get_adapters(&connection)
                 .await?
                 .into_iter()
                 .map(|(path, proxy)| async move {

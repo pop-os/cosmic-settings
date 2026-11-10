@@ -6,8 +6,9 @@ use iced_futures::Subscription;
 use std::collections::HashMap;
 
 pub fn subscription() -> iced_futures::Subscription<bool> {
-    Subscription::run_with_id(
-        "airplane-mode",
+    struct MyId;
+
+    Subscription::run_with(std::any::TypeId::of::<MyId>(), |_| {
         async {
             match rfkill::rfkill_updates() {
                 Ok(updates) => updates.filter_map(|state| async {
@@ -25,8 +26,8 @@ pub fn subscription() -> iced_futures::Subscription<bool> {
                 }
             }
         }
-        .flatten_stream(),
-    )
+        .flatten_stream()
+    })
 }
 
 // Test that:
@@ -41,8 +42,9 @@ fn is_airplane_mode(rfkill_state: &HashMap<u32, rfkill::DeviceState>) -> bool {
 
 mod rfkill {
     use futures::stream::Stream;
+    use std::collections::HashMap;
     use std::os::unix::fs::OpenOptionsExt;
-    use std::{collections::HashMap, fs, io, mem, slice};
+    use std::{fs, io, mem, slice};
     use tokio::io::unix::AsyncFd;
 
     // /usr/include/linux/rfkill.h
