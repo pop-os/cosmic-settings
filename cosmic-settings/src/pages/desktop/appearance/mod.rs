@@ -295,7 +295,10 @@ impl Page {
 
             Message::RenameBundle(slug, name) => {
                 self.import = None;
-                self.rename = Some(theme_bundles::Rename { slug, name });
+                self.rename = Some(theme_bundles::Rename {
+                    slug,
+                    name: theme_bundles::limit_theme_name(name),
+                });
                 tasks.push(theme_bundles::focus_input(
                     theme_bundles::RENAME_INPUT.clone(),
                     true,
@@ -304,7 +307,7 @@ impl Page {
 
             Message::RenameNameChanged(name) => {
                 if let Some(rename) = self.rename.as_mut() {
-                    rename.name = name;
+                    rename.name = theme_bundles::limit_theme_name(name);
                 }
             }
 
@@ -312,7 +315,7 @@ impl Page {
 
             Message::RenameConfirm => {
                 let chosen = self.rename.as_ref().and_then(|rename| {
-                    let name = rename.name.trim().to_owned();
+                    let name = theme_bundles::limit_theme_name(rename.name.trim().to_owned());
                     (!name.is_empty()).then(|| (rename.slug.clone(), name))
                 });
                 if let Some((slug, name)) = chosen {
@@ -334,7 +337,7 @@ impl Page {
 
             Message::ImportNameChanged(name) => {
                 if let Some(import) = self.import.as_mut() {
-                    import.name = name;
+                    import.name = theme_bundles::limit_theme_name(name);
                 }
             }
 
@@ -381,12 +384,12 @@ impl Page {
                                 .and_then(|name| name.to_str())
                                 .filter(|name| !name.is_empty())
                             {
-                                import.name = name.to_owned();
+                                import.name = theme_bundles::limit_theme_name(name.to_owned());
                             }
                         } else if let Ok(name) =
                             cosmic_theme_bundle_config::transfer::archive_name(&path)
                         {
-                            import.name = name;
+                            import.name = theme_bundles::limit_theme_name(name);
                         }
                     }
                     import.path = Some(path);
@@ -396,7 +399,7 @@ impl Page {
             Message::ImportConfirm => {
                 let chosen = self.import.as_ref().and_then(|import| {
                     let path = import.path.clone()?;
-                    let name = import.name.trim().to_owned();
+                    let name = theme_bundles::limit_theme_name(import.name.trim().to_owned());
                     Some((path, name))
                 });
                 if let Some((path, name)) = chosen {

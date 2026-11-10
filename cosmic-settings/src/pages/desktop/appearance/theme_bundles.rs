@@ -26,6 +26,12 @@ pub(crate) static SAVE_AS_INPUT: LazyLock<widget::Id> =
 pub(crate) static RENAME_INPUT: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("theme-bundle-rename-name"));
 
+const MAX_THEME_NAME_LEN: usize = 40;
+
+pub(crate) fn limit_theme_name(name: String) -> String {
+    name.chars().take(MAX_THEME_NAME_LEN).collect()
+}
+
 const CARD_WIDTH: f32 = 204.0;
 const CARD_HEIGHT: f32 = 138.0;
 
