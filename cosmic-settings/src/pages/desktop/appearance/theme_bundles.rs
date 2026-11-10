@@ -641,7 +641,7 @@ fn active_row<'a>(deck: &'a Deck, mode: Mode) -> Element<'a, crate::pages::Messa
             Mode::Light => fl!("light"),
         }
     } else {
-        deck.live_name.clone()
+        format!("{:.40}", &deck.live_name)
     };
 
     let rename = deck.active_card().map(|card| {
