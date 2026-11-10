@@ -208,7 +208,7 @@ impl Page {
             }
 
             Message::SaveAsNameChanged(name) => {
-                self.save_as = Some(name);
+                self.save_as = Some(theme_bundles::limit_theme_name(name));
             }
 
             Message::SaveAsCancel => self.save_as = None,
@@ -217,7 +217,7 @@ impl Page {
                 if let Some(name) = self
                     .save_as
                     .as_ref()
-                    .map(|name| name.trim().to_owned())
+                    .map(|name| theme_bundles::limit_theme_name(name.trim().to_owned()))
                     .filter(|name| !name.is_empty())
                 {
                     self.save_as = None;
