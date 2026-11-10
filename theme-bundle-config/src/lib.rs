@@ -388,7 +388,7 @@ impl Store {
         })
     }
 
-    fn system_config(&self, slug: &str, part: Part) -> Result<Config, Error> {
+    pub fn system_config(&self, slug: &str, part: Part) -> Result<Config, Error> {
         let Some(dir) = self.system_dir() else {
             return Err(Error::UnknownBundle(slug.to_owned()));
         };
@@ -610,10 +610,11 @@ impl Store {
         let same_on_all = from
             .get::<bool>(cosmic_bg_config::SAME_ON_ALL)
             .unwrap_or(true);
-        let Some(default_background) = base.clone().or_else(|| {
-            from.get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
-                .ok()
-        }) else {
+        let Some(default_background) = from
+            .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
+            .ok()
+            .or_else(|| base.clone())
+        else {
             return Ok(false);
         };
         let backgrounds = if same_on_all {
@@ -694,7 +695,10 @@ impl Store {
                 .map(|entry| entry.output.clone())
                 .collect::<Vec<_>>(),
         )?;
-        stored.set(BASE, &live.default_background)?;
+        stored.set(
+            cosmic_bg_config::DEFAULT_BACKGROUND,
+            &live.default_background,
+        )?;
 
         Ok(())
     }
@@ -819,12 +823,8 @@ impl Store {
                         .get_local::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
                         .ok();
                     let stored_background = stored
-                        .get::<cosmic_bg_config::Entry>(BASE)
-                        .or_else(|_| {
-                            stored.get_local::<cosmic_bg_config::Entry>(
-                                cosmic_bg_config::DEFAULT_BACKGROUND,
-                            )
-                        })
+                        .get_local::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
+                        .or_else(|_| stored.get::<cosmic_bg_config::Entry>(BASE))
                         .ok();
                     if live_background != stored_background {
                         return Ok(false);
@@ -939,20 +939,65 @@ impl Store {
     }
 
     pub fn reset_live(&self, mode: Mode) -> Result<bool, Error> {
-        let installed = self.system_for_live(mode)?;
-        let mut restored = false;
-        for part in Part::ALL {
-            let live = self.live_config(part, mode)?;
-            let source = installed
-                .as_ref()
-                .and_then(|bundle| self.system_config(&bundle.slug, part).ok());
-            let part_restored = match source {
-                Some(source) => restore_part(&source, &live, part)?,
-                None => restore_part(&live, &live, part)?,
-            };
-            restored |= part_restored;
+        let theme = read::<Theme>(&self.live_config(Part::Theme, mode)?)?;
+        let name = store_name(&theme, mode);
+
+        let worn = self.worn_bundle(mode, &name)?;
+        let (theme_config, builder_config, background_config) = if let Some(system) = self
+            .system_bundles()?
+            .into_iter()
+            .find(|bundle| bundle.mode == mode && bundle.name == name)
+        {
+            (
+                self.system_config(&system.slug, Part::Theme)?,
+                self.system_config(&system.slug, Part::Builder)?,
+                self.system_config(&system.slug, Part::Background)?,
+            )
+        } else if let Some(bundle) = &worn {
+            (
+                self.bundle_config(&bundle.slug, Part::Theme)?,
+                self.bundle_config(&bundle.slug, Part::Builder)?,
+                self.bundle_config(&bundle.slug, Part::Background)?,
+            )
+        } else {
+            return Ok(false);
+        };
+
+        let theme = match theme_config.get::<Theme>(BASE) {
+            Ok(theme) => theme,
+            Err(_) => theme_of(&theme_config)?,
+        };
+        let builder = match builder_config.get::<ThemeBuilder>(BASE) {
+            Ok(builder) => builder,
+            Err(_) => builder_of(&builder_config)?,
+        };
+        self.write_live_look(mode, builder, theme.name)?;
+
+        self.reset_live_background(&background_config, mode)?;
+        if let Some(bundle) = worn {
+            self.sync_bundle(&bundle, mode)?;
         }
-        Ok(restored)
+
+        Ok(true)
+    }
+
+    fn reset_live_background(&self, from: &Config, mode: Mode) -> Result<bool, Error> {
+        let Some(background) = from.get::<cosmic_bg_config::Entry>(BASE).ok().or_else(|| {
+            from.get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
+                .ok()
+        }) else {
+            return Ok(false);
+        };
+        let target = cosmic_bg_config::Context(self.live_config(Part::Background, mode)?);
+        target.set_same_on_all(true)?;
+        target
+            .0
+            .set(cosmic_bg_config::DEFAULT_BACKGROUND, background.clone())?;
+        target.0.set(BASE, background)?;
+        target
+            .0
+            .set(cosmic_bg_config::BACKGROUNDS, Vec::<String>::new())?;
+        Ok(true)
     }
 
     /// The system preset whose name and mode a mode's live look has.
@@ -978,17 +1023,13 @@ impl Store {
         } else {
             ThemeBuilder::light()
         };
+        let name = builder.clone().build().name;
+        self.write_live_look(mode, builder, name)?;
 
         let config = self.live_config(Part::Theme, mode)?;
-        let mut theme = builder.clone().build();
-        keep_theme_interface(&mut theme, &read::<Theme>(&config)?);
-        theme.write_entry(&config)?;
+        let theme = read::<Theme>(&config)?;
         config.set(BASE, neutral_theme(&theme))?;
 
-        let config = self.live_config(Part::Builder, mode)?;
-        let mut builder = builder;
-        keep_builder_interface(&mut builder, &read::<ThemeBuilder>(&config)?);
-        builder.write_entry(&config)?;
         Ok(())
     }
 
@@ -1090,6 +1131,13 @@ impl Store {
             mode,
             package: None,
         };
+        let live = cosmic_bg_config::Config::load(&cosmic_bg_config::Context(
+            self.live_config(Part::Background, mode)?,
+        ))?;
+        let config = self.bundle_config(slug, Part::Background)?;
+        if config.get_local::<cosmic_bg_config::Entry>(BASE).is_err() {
+            config.set(BASE, &live.default_background)?;
+        }
         self.sync_bundle(&bundle, mode)?;
         for part in Part::ALL {
             self.write_installed_keys(slug, part, mode)?;
@@ -1160,27 +1208,31 @@ impl Store {
         let theme_config = self.bundle_config(slug, Part::Theme)?;
         let builder_config = self.bundle_config(slug, Part::Builder)?;
 
-        if theme_has_per_key(&theme_config) && builder_has_per_key(&builder_config) {
-            let live = read::<Theme>(&self.live_config(Part::Theme, mode)?)?;
-            let incoming = theme_of(&theme_config)?;
-            write_theme_changes(&self.live_config(Part::Theme, mode)?, &live, &incoming)?;
-
-            let live = read::<ThemeBuilder>(&self.live_config(Part::Builder, mode)?)?;
-            let incoming = builder_of(&builder_config)?;
-            write_builder_changes(&self.live_config(Part::Builder, mode)?, &live, &incoming)?;
-        } else {
-            let live = read::<Theme>(&self.live_config(Part::Theme, mode)?)?;
-            let mut theme = theme_of(&theme_config)?;
-            keep_theme_interface(&mut theme, &live);
-            theme.write_entry(&self.live_config(Part::Theme, mode)?)?;
-
-            let live = read::<ThemeBuilder>(&self.live_config(Part::Builder, mode)?)?;
-            let mut builder = builder_of(&builder_config)?;
-            keep_builder_interface(&mut builder, &live);
-            builder.write_entry(&self.live_config(Part::Builder, mode)?)?;
-        }
+        let theme = theme_of(&theme_config)?;
+        let builder = builder_of(&builder_config)?;
+        self.write_live_look(mode, builder, theme.name)?;
 
         self.apply_background(slug, mode)?;
+        Ok(())
+    }
+
+    fn write_live_look(
+        &self,
+        mode: Mode,
+        mut builder: ThemeBuilder,
+        name: String,
+    ) -> Result<(), Error> {
+        let live_theme_config = self.live_config(Part::Theme, mode)?;
+        let live_builder_config = self.live_config(Part::Builder, mode)?;
+
+        let live_builder = read::<ThemeBuilder>(&live_builder_config)?;
+        keep_builder_interface(&mut builder, &live_builder);
+        builder.write_entry(&live_builder_config)?;
+
+        let mut theme = builder.build();
+        theme.name = name;
+        theme.write_entry(&live_theme_config)?;
+
         Ok(())
     }
 

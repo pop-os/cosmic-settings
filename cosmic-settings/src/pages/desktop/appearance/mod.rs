@@ -266,7 +266,7 @@ impl Page {
 
             Message::BundleDeleted(slug, result) => {
                 match result {
-                    Ok(()) => {}
+                    Ok(()) => tasks.push(self.reload_theme()),
                     Err(error) => tracing::error!(%slug, ?error, "failed to remove theme bundle"),
                 }
                 tasks.push(cosmic::task::future(async {

@@ -476,6 +476,11 @@ fn card(store: &Store, bundle: &Bundle, system: bool, on_screen: bool, mode: Mod
     let live = on_screen;
     let background = if live {
         store.live_config(Part::Background, mode).ok()
+    } else if system {
+        store
+            .system_config(&bundle.slug, Part::Background)
+            .or_else(|_| store.bundle_config(&bundle.slug, Part::Background))
+            .ok()
     } else {
         store.bundle_config(&bundle.slug, Part::Background).ok()
     };
