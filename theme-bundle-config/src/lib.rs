@@ -388,7 +388,7 @@ impl Store {
         })
     }
 
-    pub fn system_config(&self, slug: &str, part: Part) -> Result<Config, Error> {
+    fn system_config(&self, slug: &str, part: Part) -> Result<Config, Error> {
         let Some(dir) = self.system_dir() else {
             return Err(Error::UnknownBundle(slug.to_owned()));
         };
