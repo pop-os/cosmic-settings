@@ -29,7 +29,7 @@ const META_MODE: &str = "x-cosmic-mode";
 const META_PARTS: &str = "x-cosmic-parts";
 const META_ASSETS: &str = "x-cosmic-assets";
 
-const OPTIONAL_KEYS: [&str; 3] = ["icon_theme", "font", "mono_font"];
+const OPTIONAL_KEYS: [&str; 4] = ["icon_theme", "cursor_theme", "font", "mono_font"];
 
 const MAX_DEPTH: usize = 64;
 const MAX_PATH: usize = 1024;
@@ -70,6 +70,7 @@ pub struct Asset {
 pub enum AssetKind {
     Wallpaper,
     IconTheme,
+    CursorTheme,
     Font,
 }
 
@@ -320,6 +321,15 @@ impl Store {
         let icon_asset = (icontheme_is_custom(theme)
             && icon_theme_dir(&theme.icon_theme).is_some())
         .then(|| assets.reserve_id(format!("{package_id}.icons")));
+        // A cursor theme that is the same as the icon theme
+        let cursor_asset = theme
+            .cursor_theme
+            .as_deref()
+            .filter(|name| cursor_theme_dir(name).is_some())
+            .map(|name| match &icon_asset {
+                Some(icon_asset) if name == theme.icon_theme => icon_asset.clone(),
+                _ => assets.reserve_id(format!("{package_id}.cursors")),
+            });
 
         let mut exported_theme = neutral_theme(theme);
         let builder = self
@@ -343,6 +353,10 @@ impl Store {
         if let Some(icon_asset) = &icon_asset {
             exported_theme.icon_theme.clone_from(icon_asset);
             exported_builder.icon_theme.clone_from(icon_asset);
+        }
+        if let Some(cursor_asset) = &cursor_asset {
+            exported_theme.cursor_theme = Some(cursor_asset.clone());
+            exported_builder.cursor_theme = Some(cursor_asset.clone());
         }
 
         let mut parts = Vec::new();
@@ -418,6 +432,13 @@ impl Store {
                     ron::ser::to_string(icon_asset)
                         .map(String::into_bytes)
                         .map_err(|err| Error::Archive(format!("icon theme: {err}")))?
+                } else if let Some(cursor_asset) = &cursor_asset
+                    && matches!(part, Part::Theme | Part::Builder)
+                    && key == "cursor_theme"
+                {
+                    ron::ser::to_string(&Some(cursor_asset))
+                        .map(String::into_bytes)
+                        .map_err(|err| Error::Archive(format!("cursor theme: {err}")))?
                 } else {
                     bytes
                 };
@@ -476,6 +497,12 @@ impl Store {
 
         if let Some(icon_asset) = &icon_asset {
             assets.icon_theme(icon_asset, &theme.icon_theme);
+        }
+        if let Some(cursor_asset) = &cursor_asset
+            && Some(cursor_asset) != icon_asset.as_ref()
+            && let Some(name) = &theme.cursor_theme
+        {
+            assets.cursor_theme(cursor_asset, name);
         }
         if theme.font.family != DEFAULT_FONT_FAMILY
             || theme.mono_font.family != cosmic_theme::DEFAULT_MONOSPACE_FONT_FAMILY
@@ -577,6 +604,8 @@ impl Store {
         let mut used = BTreeSet::new();
         let mut plans = Vec::new();
         let mut wallpaper_paths = Vec::new();
+        // "archived id" to "installed id", for theme keys that name an asset
+        let mut theme_ids = Vec::new();
         for asset in &manifest.assets {
             if !look_assets && asset.kind != AssetKind::Wallpaper {
                 continue;
@@ -594,9 +623,10 @@ impl Store {
                     used.insert(id.clone());
                     (data.join("cosmic").join(&id), id)
                 }
-                AssetKind::IconTheme => {
+                AssetKind::IconTheme | AssetKind::CursorTheme => {
                     let id = unique_installed_id(&data.join("icons"), &base, &used);
                     used.insert(id.clone());
+                    theme_ids.push((asset.id.clone(), id.clone()));
                     (data.join("icons").join(&id), id)
                 }
                 AssetKind::Font => {
@@ -658,6 +688,7 @@ impl Store {
             if let Some(icon_id) = &icon_id {
                 rewrite_imported_icon_theme(self, &slug, icon_id)?;
             }
+            rewrite_imported_cursor_theme(self, &slug, &theme_ids)?;
 
             rewrite_backgrounds(self, &slug, &wallpaper_paths)?;
             self.write_imported_name(&slug, &name)?;
@@ -778,7 +809,7 @@ fn installed_asset_path(
         return None;
     }
     Some(match asset.kind {
-        AssetKind::IconTheme => data.join("icons").join(&asset.id),
+        AssetKind::IconTheme | AssetKind::CursorTheme => data.join("icons").join(&asset.id),
         AssetKind::Font => data.join("fonts").join(&asset.id),
         AssetKind::Wallpaper => {
             let installed = data.join("cosmic").join(&asset.id);
@@ -819,6 +850,7 @@ fn asset_base_id(package_id: &str, asset: &Asset) -> String {
     }
     match asset.kind {
         AssetKind::IconTheme => format!("{package_id}.icons"),
+        AssetKind::CursorTheme => format!("{package_id}.cursors"),
         AssetKind::Font => format!(
             "{package_id}.fonts.{}",
             crate::slugify(if asset.name.is_empty() {
@@ -859,7 +891,7 @@ fn install_asset(plan: &AssetPlan) -> Result<(), Error> {
                 Err(Error::Archive("wallpaper asset is missing".to_owned()))
             }
         }
-        AssetKind::IconTheme | AssetKind::Font => {
+        AssetKind::IconTheme | AssetKind::CursorTheme | AssetKind::Font => {
             if !plan.source.is_dir() {
                 return Err(Error::Archive("asset is not a directory".to_owned()));
             }
@@ -884,6 +916,49 @@ fn rewrite_imported_icon_theme(store: &Store, slug: &str, icon_id: &str) -> Resu
             Part::Builder => {
                 if let Ok(mut builder) = config.get::<ThemeBuilder>(crate::BASE) {
                     builder.icon_theme = icon_id.to_owned();
+                    config.set(crate::BASE, builder)?;
+                }
+            }
+            Part::Background => {}
+        }
+    }
+    Ok(())
+}
+
+/// Point the imported bundle's cursor theme at its installed asset (if it names one).
+fn rewrite_imported_cursor_theme(
+    store: &Store,
+    slug: &str,
+    theme_ids: &[(String, String)],
+) -> Result<(), Error> {
+    let installed = |name: &Option<String>| {
+        let name = name.as_deref()?;
+        theme_ids
+            .iter()
+            .find(|(archived, _)| archived == name)
+            .map(|(_, id)| Some(id.clone()))
+    };
+    for part in [Part::Theme, Part::Builder] {
+        let config = store.bundle_config(slug, part)?;
+        if let Ok(name) = config.get::<Option<String>>("cursor_theme")
+            && let Some(id) = installed(&name)
+        {
+            config.set("cursor_theme", id)?;
+        }
+        match part {
+            Part::Theme => {
+                if let Ok(mut theme) = config.get::<Theme>(crate::BASE)
+                    && let Some(id) = installed(&theme.cursor_theme)
+                {
+                    theme.cursor_theme = id;
+                    config.set(crate::BASE, theme)?;
+                }
+            }
+            Part::Builder => {
+                if let Ok(mut builder) = config.get::<ThemeBuilder>(crate::BASE)
+                    && let Some(id) = installed(&builder.cursor_theme)
+                {
+                    builder.cursor_theme = id;
                     config.set(crate::BASE, builder)?;
                 }
             }
@@ -1030,6 +1105,20 @@ impl Assets {
         });
     }
 
+    fn cursor_theme(&mut self, id: &str, name: &str) {
+        let Some(dir) = cursor_theme_dir(name) else {
+            return;
+        };
+        let root = format!("{DATA_ROOT}/icons/{id}");
+        self.carry_tree(&dir, &root);
+        self.records.push(Asset {
+            id: id.to_owned(),
+            kind: AssetKind::CursorTheme,
+            path: root,
+            name: name.to_owned(),
+        });
+    }
+
     fn font(&mut self, index: &FontIndex, config: &FontConfig, default: &str) {
         if config.family == default {
             return;
@@ -1101,6 +1190,7 @@ fn is_default_key(key: &str, bytes: &[u8]) -> bool {
         "icon_theme" => {
             ron::from_str::<String>(&bytes).is_ok_and(|name| name == DEFAULT_ICON_THEME)
         }
+        "cursor_theme" => ron::from_str::<Option<String>>(&bytes).is_ok_and(|name| name.is_none()),
         "font" => {
             ron::from_str::<FontConfig>(&bytes).is_ok_and(|font| font == FontConfig::default())
         }
@@ -1346,6 +1436,21 @@ fn icon_theme_dir(name: &str) -> Option<PathBuf> {
         .into_iter()
         .map(|dir| dir.join("icons").join(name))
         .find(|dir| dir.join("index.theme").is_file())
+}
+
+/// Where an Xcursor theme lives:
+/// - `~/.icons`
+/// - ot an XDG icons directory with a `cursors/` subdir.
+fn cursor_theme_dir(name: &str) -> Option<PathBuf> {
+    if name.is_empty() || Path::new(name).components().count() != 1 {
+        return None;
+    }
+    std::env::var_os("HOME")
+        .map(|home| PathBuf::from(home).join(".icons"))
+        .into_iter()
+        .chain(data_dirs().into_iter().map(|dir| dir.join("icons")))
+        .map(|dir| dir.join(name))
+        .find(|dir| dir.join("cursors").is_dir())
 }
 
 fn data_dirs() -> Vec<PathBuf> {
