@@ -170,6 +170,7 @@ pub enum Message {
     DrawerCorners(drawer::CornerMessage),
     DrawerFont(drawer::FontMessage),
     DrawerIcon(drawer::IconMessage),
+    CursorTheme(usize),
     ApplyThemeGlobal(bool),
 
     FocusFontInput,
@@ -290,6 +291,7 @@ impl Page {
             | Message::SavedAs(_)
             | Message::DrawerFont(_)
             | Message::DrawerIcon(_)
+            | Message::CursorTheme(_)
             | Message::FocusFontInput
             | Message::Roundness(_) => {}
 

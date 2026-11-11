@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::app::ContextDrawer;
+use cosmic::cosmic_config::ConfigSet;
 use cosmic::cosmic_theme::Roundness;
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::text_input::focus;
-use cosmic::widget::{button, container, settings, text};
+use cosmic::widget::{button, container, dropdown, settings, text};
 use cosmic::{Apply, Element, Task, task};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_theme_bundle_config::Mode;
@@ -28,6 +29,7 @@ pub struct Page {
     pub(crate) context_view: Option<ContextView>,
     pub(crate) roundness: Roundness,
     pub(crate) save_as: Option<String>,
+    pub(crate) cursor_themes: Vec<String>,
 }
 
 impl Default for Page {
@@ -41,6 +43,9 @@ impl Default for Page {
             theme_manager,
             context_view: None,
             save_as: None,
+            cursor_themes: std::iter::once(fl!("default"))
+                .chain(cursor_themes())
+                .collect(),
         }
     }
 }
@@ -158,6 +163,37 @@ impl Page {
                     .theme_manager
                     .selected_customizer_mut()
                     .set_window_hint(window_hint);
+            }
+
+            Message::CursorTheme(idx) => {
+                let cursor_theme = (idx > 0)
+                    .then(|| self.cursor_themes.get(idx).cloned())
+                    .flatten();
+                self.theme_manager.set_cursor_theme(cursor_theme.clone());
+
+                let is_dark = self.mode.is_dark();
+                let configs = if is_dark {
+                    (
+                        cosmic::cosmic_theme::Theme::dark_config(),
+                        cosmic::cosmic_theme::ThemeBuilder::dark_config(),
+                    )
+                } else {
+                    (
+                        cosmic::cosmic_theme::Theme::light_config(),
+                        cosmic::cosmic_theme::ThemeBuilder::light_config(),
+                    )
+                };
+                if let (Ok(config), Ok(builder_config)) = configs {
+                    _ = config.set("cursor_theme", &cursor_theme);
+                    _ = builder_config.set("cursor_theme", &cursor_theme);
+                    if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+                        && let Err(error) = store.sync_active(Mode::from_is_dark(is_dark))
+                    {
+                        tracing::warn!(?error, "failed to sync the active theme bundle");
+                    }
+                }
+
+                theme_changed = self.is_active_mode();
             }
 
             Message::Roundness(r) => {
@@ -433,6 +469,7 @@ fn font_and_icons() -> Section<crate::pages::Message> {
         interface_font_txt = fl!("interface-font");
         monospace_font_txt = fl!("monospace-font");
         icons_theme_txt = fl!("icons-theme");
+        cursor_theme_txt = fl!("cursor-theme");
     });
 
     Section::default()
@@ -458,11 +495,24 @@ fn font_and_icons() -> Section<crate::pages::Message> {
                 Message::DrawerOpen(ContextView::IconThemes),
             );
 
+            let selected = page
+                .theme_manager
+                .theme()
+                .cursor_theme
+                .as_ref()
+                .and_then(|t| page.cursor_themes[1..].iter().position(|n| n == t))
+                .map_or(0, |idx| idx + 1);
+            let cursor_theme = settings::item(
+                &descriptions[cursor_theme_txt],
+                dropdown(&page.cursor_themes, Some(selected), Message::CursorTheme),
+            );
+
             settings::section()
                 .title(&*section.title)
                 .add(system_font)
                 .add(mono_font)
                 .add(icon_theme)
+                .add(cursor_theme)
                 .apply(Element::from)
                 .map(crate::pages::Message::AppearanceTheme)
         })
@@ -478,4 +528,37 @@ fn export_action() -> Section<crate::pages::Message> {
         .align_x(Alignment::End)
         .apply(Element::from)
     })
+}
+
+pub fn cursor_themes() -> Vec<String> {
+    let home = dirs::home_dir();
+    let data_home = std::env::var_os("XDG_DATA_HOME")
+        .filter(|v| !v.is_empty())
+        .map(std::path::PathBuf::from)
+        .or_else(|| home.as_ref().map(|h| h.join(".local/share")));
+    let data_dirs = std::env::var_os("XDG_DATA_DIRS")
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| "/usr/local/share:/usr/share".into());
+
+    let search = home
+        .map(|h| h.join(".icons"))
+        .into_iter()
+        .chain(data_home.map(|d| d.join("icons")))
+        .chain(std::env::split_paths(&data_dirs).map(|d| d.join("icons")))
+        .chain(std::iter::once("/usr/share/pixmaps".into()));
+
+    let mut themes = std::collections::BTreeSet::new();
+    for dir in search {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            continue;
+        };
+        for entry in entries.filter_map(Result::ok) {
+            if entry.path().join("cursors").is_dir()
+                && let Ok(name) = entry.file_name().into_string()
+            {
+                themes.insert(name);
+            }
+        }
+    }
+    themes.into_iter().collect()
 }
