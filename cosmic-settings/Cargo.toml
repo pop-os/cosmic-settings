@@ -64,7 +64,7 @@ mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cos
     "tokio",
 ], optional = true }
 notify = "8.2.0"
-nmrs = { version = "3.5.3", optional = true }
+nmrs = { version = "3.5.12", optional = true }
 regex = "1.13.1"
 ron = "0.12"
 rust-embed = "8.12.0"
