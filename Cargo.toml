@@ -119,6 +119,9 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
 
+[patch.'https://github.com/pop-os/cosmic-comp']
+cosmic-comp-config = { git = "https://github.com/hojjatabdollahi/cosmic-comp", branch = "hojjat/cursor" }
+
 [patch.crates-io]
 atspi = { git = "https://github.com/wash2/atspi" }
 atspi-common = { git = "https://github.com/wash2/atspi" }
