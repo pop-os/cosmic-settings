@@ -1131,9 +1131,13 @@ impl Page {
                     return Task::none();
                 };
 
+                let rate = current.refresh_rate;
+
                 task.arg("mode")
                     .arg("--adaptive-sync")
                     .arg(<&'static str>::from(mode))
+                    .arg("--refresh")
+                    .arg(format!("{}.{:03}", rate / 1000, rate % 1000))
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
@@ -1173,9 +1177,13 @@ impl Page {
                     return Task::none();
                 };
 
+                let rate = current.refresh_rate;
+
                 task.arg("mode")
                     .arg("--transform")
                     .arg(&*format!("{transform}"))
+                    .arg("--refresh")
+                    .arg(format!("{}.{:03}", rate / 1000, rate % 1000))
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
