@@ -10,7 +10,7 @@ default-members = ["cosmic-settings"]
 resolver = "3"
 
 [workspace.package]
-rust-version = "1.93"
+rust-version = "1.95"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
@@ -26,6 +26,7 @@ image = { version = "0.25.10", default-features = false, features = [
 fontdb = "0.23.0"
 tracing = "0.1.44"
 walkdir = "=2.5.0"
+jxl-image-rs-integration = "0.8"
 
 [workspace.dependencies.libcosmic]
 features = [

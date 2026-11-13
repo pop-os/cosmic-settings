@@ -5,6 +5,7 @@ use crate::Event;
 
 use std::sync::Arc;
 
+use cosmic_bluez_zbus::agent_manager1::AgentManager1Proxy;
 use futures::{SinkExt, StreamExt};
 use zbus::ObjectPath;
 
@@ -34,34 +35,59 @@ pub async fn watch(
     tracing::debug!("connecting to bluez agent manager");
 
     let bluez = cosmic_bluez_zbus::agent_manager1::AgentManager1Proxy::new(&connection).await?;
+    let mut owners = zbus::fdo::DBusProxy::new(&connection)
+        .await?
+        .receive_name_owner_changed_with_args(&[(0, "org.bluez")])
+        .await?;
 
     tracing::debug!("registering agent");
 
-    bluez
-        .register_agent(
-            &agent_path,
-            <&'static str>::from(cosmic_bluez_zbus::agent1::Capability::KeyboardDisplay),
-        )
-        .await?;
-
-    if let Err(why) = bluez.request_default_agent(&agent_path).await {
-        _ = bluez.unregister_agent(&agent_path).await;
-        Err(why)?;
-    }
+    register(&bluez, &agent_path).await?;
 
     tracing::debug!("registered");
 
-    while let Some(msg) = receiver.next().await {
-        tracing::debug!(?msg, "agent message received");
+    loop {
+        futures::select! {
+            msg = receiver.next() => {
+                let Some(msg) = msg else { break };
+                tracing::debug!(?msg, "agent message received");
 
-        if tx.send(Event::Agent(Arc::new(msg))).await.is_err() {
-            break;
+                if tx.send(Event::Agent(Arc::new(msg))).await.is_err() {
+                    break;
+                }
+            }
+
+            signal = owners.next() => {
+                let Some(signal) = signal else { break };
+                if signal.args().is_ok_and(|args| args.new_owner().is_some()) {
+                    tracing::debug!("registering agent again");
+                    if let Err(why) = register(&bluez, &agent_path).await {
+                        tracing::error!("Failed to register the agent again: {why}");
+                    }
+                }
+            }
         }
     }
 
     _ = bluez.unregister_agent(&agent_path).await;
 
     tracing::debug!("exiting");
+
+    Ok(())
+}
+
+async fn register(bluez: &AgentManager1Proxy<'_>, agent_path: &ObjectPath<'_>) -> zbus::Result<()> {
+    bluez
+        .register_agent(
+            agent_path,
+            <&'static str>::from(cosmic_bluez_zbus::agent1::Capability::KeyboardDisplay),
+        )
+        .await?;
+
+    if let Err(why) = bluez.request_default_agent(agent_path).await {
+        _ = bluez.unregister_agent(agent_path).await;
+        Err(why)?;
+    }
 
     Ok(())
 }

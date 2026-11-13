@@ -10,6 +10,7 @@ use std::sync::Arc;
 use tracing::error;
 
 use crate::app;
+use crate::pages::desktop::appearance::theme_manager::Manager;
 use crate::widget::color_picker_context_view;
 
 use super::icon_themes::{IconHandles, IconThemes};
@@ -149,6 +150,7 @@ impl Content {
         &mut self,
         message: FontMessage,
         context_view: Option<&ContextView>,
+        manager: &mut Manager,
     ) -> Task<app::Message> {
         match message {
             FontMessage::FontLoaded(interface, mono) => {
@@ -159,11 +161,11 @@ impl Content {
                 Some(c) => self.font_config.search(input.to_string(), c),
             },
             FontMessage::Select(font) => {
-                if let Some(context_view) = context_view
-                    && let Some(task) = self.font_config.select(font.to_string(), context_view)
-                {
-                    return task;
+                if let Some(context_view) = context_view {
+                    self.font_config
+                        .select(font.to_string(), context_view, manager);
                 }
+
                 Task::none()
             }
         }
@@ -217,34 +219,44 @@ impl Content {
         &mut self,
         message: IconMessage,
         _context_view: &ContextView,
+        manager: &mut Manager,
     ) -> Task<app::Message> {
         match message {
             IconMessage::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
 
-                    let cosmic_theme = cosmic::theme::active().cosmic().clone();
-                    let config = if cosmic_theme.is_dark {
-                        cosmic::cosmic_theme::Theme::dark_config()
+                    let is_dark = manager.mode().is_dark;
+                    manager.set_icon_theme(theme.id.clone());
+
+                    let (config, builder_config) = if is_dark {
+                        (
+                            cosmic::cosmic_theme::Theme::dark_config(),
+                            cosmic::cosmic_theme::ThemeBuilder::dark_config(),
+                        )
                     } else {
-                        cosmic::cosmic_theme::Theme::light_config()
+                        (
+                            cosmic::cosmic_theme::Theme::light_config(),
+                            cosmic::cosmic_theme::ThemeBuilder::light_config(),
+                        )
                     };
-                    if let Ok(config) = config {
-                        _ = config.set::<String>("icon_theme", theme.id);
-                        if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
-                            if let Err(error) =
-                                store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(
-                                    cosmic_theme.is_dark,
-                                ))
-                            {
-                                tracing::warn!(?error, "failed to sync the active theme bundle");
-                            }
+
+                    if let Some((config, builder_config)) = config.ok().zip(builder_config.ok()) {
+                        _ = config.set::<String>("icon_theme", theme.id.clone());
+                        _ = builder_config.set::<String>("icon_theme", theme.id);
+
+                        if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+                            && let Err(error) = store.sync_active(
+                                cosmic_theme_bundle_config::Mode::from_is_dark(is_dark),
+                            )
+                        {
+                            tracing::warn!(?error, "failed to sync the active theme bundle");
                         }
                     }
                 }
             }
             IconMessage::IconLoaded((icon_themes, icon_handles)) => {
-                let active_icon_theme = cosmic::theme::active().cosmic().icon_theme.clone();
+                let active_icon_theme = manager.theme().icon_theme.clone();
 
                 // Set the icon themes, and define the active icon theme.
                 self.icon_themes = icon_themes;
@@ -290,12 +302,22 @@ impl Content {
         Task::none()
     }
 
-    pub fn on_open<F>(&mut self, context_view: &ContextView, wrap: F) -> Task<app::Message>
+    pub fn on_open<F>(
+        &mut self,
+        context_view: &ContextView,
+        manager: &Manager,
+        wrap: F,
+    ) -> Task<app::Message>
     where
         F: Fn(super::Message) -> crate::pages::Message + Send + 'static,
     {
         match *context_view {
             ContextView::IconThemes => {
+                self.icon_theme_active = self
+                    .icon_themes
+                    .iter()
+                    .position(|theme| theme.id == manager.theme().icon_theme);
+
                 if self.icons_fetched {
                     return Task::none();
                 }

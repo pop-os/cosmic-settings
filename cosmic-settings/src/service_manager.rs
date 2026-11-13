@@ -156,16 +156,14 @@ impl ServiceManager for SystemDServiceManager {
         std::process::Command::new("systemctl")
             .args(["is-enabled", &self.service_name])
             .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+            .map_or(true, |status| status.success())
     }
 
     fn is_active(&self) -> bool {
         std::process::Command::new("systemctl")
             .args(["is-active", &self.service_name])
             .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+            .map_or(true, |status| status.success())
     }
 
     fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
@@ -196,8 +194,7 @@ impl ServiceManager for SystemDServiceManager {
         std::process::Command::new("systemctl")
             .args(["cat", &self.service_name])
             .status()
-            .map(|status| status.success())
-            .unwrap_or(false)
+            .is_ok_and(|status| status.success())
     }
 }
 
@@ -225,8 +222,7 @@ fn is_service_in_runlevel_output(output: &str, service_name: &str) -> bool {
     output.lines().any(|line| {
         line.split('|')
             .next()
-            .map(|name| name.trim() == service_name)
-            .unwrap_or(false)
+            .is_some_and(|name| name.trim() == service_name)
     })
 }
 
@@ -236,21 +232,19 @@ impl ServiceManager for OpenRcServiceManager {
         std::process::Command::new("rc-update")
             .args(["show"])
             .output()
-            .map(|output| {
+            .map_or(true, |output| {
                 is_service_in_runlevel_output(
                     &String::from_utf8_lossy(&output.stdout),
                     &self.service_name,
                 )
             })
-            .unwrap_or(true)
     }
 
     fn is_active(&self) -> bool {
         std::process::Command::new("rc-service")
             .args([&self.service_name, "status"])
             .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+            .map_or(true, |status| status.success())
     }
 
     fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {

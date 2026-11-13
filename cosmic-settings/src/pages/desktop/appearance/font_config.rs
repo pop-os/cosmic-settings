@@ -3,11 +3,12 @@
 
 use std::sync::{Arc, LazyLock};
 
-use cosmic::cosmic_theme::{FontConfig, Theme};
+use cosmic::cosmic_theme::{FontConfig, Theme, ThemeBuilder};
 use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigSet;
 
 use crate::app;
+use crate::pages::desktop::appearance::theme_manager::Manager;
 use crate::widget::selection_context_item;
 
 use super::{ContextView, Message, drawer};
@@ -118,11 +119,9 @@ impl Model {
         Task::none()
     }
 
-    pub fn select(
-        &mut self,
-        font: String,
-        context_view: &ContextView,
-    ) -> Option<Task<app::Message>> {
+    pub fn select(&mut self, font: String, context_view: &ContextView, manager: &mut Manager) {
+        let is_dark = manager.mode().is_dark;
+
         match *context_view {
             ContextView::MonospaceFont => {
                 self.monospace_font = FontConfig {
@@ -131,9 +130,9 @@ impl Model {
                     style: cosmic::iced::font::Style::Normal,
                     stretch: cosmic::iced::font::Stretch::Normal,
                 };
+                manager.set_mono_font(self.monospace_font.clone());
 
-                update_theme(MONO_FONT, self.monospace_font.clone());
-                None
+                update_theme(MONO_FONT, self.monospace_font.clone(), is_dark);
             }
             ContextView::SystemFont => {
                 self.interface_font = FontConfig {
@@ -142,10 +141,11 @@ impl Model {
                     style: cosmic::iced::font::Style::Normal,
                     stretch: cosmic::iced::font::Stretch::Normal,
                 };
-                update_theme(FONT, self.interface_font.clone());
-                None
+                manager.set_font(self.interface_font.clone());
+
+                update_theme(FONT, self.interface_font.clone(), is_dark);
             }
-            _ => None,
+            _ => {}
         }
     }
 
@@ -221,21 +221,20 @@ impl Model {
     }
 }
 
-fn update_theme(key: &str, font: FontConfig) {
-    let theme = cosmic::theme::active().cosmic().clone();
-    let config = if theme.is_dark {
-        Theme::dark_config()
+fn update_theme(key: &str, font: FontConfig, is_dark: bool) {
+    let (config, builder_config) = if is_dark {
+        (Theme::dark_config(), ThemeBuilder::dark_config())
     } else {
-        Theme::light_config()
+        (Theme::light_config(), ThemeBuilder::light_config())
     };
-    if let Ok(config) = config {
-        _ = config.set(key, font);
-        if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
-            if let Err(error) = store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(
-                theme.is_dark,
-            )) {
-                tracing::warn!(?error, "failed to sync the active theme bundle");
-            }
+    if let Some((config, builder_config)) = config.ok().zip(builder_config.ok()) {
+        _ = config.set(key, font.clone());
+        _ = builder_config.set(key, font);
+        if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+            && let Err(error) =
+                store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(is_dark))
+        {
+            tracing::warn!(?error, "failed to sync the active theme bundle");
         }
     }
 }

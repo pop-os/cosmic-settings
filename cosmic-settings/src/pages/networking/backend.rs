@@ -371,25 +371,13 @@ pub struct ActiveConnectionRecord {
     state: devices::ActiveConnectionState,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct NetworkManagerState {
     pub wireless_access_points: Vec<available_wifi::AccessPoint>,
     pub active_conns: Vec<current_networks::ActiveConnectionInfo>,
     pub known_access_points: Vec<available_wifi::AccessPoint>,
     pub wifi_enabled: bool,
     pub airplane_mode: bool,
-}
-
-impl Default for NetworkManagerState {
-    fn default() -> Self {
-        Self {
-            wireless_access_points: Vec::new(),
-            active_conns: Vec::new(),
-            known_access_points: Vec::new(),
-            wifi_enabled: false,
-            airplane_mode: false,
-        }
-    }
 }
 
 impl NetworkManagerState {
@@ -425,7 +413,7 @@ impl NetworkManagerState {
             )
             .into_values()
             .collect::<Vec<_>>();
-        wireless_access_points.sort_by(|a, b| b.strength.cmp(&a.strength));
+        wireless_access_points.sort_by_key(|a| std::cmp::Reverse(a.strength));
 
         let active_infos = active_connection_infos(active_conns);
         let saved_wifi = saved_wifi_profiles(&saved_connections);
@@ -470,9 +458,7 @@ impl NetworkManagerState {
             active_conns: active_infos,
             known_access_points,
             wifi_enabled: wifi_state.map(|state| state.enabled).unwrap_or(false),
-            airplane_mode: airplane_mode
-                .map(|state| state.is_airplane_mode())
-                .unwrap_or(false),
+            airplane_mode: airplane_mode.is_ok_and(|state| state.is_airplane_mode()),
         })
     }
 
@@ -590,7 +576,7 @@ pub async fn watch(nm: NetworkManager, mut output: futures::channel::mpsc::Sende
                     Ok(NetworkEvent::DeviceChanged { .. } | NetworkEvent::SettingsChanged(_)) => Some(Event::Devices),
                     Ok(NetworkEvent::ActiveConnectionsChanged) => Some(Event::ActiveConns),
                     Ok(NetworkEvent::WirelessEnabledChanged) => Some(Event::WiFiEnabled(
-                        nm.wifi_state().await.map(|state| state.enabled).unwrap_or(false),
+                        nm.wifi_state().await.is_ok_and(|state| state.enabled),
                     )),
                     Ok(NetworkEvent::ConnectivityChanged | NetworkEvent::NetworkManagerRestarted) => Some(Event::ActiveConns),
                     Ok(_) => None,

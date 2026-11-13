@@ -12,7 +12,7 @@ use cosmic::iced::alignment::Vertical;
 use cosmic::iced::core::{Alignment, Background, Border, Length};
 use cosmic::iced::widget::Stack;
 use cosmic::widget::text_input::{focus, select_all};
-use cosmic::widget::{self, button, column, container, icon, row, space, text};
+use cosmic::widget::{self, button, column, container, flex_row, icon, row, space, text};
 use cosmic::{Apply, Element, Task};
 use cosmic_settings_page::Section;
 use cosmic_settings_wallpaper as wallpaper;
@@ -25,6 +25,12 @@ pub(crate) static SAVE_AS_INPUT: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("theme-bundle-save-as-name"));
 pub(crate) static RENAME_INPUT: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("theme-bundle-rename-name"));
+
+const MAX_THEME_NAME_LEN: usize = 40;
+
+pub(crate) fn limit_theme_name(name: String) -> String {
+    name.chars().take(MAX_THEME_NAME_LEN).collect()
+}
 
 const CARD_WIDTH: f32 = 204.0;
 const CARD_HEIGHT: f32 = 138.0;
@@ -207,7 +213,6 @@ fn live_card(store: &Store, mode: Mode) -> Card {
         preview: preview(
             store.live_config(Part::Background, mode).ok(),
             theme.bg_color(),
-            false,
         ),
     }
 }
@@ -487,7 +492,7 @@ fn card(store: &Store, bundle: &Bundle, system: bool, on_screen: bool, mode: Mod
         background: theme.bg_color().into(),
         on_background: theme.on_bg_color().into(),
         accent: theme.accent_color().into(),
-        preview: preview(background, theme.bg_color(), !live),
+        preview: preview(background, theme.bg_color()),
     }
 }
 
@@ -503,7 +508,7 @@ fn read_theme(config: &Config) -> Theme {
     }
 }
 
-fn preview(config: Option<Config>, fallback: Srgba, prefer_base: bool) -> Preview {
+fn preview(config: Option<Config>, fallback: Srgba) -> Preview {
     let source = config.and_then(|config| {
         let same_on_all = config
             .get::<bool>(cosmic_bg_config::SAME_ON_ALL)
@@ -519,22 +524,11 @@ fn preview(config: Option<Config>, fallback: Srgba, prefer_base: bool) -> Previe
             return Some(entry.source);
         }
 
-        let entry = if prefer_base {
-            config
-                .get::<cosmic_bg_config::Entry>("base")
-                .ok()
-                .or_else(|| {
-                    config
-                        .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
-                        .ok()
-                })
-        } else {
-            config
-                .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
-                .ok()
-                .or_else(|| config.get::<cosmic_bg_config::Entry>("base").ok())
-        };
-        entry.map(|entry| entry.source)
+        config
+            .get::<cosmic_bg_config::Entry>(cosmic_bg_config::DEFAULT_BACKGROUND)
+            .ok()
+            .or_else(|| config.get::<cosmic_bg_config::Entry>("base").ok())
+            .map(|entry| entry.source)
     });
 
     match source {
@@ -658,20 +652,30 @@ fn active_row<'a>(deck: &'a Deck, mode: Mode) -> Element<'a, crate::pages::Messa
 
     let gap = |width: u16| space::horizontal().width(Length::Fixed(f32::from(width)));
 
-    let mut row = row::with_capacity(5)
-        .push(text::body(name))
-        .push(gap(spacing.space_s));
+    let mut row = Vec::with_capacity(5);
+    row.push(Element::from(
+        text::body(name)
+            .wrapping(iced_winit::core::text::Wrapping::None)
+            .ellipsize(iced_winit::core::text::Ellipsize::End(
+                iced_winit::core::text::EllipsizeHeightLimit::Lines(1),
+            ))
+            .width(Length::Shrink),
+    ));
+    row.push(gap(spacing.space_s).into());
 
     if let Some(rename) = rename {
-        row = row.push(rename).push(gap(spacing.space_xxs));
+        row.push(rename.into());
+        row.push(gap(spacing.space_xxs).into());
     }
 
     if let Some(remove) = remove {
-        row = row.push(remove).push(gap(spacing.space_xs));
+        row.push(remove.into());
+        row.push(gap(spacing.space_xs).into());
     }
 
-    row.push(edit)
-        .align_y(Alignment::Center)
+    row.push(edit.into());
+    flex_row::flex_row(row)
+        .align_items(Alignment::Center)
         .apply(Element::from)
 }
 
