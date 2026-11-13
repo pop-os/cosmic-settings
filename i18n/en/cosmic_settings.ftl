@@ -464,6 +464,7 @@ window-management-appearance = Window management
 
 font-and-icons = Font and icons
 icons-theme = Icons theme
+cursor-theme = Cursor theme
 toolkit-theming = Toolkit theming
 interface-font = System font
 monospace-font = Monospace font

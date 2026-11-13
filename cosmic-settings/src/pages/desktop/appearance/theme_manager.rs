@@ -398,6 +398,12 @@ impl Manager {
         selected_customizer.theme.0.icon_theme = icon_theme;
     }
 
+    pub fn set_cursor_theme(&mut self, cursor_theme: Option<String>) {
+        let selected_customizer = self.selected_customizer_mut();
+        selected_customizer.builder.0.cursor_theme = cursor_theme.clone();
+        selected_customizer.theme.0.cursor_theme = cursor_theme;
+    }
+
     // TODO: Make it rollback if the first operation succeeds and the second
     // one fails?
     pub fn set_active_hint(&mut self, active_hint: u32) -> Option<ThemeStaged> {

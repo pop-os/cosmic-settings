@@ -1814,6 +1814,7 @@ fn write_theme_changes(config: &Config, old: &Theme, new: &Theme) -> Result<(), 
     changed!("control_tint", &old.control_tint, &new.control_tint);
     changed!("text_tint", &old.text_tint, &new.text_tint);
     changed!("icon_theme", &old.icon_theme, &new.icon_theme);
+    changed!("cursor_theme", &old.cursor_theme, &new.cursor_theme);
     changed!("font", &old.font, &new.font);
     changed!("mono_font", &old.mono_font, &new.mono_font);
     changed!("corner_radii", old.corner_radii, new.corner_radii);
@@ -1857,6 +1858,7 @@ fn write_builder_changes(
     changed!("destructive", &old.destructive, &new.destructive);
     changed!("window_hint", &old.window_hint, &new.window_hint);
     changed!("icon_theme", &old.icon_theme, &new.icon_theme);
+    changed!("cursor_theme", &old.cursor_theme, &new.cursor_theme);
     changed!("font", &old.font, &new.font);
     changed!("mono_font", &old.mono_font, &new.mono_font);
     changed!("corner_radii", old.corner_radii, new.corner_radii);
