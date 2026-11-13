@@ -122,9 +122,8 @@ impl From<Message> for app::Message {
 enum Randr {
     Mirror(OutputKey),
     Position(i32, i32),
-    RefreshRate(u32),
+    Mode(u32, u32, u32),
     VariableRefreshRate(AdaptiveSyncState),
-    Resolution(u32, u32),
     Scale(u32),
     Transform(Transform),
     Toggle(bool),
@@ -497,18 +496,13 @@ impl Page {
                             })
                     {
                         tracing::debug!(old = ?self.dialog, new = ?mode, "Mode update");
-                        match self.dialog {
-                            Some(Randr::Resolution(width, height))
-                                if mode.size.0 == width && mode.size.1 == height =>
-                            {
-                                self.config.resolution = Some((width, height));
-                                return self.update(Message::DialogComplete);
-                            }
-                            Some(Randr::RefreshRate(rate)) if mode.refresh_rate == rate => {
-                                self.config.refresh_rate = Some(rate);
-                                return self.update(Message::DialogComplete);
-                            }
-                            _ => {}
+                        if let Some(Randr::Mode(width, height, rate)) = self.dialog
+                            && mode.size == (width, height)
+                            && mode.refresh_rate == rate
+                        {
+                            self.config.resolution = Some((width, height));
+                            self.config.refresh_rate = Some(rate);
+                            return self.update(Message::DialogComplete);
                         }
                     }
                 }
@@ -960,13 +954,22 @@ impl Page {
             return Task::none();
         };
 
-        if let Some(ref resolution) = self.config.resolution
-            && let Some(rates) = self.cache.modes.get(resolution)
+        if let Some((width, height)) = self.config.resolution
+            && let Some(rates) = self.cache.modes.get(&(width, height))
             && let Some(&rate) = rates.get(option)
         {
+            let request = Randr::Mode(width, height, rate);
+            let revert_request = self
+                .config
+                .refresh_rate
+                .map_or(request, |old_rate| Randr::Mode(width, height, old_rate));
+
             self.cache.refresh_rate_selected = Some(option);
             self.config.refresh_rate = Some(rate);
-            return self.exec_randr(output, Randr::RefreshRate(rate));
+            return Task::batch([
+                self.exec_randr(output, request),
+                self.set_dialog(revert_request, &request),
+            ]);
         }
 
         Task::none()
@@ -993,9 +996,15 @@ impl Page {
             _ => return Task::none(),
         };
 
+        let request = Randr::VariableRefreshRate(mode);
+        let revert_request = self.config.vrr.map_or(request, Randr::VariableRefreshRate);
+
         self.cache.vrr_selected = Some(option);
         self.config.vrr = Some(mode);
-        self.exec_randr(output, Randr::VariableRefreshRate(mode))
+        Task::batch([
+            self.exec_randr(output, request),
+            self.set_dialog(revert_request, &request),
+        ])
     }
 
     /// Change the resolution of the active display.
@@ -1017,17 +1026,19 @@ impl Page {
             return Task::none();
         };
 
-        let request = Randr::Resolution(resolution.0, resolution.1);
+        let request = Randr::Mode(resolution.0, resolution.1, rate);
         let mut revert_request = request;
-        if let Some(resolution) = self.config.resolution {
-            revert_request = Randr::Resolution(resolution.0, resolution.1);
+        if let Some((width, height)) = self.config.resolution
+            && let Some(old_rate) = self.config.refresh_rate
+        {
+            revert_request = Randr::Mode(width, height, old_rate);
         }
 
         self.config.refresh_rate = Some(rate);
         self.config.resolution = Some(resolution);
         self.cache.refresh_rate_selected = Some(0);
         self.cache.resolution_selected = Some(option);
-        tasks.push(self.exec_randr(output, Randr::Resolution(resolution.0, resolution.1)));
+        tasks.push(self.exec_randr(output, request));
         tasks.push(self.set_dialog(revert_request, &request));
 
         Task::batch(tasks)
@@ -1113,17 +1124,13 @@ impl Page {
                     .arg(itoa::Buffer::new().format(current.size.1));
             }
 
-            Randr::RefreshRate(rate) => {
-                let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
-                    return Task::none();
-                };
-
+            Randr::Mode(width, height, rate) => {
                 task.arg("mode")
                     .arg("--refresh")
                     .arg(format!("{}.{:03}", rate / 1000, rate % 1000))
                     .arg(name)
-                    .arg(itoa::Buffer::new().format(current.size.0))
-                    .arg(itoa::Buffer::new().format(current.size.1));
+                    .arg(itoa::Buffer::new().format(width))
+                    .arg(itoa::Buffer::new().format(height));
             }
 
             Randr::VariableRefreshRate(mode) => {
@@ -1141,13 +1148,6 @@ impl Page {
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
-            }
-
-            Randr::Resolution(width, height) => {
-                task.arg("mode")
-                    .arg(name)
-                    .arg(itoa::Buffer::new().format(width))
-                    .arg(itoa::Buffer::new().format(height));
             }
 
             Randr::Scale(scale) => {
