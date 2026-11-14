@@ -153,7 +153,6 @@ export = ರಫ್ತು
 hex = ಹೆಕ್ಸ್
 import = ಆಮದು
 light = ಲೈಟ್
-mode-and-colors = ಮೋಡ್ ಮತ್ತು ಬಣ್ಣಗಳು
 recent-colors = ಇತ್ತೀಚಿನ ಬಣ್ಣಗಳು
 reset-to-default = ಡೀಫಾಲ್ಟ್‌ಗೆ ಪುನರ್‌ಸ್ಥಾಪಿಸಿ
 rgb = RGB
@@ -192,8 +191,6 @@ window-management-appearance = ವಿಂಡೋ ನಿರ್ವಹಣೆ
 
 ### Experimental
 
-experimental-settings = ಪ್ರಯೋಗಾತ್ಮಕ ಸೆಟಿಂಗ್‌ಗಳು
-icons-and-toolkit = ಐಕಾನ್‌ಗಳು ಮತ್ತು ಟೂಲ್‌ಕಿಟ್ ಥೀಮಿಂಗ್
 interface-font = ಸಿಸ್ಟಮ್ ಫಾಂಟ್
 monospace-font = ಮೊನೊಸ್ಪೇಸ್  ಫಾಂಟ್
 

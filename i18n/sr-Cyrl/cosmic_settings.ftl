@@ -209,7 +209,6 @@ export = Извези
 hex = Hex
 import = Увези
 light = Светла
-mode-and-colors = Режим и боје
 recent-colors = Недавне боје
 reset-to-default = Врати на подразумевано
 rgb = RGB
@@ -248,8 +247,6 @@ window-management-appearance = Управљање прозорима
 
 ### Experimental
 
-experimental-settings = Експериментална подешавања
-icons-and-toolkit = Тема иконица и toolkit-а
 interface-font = Фонт система
 monospace-font = Монопросторни фонт
 

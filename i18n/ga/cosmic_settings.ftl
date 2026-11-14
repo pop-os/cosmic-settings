@@ -209,7 +209,6 @@ export = Easpórtáil
 hex = Heics
 import = Iompórtáil
 light = Solas
-mode-and-colors = Mód agus dathanna
 recent-colors = Dathanna le déanaí
 reset-to-default = Athshocraigh go réamhshocraithe
 rgb = RGB
@@ -261,8 +260,6 @@ window-management-appearance = Bainistíocht fuinneoga
 
 ### Experimental
 
-experimental-settings = Socruithe turgnamhach
-icons-and-toolkit = Deilbhíní agus téamaíocht uirlisí
 interface-font = Cló an chóras
 monospace-font = Cló monospás
 
@@ -972,3 +969,9 @@ drawing-tablet = Táibléad líníochta
     .enabled = Cumasaithe
 tap-and-drag = Tapáil agus tarraing
 drag-lock = Glasáil tarraingthe
+change-wallpaper = Athraigh an cúlbhrat
+mode = Mód
+theme-bundles-dark = Téama dorcha
+theme-bundles-empty = Gan téamaí sábháilte go fóill
+theme-bundles-import-file = Roghnaigh comhad
+theme-bundles-save-as = Sábháil mar...

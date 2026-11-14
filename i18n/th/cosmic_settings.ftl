@@ -201,7 +201,6 @@ export = ส่งออก
 hex = Hex
 import = นำเข้า
 light = สว่าง
-mode-and-colors = โหมดและสี
 recent-colors = สีล่าสุด
 reset-to-default = รีเซ็ตเป็นค่าเริ่มต้น
 rgb = RGB
@@ -253,8 +252,6 @@ window-management-appearance = การจัดการหน้าต่า�
 
 ### Experimental
 
-experimental-settings = การตั้งค่าทดลอง
-icons-and-toolkit = ไอคอนและธีมชุดเครื่องมือ
 interface-font = ฟอนต์ระบบ
 monospace-font = ฟอนต์โมโนสเปซ
 

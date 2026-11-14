@@ -209,7 +209,6 @@ export = 匯出
 hex = 十六進位
 import = 匯入
 light = 淺色
-mode-and-colors = 色彩與模式
 recent-colors = 最近使用的色彩
 reset-to-default = 重新設定至預設
 rgb = RGB
@@ -261,8 +260,6 @@ window-management-appearance = 視窗管理
 
 ### Experimental
 
-experimental-settings = 實驗性設定
-icons-and-toolkit = 圖示與工具組主題
 interface-font = 系統字型
 monospace-font = 等寬字型
 
@@ -972,3 +969,5 @@ drawing-tablet = 繪圖板
     .map-to-display = 映射至顯示器
     .not-set = 未設定
     .enabled = 已啟用
+edit = 編輯
+change-wallpaper = 變更桌布
