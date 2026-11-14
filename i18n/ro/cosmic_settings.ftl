@@ -197,7 +197,6 @@ export = Exportă
 hex = Hex
 import = Importă
 light = Lumină
-mode-and-colors = Mod și culori
 recent-colors = Culori recente
 reset-to-default = Resetează la valoarea implicită
 rgb = RGB
@@ -236,8 +235,6 @@ window-management-appearance = Gestionarea aspectului ferestrelor
 
 ### Experimental
 
-experimental-settings = Setări experimentale
-icons-and-toolkit = Tematizarea pictogramelor și a interfeței
 interface-font = Fontul sistemului
 monospace-font = Fontul monospace
 

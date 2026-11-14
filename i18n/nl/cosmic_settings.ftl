@@ -260,7 +260,6 @@ export = Exporteren
 hex = Hex
 import = Importeren
 light = Licht
-mode-and-colors = Kleuren en lichte/donkere modus
 recent-colors = Recente kleuren
 reset-to-default = Naar standaardinstellingen terugzetten
 rgb = RGB
@@ -299,8 +298,6 @@ window-management-appearance = Vensterbeheer
 
 ### Experimental
 
-experimental-settings = Experimentele instellingen
-icons-and-toolkit = Thema's voor pictogrammen en de toolkit
 interface-font = Systeemlettertype
 monospace-font = Lettertype met gelijke letterbreedte
 

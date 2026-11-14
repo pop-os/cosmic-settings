@@ -208,7 +208,6 @@ export = Изнасяне
 hex = Hex
 import = Внасяне
 light = Светла тема
-mode-and-colors = Режим и цветове
 recent-colors = Скоро ползвани цветове
 reset-to-default = Връщане на стандартните настройки
 rgb = RGB
@@ -247,8 +246,6 @@ window-management-appearance = Управление на прозорци
 
 ### Experimental
 
-experimental-settings = Експериментални настройки
-icons-and-toolkit = Стилизиране на иконките и графичната среда
 interface-font = Системен шрифт
 monospace-font = Равноширок шрифт
 

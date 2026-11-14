@@ -205,7 +205,6 @@ export = Dışa aktar
 hex = Hex
 import = İçe aktar
 light = Aydınlık
-mode-and-colors = Mod ve renkler
 recent-colors = Son kullanılan renkler
 reset-to-default = Varsayılana dön
 rgb = RGB
@@ -244,8 +243,6 @@ window-management-appearance = Pencere Yönetimi
 
 ### Experimental
 
-experimental-settings = Deneysel ayarlar
-icons-and-toolkit = Simge ve araç seti teması
 interface-font = Sistem yazı tipi
 monospace-font = Tek aralıklı yazı tipi
 
