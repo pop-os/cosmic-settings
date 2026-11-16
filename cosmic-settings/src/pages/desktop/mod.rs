@@ -4,6 +4,8 @@
 pub mod appearance;
 #[cfg(feature = "wayland")]
 pub mod dock;
+#[cfg(feature = "page-launcher")]
+pub mod launcher;
 #[cfg(feature = "wayland")]
 pub mod panel;
 pub mod wallpaper;
@@ -52,6 +54,11 @@ impl page::AutoBind<crate::pages::Message> for Page {
         #[cfg(feature = "page-workspaces")]
         {
             page = page.sub_page::<workspaces::Page>();
+        }
+
+        #[cfg(feature = "page-launcher")]
+        {
+            page = page.sub_page::<launcher::Page>();
         }
 
         page
