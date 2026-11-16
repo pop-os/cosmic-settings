@@ -73,6 +73,43 @@ fn wallpaper_card(wallpaper: &Wallpaper) -> Element<'static, Message> {
     }
 }
 
+fn empty_wallpaper_card() -> Element<'static, Message> {
+    let spacing = cosmic::theme::spacing();
+    let radius = cosmic::theme::active().cosmic().corner_radii.radius_s;
+
+    let content = widget::column::with_capacity(3)
+        .push(icon::from_name("image-x-generic-symbolic").size(32).icon())
+        .push(text::body(fl!("no-wallpaper-selected")))
+        .push(text::caption(fl!("choose-wallpaper")))
+        .align_x(Alignment::Center)
+        .spacing(spacing.space_xxs);
+
+    let tile = container(content)
+        .center_x(Length::Fixed(240.))
+        .center_y(Length::Fixed(160.))
+        .class(cosmic::theme::Container::custom(move |theme| {
+            container::Style {
+                background: Some(cosmic::iced::Background::Color(
+                    theme.cosmic().background(false).component.base.into(),
+                )),
+                border: cosmic::iced::Border {
+                    radius: radius.into(),
+                    width: 1.0,
+                    color: theme.cosmic().background(false).divider.into(),
+                },
+                ..Default::default()
+            }
+        }));
+
+    button::custom_image_button(tile, None)
+        .padding(0)
+        .class(button::ButtonClass::Image)
+        .on_press(Message::WallpaperPage)
+        .width(Length::Fixed(240.0))
+        .height(Length::Fixed(160.0))
+        .into()
+}
+
 #[allow(clippy::too_many_lines)]
 pub fn section() -> Section<crate::pages::Message> {
     Section::default()
@@ -98,24 +135,28 @@ pub fn section() -> Section<crate::pages::Message> {
                 .push(change)
                 .align_y(Alignment::Center);
 
+            let cards: Vec<Element<'_, Message>> = if wallpapers.is_empty() {
+                vec![empty_wallpaper_card()]
+            } else {
+                wallpapers
+                    .iter()
+                    .map(|w_path| {
+                        button::custom_image_button(wallpaper_card(w_path), None)
+                            .padding(0)
+                            .class(button::ButtonClass::Image)
+                            .on_press(Message::WallpaperPage)
+                            .width(Length::Fixed(240.0))
+                            .height(Length::Fixed(160.0))
+                            .into()
+                    })
+                    .collect()
+            };
+
             settings::section()
                 .header(title)
                 .add(
                     container(
-                        cosmic::widget::flex_row(
-                            wallpapers
-                                .iter()
-                                .map(|w_path| {
-                                    button::custom_image_button(wallpaper_card(w_path), None)
-                                        .padding(0)
-                                        .class(button::ButtonClass::Image)
-                                        .on_press(Message::WallpaperPage)
-                                        .width(Length::Fixed(240.0))
-                                        .height(Length::Fixed(160.0))
-                                        .into()
-                                })
-                                .collect(),
-                        )
+                        cosmic::widget::flex_row(cards)
                         .spacing(spacing.space_xxs),
                     )
                     .center_x(Length::Fill),
