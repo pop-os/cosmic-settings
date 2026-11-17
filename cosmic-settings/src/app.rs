@@ -1269,7 +1269,7 @@ impl SettingsApp {
 
         self.page_container(settings::view_column(sections))
             .apply(scrollable)
-            .apply(|w| id_container(w, self.search_scroll_id.clone()))
+            .id(self.search_scroll_id.clone())
             .into()
     }
 
