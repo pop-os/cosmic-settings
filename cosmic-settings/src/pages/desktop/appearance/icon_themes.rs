@@ -313,3 +313,38 @@ fn icon_handle(icon_name: &str, alternate: &str, valid_dirs: &[String]) -> icon:
         // Fallback icon handle
         .unwrap_or_else(|| icon::from_name(icon_name).size(ICON_THUMB_SIZE).handle())
 }
+
+/// Directories icon and cursor themes are looked up in, in lookup order.
+pub fn search_dirs() -> Vec<PathBuf> {
+    let home = dirs::home_dir();
+    let data_home = std::env::var_os("XDG_DATA_HOME")
+        .filter(|v| !v.is_empty())
+        .map(PathBuf::from)
+        .or_else(|| home.as_ref().map(|h| h.join(".local/share")));
+    let data_dirs = std::env::var_os("XDG_DATA_DIRS")
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| "/usr/local/share:/usr/share".into());
+    home.map(|h| h.join(".icons"))
+        .into_iter()
+        .chain(data_home.map(|d| d.join("icons")))
+        .chain(std::env::split_paths(&data_dirs).map(|d| d.join("icons")))
+        .chain(std::iter::once("/usr/share/pixmaps".into()))
+        .collect()
+}
+
+/// The `Name=` from a theme's index.theme, or the id itself when there is none.
+pub fn display_name(id: &str) -> String {
+    search_dirs()
+        .into_iter()
+        .find_map(|dir| std::fs::read_to_string(dir.join(id).join("index.theme")).ok())
+        .and_then(|index| index_theme_name(&index))
+        .unwrap_or_else(|| id.to_owned())
+}
+
+fn index_theme_name(index: &str) -> Option<String> {
+    index
+        .lines()
+        .find_map(|line| line.strip_prefix("Name="))
+        .map(|name| name.trim().to_owned())
+        .filter(|name| !name.is_empty())
+}
