@@ -17,13 +17,11 @@ pub async fn unregister(connection: zbus::Connection) -> zbus::Result<()> {
     bluez.unregister_agent(&agent_path).await
 }
 
+#[tracing::instrument(name = "bluetooth::agent::watch", skip_all)]
 pub async fn watch(
     connection: zbus::Connection,
     mut tx: futures::channel::mpsc::Sender<Event>,
 ) -> zbus::Result<()> {
-    let span = tracing::span!(tracing::Level::INFO, "bluetooth::agent::watch");
-    let _span = span.enter();
-
     let (agent, mut receiver) = cosmic_bluez_zbus::agent1::create();
 
     let agent_path = ObjectPath::from_static_str_unchecked(AGENT_PATH);
