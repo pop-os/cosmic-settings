@@ -6,6 +6,7 @@ use std::path::PathBuf;
 
 use super::Message;
 use cosmic::Element;
+use cosmic::iced::core::text::{Ellipsize, EllipsizeHeightLimit, Wrapping};
 use cosmic::iced::{Background, Length};
 use cosmic::widget::{button, icon, text};
 use tokio::io::AsyncBufReadExt;
@@ -14,7 +15,6 @@ const ICON_PREV_N: usize = 6;
 const ICON_PREV_ROW: usize = 3;
 const ICON_TRY_SIZES: [u16; 3] = [32, 48, 64];
 const ICON_THUMB_SIZE: u16 = 32;
-const ICON_NAME_TRUNC: usize = 20;
 
 pub type IconThemes = Vec<IconTheme>;
 pub type IconHandles = Vec<[icon::Handle; ICON_PREV_N]>;
@@ -107,12 +107,11 @@ pub fn button(
             }),
         )
         .push(
-            text::body(if name.len() > ICON_NAME_TRUNC {
-                format!("{name:.ICON_NAME_TRUNC$}...")
-            } else {
-                name.into()
-            })
-            .width(Length::Fixed((ICON_THUMB_SIZE * 3) as _)),
+            text::body(name.to_owned())
+                .width(Length::Fixed((ICON_THUMB_SIZE * 3) as _))
+                // Wrap long names (even without spaces) onto a second line, then ellipsize.
+                .wrapping(Wrapping::WordOrGlyph)
+                .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(2))),
         )
         .spacing(theme.space_xxs())
         .into()

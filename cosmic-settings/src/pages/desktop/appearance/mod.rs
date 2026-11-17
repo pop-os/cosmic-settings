@@ -43,6 +43,7 @@ pub enum ContextView {
     ControlComponent,
     #[cfg(feature = "cosmic-comp-config")]
     ShadowAndCorners,
+    CursorThemes,
     CustomAccent,
     IconThemes,
     InterfaceText,
