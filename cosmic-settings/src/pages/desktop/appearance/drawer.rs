@@ -36,6 +36,8 @@ pub struct Content {
 
     pub cursor_themes: Vec<(icon_themes::IconTheme, Vec<icon::Handle>)>,
     pub cursor_theme_active: Option<String>,
+    icon_theme_name: String,
+    cursor_theme_name: String,
 
     comp_config: cosmic_config::Config,
     #[cfg(feature = "cosmic-comp-config")]
@@ -127,6 +129,8 @@ impl From<&theme_manager::Manager> for Content {
             icon_handles: Vec::new(),
             cursor_themes: Vec::new(),
             cursor_theme_active: None,
+            icon_theme_name: String::new(),
+            cursor_theme_name: String::new(),
             comp_config,
             #[cfg(feature = "cosmic-comp-config")]
             appearance_conf,
@@ -143,6 +147,30 @@ impl Content {
         }
     }
 
+    /// Display name of the selected icon or cursor theme, for the summary rows.
+    pub fn current_theme_name(&self, context_view: &ContextView) -> String {
+        match *context_view {
+            ContextView::IconThemes => self.icon_theme_name.clone(),
+            ContextView::CursorThemes => self.cursor_theme_name.clone(),
+            _ => String::new(),
+        }
+    }
+
+    /// Take the icon and cursor selection from the live theme
+    pub fn sync_themes(&mut self, manager: &theme_manager::Manager) {
+        let theme = manager.theme();
+        self.icon_theme_active = self
+            .icon_themes
+            .iter()
+            .position(|t| t.id == theme.icon_theme);
+        self.cursor_theme_active = theme.cursor_theme.clone();
+        self.icon_theme_name = icon_themes::display_name(&theme.icon_theme);
+        self.cursor_theme_name = theme
+            .cursor_theme
+            .as_deref()
+            .map_or_else(|| fl!("default"), icon_themes::display_name);
+    }
+
     pub fn preserve_from(&mut self, previous: &mut Content) {
         self.font_config
             .take_families_from(&mut previous.font_config);
@@ -152,6 +180,8 @@ impl Content {
         self.icon_themes = std::mem::take(&mut previous.icon_themes);
         self.icon_handles = std::mem::take(&mut previous.icon_handles);
         self.cursor_themes = std::mem::take(&mut previous.cursor_themes);
+        self.icon_theme_name = std::mem::take(&mut previous.icon_theme_name);
+        self.cursor_theme_name = std::mem::take(&mut previous.cursor_theme_name);
     }
 
     pub fn update_font(
@@ -233,6 +263,7 @@ impl Content {
             IconMessage::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
+                    self.icon_theme_name = theme.name.clone();
 
                     let is_dark = manager.mode().is_dark;
                     manager.set_icon_theme(theme.id.clone());

@@ -17,9 +17,9 @@ use slotmap::{Key, SlotMap};
 use crate::pages::desktop::appearance::font_config::FONT_SEARCH;
 
 use super::icon_themes::IconTheme;
-use super::theme_manager;
 use super::{
-    ContextView, Message, colors_and_style, drawer, font_config, style, theme_bundles, wallpaper,
+    ContextView, Message, colors_and_style, drawer, font_config, style, theme_bundles,
+    theme_manager, wallpaper,
 };
 
 pub struct Page {
@@ -62,6 +62,7 @@ impl Page {
         self.roundness = self.theme_manager.theme().corner_radii.into();
         self.drawer.reset(&self.theme_manager);
         self.drawer.sync_fonts(&self.theme_manager);
+        self.drawer.sync_themes(&self.theme_manager);
         self.context_view = None;
     }
 
@@ -171,8 +172,8 @@ impl Page {
                             .map(|(t, _)| t.id.clone())
                     })
                     .flatten();
-                self.drawer.cursor_theme_active.clone_from(&cursor_theme);
                 self.theme_manager.set_cursor_theme(cursor_theme.clone());
+                self.drawer.sync_themes(&self.theme_manager);
 
                 let is_dark = self.mode.is_dark();
                 let configs = if is_dark {
@@ -493,13 +494,15 @@ fn font_and_icons() -> Section<crate::pages::Message> {
                 Message::DrawerOpen(ContextView::MonospaceFont),
             );
 
-            let icon_theme = crate::widget::go_next_item(
+            let icon_theme = crate::widget::go_next_with_item(
                 &descriptions[icons_theme_txt],
+                text::body(page.drawer.current_theme_name(&ContextView::IconThemes)),
                 Message::DrawerOpen(ContextView::IconThemes),
             );
 
-            let cursor_theme = crate::widget::go_next_item(
+            let cursor_theme = crate::widget::go_next_with_item(
                 &descriptions[cursor_theme_txt],
+                text::body(page.drawer.current_theme_name(&ContextView::CursorThemes)),
                 Message::DrawerOpen(ContextView::CursorThemes),
             );
 
@@ -528,21 +531,7 @@ fn export_action() -> Section<crate::pages::Message> {
 
 /// Installed cursor themes as (directory id, display name), sorted by id.
 pub fn cursor_themes() -> Vec<(String, String)> {
-    let home = dirs::home_dir();
-    let data_home = std::env::var_os("XDG_DATA_HOME")
-        .filter(|v| !v.is_empty())
-        .map(std::path::PathBuf::from)
-        .or_else(|| home.as_ref().map(|h| h.join(".local/share")));
-    let data_dirs = std::env::var_os("XDG_DATA_DIRS")
-        .filter(|v| !v.is_empty())
-        .unwrap_or_else(|| "/usr/local/share:/usr/share".into());
-
-    let search = home
-        .map(|h| h.join(".icons"))
-        .into_iter()
-        .chain(data_home.map(|d| d.join("icons")))
-        .chain(std::env::split_paths(&data_dirs).map(|d| d.join("icons")))
-        .chain(std::iter::once("/usr/share/pixmaps".into()));
+    let search = super::icon_themes::search_dirs();
 
     let mut themes = std::collections::BTreeMap::new();
     for dir in search {
