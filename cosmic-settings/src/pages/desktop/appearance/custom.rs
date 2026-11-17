@@ -8,7 +8,7 @@ use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::text_input::focus;
-use cosmic::widget::{button, container, dropdown, settings, text};
+use cosmic::widget::{button, container, icon, settings, text};
 use cosmic::{Apply, Element, Task, task};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_theme_bundle_config::Mode;
@@ -16,6 +16,7 @@ use slotmap::{Key, SlotMap};
 
 use crate::pages::desktop::appearance::font_config::FONT_SEARCH;
 
+use super::icon_themes::IconTheme;
 use super::theme_manager;
 use super::{
     ContextView, Message, colors_and_style, drawer, font_config, style, theme_bundles, wallpaper,
@@ -29,7 +30,6 @@ pub struct Page {
     pub(crate) context_view: Option<ContextView>,
     pub(crate) roundness: Roundness,
     pub(crate) save_as: Option<String>,
-    pub(crate) cursor_themes: Vec<String>,
 }
 
 impl Default for Page {
@@ -43,9 +43,6 @@ impl Default for Page {
             theme_manager,
             context_view: None,
             save_as: None,
-            cursor_themes: std::iter::once(fl!("default"))
-                .chain(cursor_themes())
-                .collect(),
         }
     }
 }
@@ -167,8 +164,14 @@ impl Page {
 
             Message::CursorTheme(idx) => {
                 let cursor_theme = (idx > 0)
-                    .then(|| self.cursor_themes.get(idx).cloned())
+                    .then(|| {
+                        self.drawer
+                            .cursor_themes
+                            .get(idx)
+                            .map(|(t, _)| t.id.clone())
+                    })
                     .flatten();
+                self.drawer.cursor_theme_active.clone_from(&cursor_theme);
                 self.theme_manager.set_cursor_theme(cursor_theme.clone());
 
                 let is_dark = self.mode.is_dark();
@@ -495,16 +498,9 @@ fn font_and_icons() -> Section<crate::pages::Message> {
                 Message::DrawerOpen(ContextView::IconThemes),
             );
 
-            let selected = page
-                .theme_manager
-                .theme()
-                .cursor_theme
-                .as_ref()
-                .and_then(|t| page.cursor_themes[1..].iter().position(|n| n == t))
-                .map_or(0, |idx| idx + 1);
-            let cursor_theme = settings::item(
+            let cursor_theme = crate::widget::go_next_item(
                 &descriptions[cursor_theme_txt],
-                dropdown(&page.cursor_themes, Some(selected), Message::CursorTheme),
+                Message::DrawerOpen(ContextView::CursorThemes),
             );
 
             settings::section()
@@ -530,7 +526,8 @@ fn export_action() -> Section<crate::pages::Message> {
     })
 }
 
-pub fn cursor_themes() -> Vec<String> {
+/// Installed cursor themes as (directory id, display name), sorted by id.
+pub fn cursor_themes() -> Vec<(String, String)> {
     let home = dirs::home_dir();
     let data_home = std::env::var_os("XDG_DATA_HOME")
         .filter(|v| !v.is_empty())
@@ -547,18 +544,117 @@ pub fn cursor_themes() -> Vec<String> {
         .chain(std::env::split_paths(&data_dirs).map(|d| d.join("icons")))
         .chain(std::iter::once("/usr/share/pixmaps".into()));
 
-    let mut themes = std::collections::BTreeSet::new();
+    let mut themes = std::collections::BTreeMap::new();
     for dir in search {
         let Ok(entries) = std::fs::read_dir(dir) else {
             continue;
         };
         for entry in entries.filter_map(Result::ok) {
-            if entry.path().join("cursors").is_dir()
-                && let Ok(name) = entry.file_name().into_string()
+            let path = entry.path();
+            if path.join("cursors").is_dir()
+                && let Ok(id) = entry.file_name().into_string()
             {
-                themes.insert(name);
+                // First match wins, that's how cursor loading works too. So keeping them insync.
+                themes.entry(id).or_insert_with_key(|id| {
+                    std::fs::read_to_string(path.join("index.theme"))
+                        .ok()
+                        .and_then(|index| {
+                            index
+                                .lines()
+                                .find_map(|l| l.strip_prefix("Name="))
+                                .map(|n| n.trim().to_owned())
+                        })
+                        .filter(|n| !n.is_empty())
+                        .unwrap_or_else(|| id.clone())
+                });
             }
         }
     }
     themes.into_iter().collect()
+}
+
+/// Cursor themes with preview icons
+/// NOTE: the first entry is the system default, with an empty id.
+pub fn load_cursor_themes() -> Vec<(IconTheme, Vec<icon::Handle>)> {
+    let default = IconTheme {
+        id: String::new(),
+        name: fl!("default"),
+    };
+    std::iter::once((default, cursor_previews("default")))
+        .chain(cursor_themes().into_iter().map(|(id, name)| {
+            let previews = cursor_previews(&id);
+            (IconTheme { id, name }, previews)
+        }))
+        .collect()
+}
+
+/// Each slot lists the legacy X11 name and its CSS alias, since themes may ship either.
+const CURSOR_PREVIEWS: [[&str; 2]; 6] = [
+    ["left_ptr", "default"],
+    ["hand2", "pointer"],
+    ["xterm", "text"],
+    ["watch", "wait"],
+    ["crosshair", "cross"],
+    ["fleur", "move"],
+];
+
+fn cursor_previews(theme: &str) -> Vec<icon::Handle> {
+    let theme = xcursor::CursorTheme::load(theme);
+    CURSOR_PREVIEWS
+        .iter()
+        .filter_map(|names| {
+            let path = names.iter().find_map(|name| theme.load_icon(name))?;
+            let images = xcursor::parser::parse_xcursor(&std::fs::read(path).ok()?)?;
+            // First frame of a large size, so the preview scales down rather than up.
+            let image = images.into_iter().min_by_key(|i| i.size.abs_diff(64))?;
+            let (side, pixels) = crop_to_square(
+                &xcursor_to_rgba(&image.pixels_rgba),
+                image.width as usize,
+                image.height as usize,
+            );
+            Some(icon::from_raster_pixels(side as u32, side as u32, pixels))
+        })
+        .collect()
+}
+
+/// XCursor pixels are premultiplied little-endian ARGB, i.e. BGRA bytes in file order.
+fn xcursor_to_rgba(bgra: &[u8]) -> Vec<u8> {
+    bgra.chunks_exact(4)
+        .flat_map(|p| {
+            let a = u16::from(p[3]);
+            let un = |c: u8| {
+                (u16::from(c) * 255)
+                    .checked_div(a)
+                    .map_or(0, |v| v.min(255) as u8)
+            };
+            [un(p[2]), un(p[1]), un(p[0]), p[3]]
+        })
+        .collect()
+}
+
+/// Trims the transparent margin (cursors pad around the hotspot)
+fn crop_to_square(rgba: &[u8], width: usize, height: usize) -> (usize, Vec<u8>) {
+    let opaque = |x: usize, y: usize| rgba[(y * width + x) * 4 + 3] > 0;
+    let (mut x0, mut y0, mut x1, mut y1) = (width, height, 0, 0);
+    for y in 0..height {
+        for x in 0..width {
+            if opaque(x, y) {
+                (x0, y0, x1, y1) = (x0.min(x), y0.min(y), x1.max(x + 1), y1.max(y + 1));
+            }
+        }
+    }
+    if x0 >= x1 {
+        return (width.max(height), rgba.to_vec());
+    }
+
+    let (w, h) = (x1 - x0, y1 - y0);
+    let side = w.max(h);
+    let (dx, dy) = ((side - w) / 2, (side - h) / 2);
+    let mut out = vec![0; side * side * 4];
+    for y in 0..h {
+        let src = ((y0 + y) * width + x0) * 4;
+        let dst = ((dy + y) * side + dx) * 4;
+        out[dst..dst + w * 4].copy_from_slice(&rgba[src..src + w * 4]);
+    }
+    (side, out)
 }

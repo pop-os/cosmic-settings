@@ -1640,6 +1640,7 @@ dependencies = [
  "upower-zbus",
  "url",
  "which",
+ "xcursor",
  "xdgen",
  "xkb-data",
  "xkeysym",
