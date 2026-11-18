@@ -354,18 +354,6 @@ pub async fn rename_device(
     Event::DeviceRenameFailed(device_path)
 }
 
-pub async fn get_devices(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
-    match crate::subscription::managed_objects(&connection).await {
-        Ok((_, objects)) => {
-            Event::SetDevices(crate::subscription::devices(&objects, Some(&adapter_path)))
-        }
-        Err(why) => {
-            tracing::error!("zbus connection failed. {why}");
-            Event::DBusError(why)
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
