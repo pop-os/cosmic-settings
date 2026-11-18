@@ -1,9 +1,9 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::properties::Properties;
 use crate::{Active, Event};
 use cosmic_bluez_zbus::device1::Device1Proxy;
-use futures::join;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
@@ -53,52 +53,31 @@ pub struct Device {
 }
 
 impl Device {
-    pub async fn from_device(proxy: &cosmic_bluez_zbus::BluetoothDevice<'_>) -> zbus::Result<Self> {
-        let (address, adapter, alias) = join!(
-            proxy.device.address(),
-            proxy.device.adapter(),
-            proxy.device.alias()
-        );
-        let address = address?;
-        if address.is_empty() {
-            return Err(zbus::Error::Failure("Device has no MAC address".to_owned()));
-        }
-        let adapter = adapter?;
-        if adapter.is_empty() {
-            return Err(zbus::Error::Failure("Device has no adapter".to_owned()));
-        }
-        let alias = match alias {
-            Ok(alias) if !alias.is_empty() && alias != address.replace(':', "-") => Some(alias),
-            _ => proxy.device.name().await.ok(),
-        };
-        let device_type: String = proxy.icon().await;
-        let paired = proxy.device.paired().await.unwrap_or(false);
-        let enabled = if proxy.device.connected().await.unwrap_or(false) {
-            Active::Enabled
-        } else {
-            Active::Disabled
-        };
-        let battery = match &proxy.battery {
-            Some(battery) => match battery.percentage().await {
-                Ok(percentage) => Some(percentage.to_string()),
-                Err(why) => {
-                    eprintln!("couldn't fetch battery percentage: {why}");
-                    None
-                }
-            },
-            None => None,
+    pub(crate) fn from_properties(
+        device: &impl Properties,
+        battery: Option<&impl Properties>,
+    ) -> Option<Self> {
+        let address = device
+            .string("Address")
+            .filter(|address| !address.is_empty())?;
+        let adapter = device
+            .object_path("Adapter")
+            .filter(|adapter| !adapter.as_str().is_empty())?;
+        let alias = match device.string("Alias") {
+            Some(alias) if !alias.is_empty() && alias != address.replace(':', "-") => Some(alias),
+            _ => device.string("Name"),
         };
 
-        let icon = device_type_to_icon(device_type.as_str());
-
-        Ok(Self {
+        Some(Self {
             alias,
             address,
             adapter,
-            enabled,
-            paired,
-            icon,
-            battery,
+            enabled: Active::from(device.boolean("Connected").unwrap_or(false)),
+            paired: device.boolean("Paired").unwrap_or(false),
+            icon: device_type_to_icon(device.string("Icon").as_deref().unwrap_or("unknown")),
+            battery: battery
+                .and_then(|battery| battery.byte("Percentage"))
+                .map(|percentage| percentage.to_string()),
         })
     }
     #[must_use]
@@ -376,23 +355,10 @@ pub async fn rename_device(
 }
 
 pub async fn get_devices(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
-    // TODO error handling
-    let result: zbus::Result<HashMap<OwnedObjectPath, Device>> = async {
-        futures::future::join_all(
-            cosmic_bluez_zbus::get_devices(&connection, Some(&adapter_path))
-                .await?
-                .into_iter()
-                .map(
-                    |(path, device)| async move { Ok((path, Device::from_device(&device).await?)) },
-                ),
-        )
-        .await
-        .into_iter()
-        .collect::<Result<HashMap<_, _>, _>>()
-    }
-    .await;
-    match result {
-        Ok(devices) => Event::SetDevices(devices),
+    match crate::subscription::managed_objects(&connection).await {
+        Ok((_, objects)) => {
+            Event::SetDevices(crate::subscription::devices(&objects, Some(&adapter_path)))
+        }
         Err(why) => {
             tracing::error!("zbus connection failed. {why}");
             Event::DBusError(why)
