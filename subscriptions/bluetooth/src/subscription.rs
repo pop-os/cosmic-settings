@@ -26,19 +26,22 @@ const QUEUE: usize = 1024;
 pub async fn watch(connection: zbus::Connection, mut tx: mpsc::Sender<Event>) {
     let (queue, mut queued) = mpsc::unbounded();
 
-    let reader = pin!(
-        read(connection, queue).instrument(tracing::info_span!("bluetooth::subscription::watch"))
-    );
-    let forward = pin!(async {
-        while let Some(event) = queued.next().await {
-            if tx.send(event).await.is_err() {
-                return;
-            }
-        }
-    });
+    let _reader = AbortOnDrop(tokio::spawn(
+        read(connection, queue).instrument(tracing::info_span!("bluetooth::subscription::watch")),
+    ));
 
-    if let Either::Left(((), forward)) = futures::future::select(reader, forward).await {
-        forward.await;
+    while let Some(event) = queued.next().await {
+        if tx.send(event).await.is_err() {
+            return;
+        }
+    }
+}
+
+struct AbortOnDrop(tokio::task::JoinHandle<()>);
+
+impl Drop for AbortOnDrop {
+    fn drop(&mut self) {
+        self.0.abort();
     }
 }
 
