@@ -1,6 +1,6 @@
 use cosmic::cosmic_theme::{CosmicPalette, ThemeBuilder};
 use cosmic::iced::core::text::Wrapping;
-use cosmic::iced::stream;
+use cosmic::iced::{Length, stream};
 use cosmic::theme::CosmicTheme;
 use cosmic::widget::{dropdown, settings, text};
 use cosmic::{Apply, Element, Task, surface};
@@ -42,6 +42,10 @@ pub struct Page {
     comp_config: CosmicCompConfig,
     comp_helper: cosmic_config::Config,
 }
+
+/// Cursor sizes the slider steps through, one notch each.
+const CURSOR_SIZES: [u32; 5] = [24, 32, 48, 64, 96];
+static CURSOR_SIZE_NOTCHES: [u32; 5] = [0, 1, 2, 3, 4];
 
 impl Default for Page {
     fn default() -> Self {
@@ -93,6 +97,7 @@ pub enum Message {
     Return,
     ScreenReaderEnabled(bool),
     SetCursorShakeToFind(bool),
+    SetCursorSize(Option<u32>),
     SetScreenFilterActive(bool),
     SetScreenFilterSelection(ColorFilter),
     SetScreenInverted(bool),
@@ -209,6 +214,7 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         color_filter_type = fl!("color-filter");
         shake_cursor = fl!("accessibility", "shake-cursor");
         shake_cursor_desc = fl!("accessibility", "shake-cursor-desc");
+        cursor_size = fl!("accessibility", "cursor-size");
     });
 
     Section::default()
@@ -305,6 +311,27 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                             Message::SetCursorShakeToFind(enabled).into()
                         }),
                 )
+                .add({
+                    let size = page
+                        .comp_config
+                        .cursor_size
+                        .or_else(|| std::env::var("XCURSOR_SIZE").ok()?.parse().ok());
+                    let notch = size.map_or(0, |size| {
+                        (0..CURSOR_SIZES.len())
+                            .min_by_key(|&i| CURSOR_SIZES[i].abs_diff(size))
+                            .unwrap_or(0)
+                    }) as u32;
+                    let slider = cosmic::widget::slider(0..=4, notch, |notch: u32| {
+                        Message::SetCursorSize(Some(CURSOR_SIZES[notch as usize])).into()
+                    })
+                    .step(1_u32)
+                    .breakpoints(&CURSOR_SIZE_NOTCHES)
+                    .width(Length::Fill)
+                    .apply(cosmic::widget::container)
+                    .max_width(250);
+
+                    settings::item::builder(&descriptions[cursor_size]).flex_control(slider)
+                })
                 .into()
         })
 }
@@ -479,6 +506,11 @@ impl Page {
                     .set_cursor_shake_to_find(&self.comp_helper, enabled)
                 {
                     tracing::error!(?err, "failed to set cursor_shake_to_find");
+                }
+            }
+            Message::SetCursorSize(size) => {
+                if let Err(err) = self.comp_config.set_cursor_size(&self.comp_helper, size) {
+                    tracing::error!(?err, "failed to set cursor_size");
                 }
             }
             Message::SetSoundMono(active) => {

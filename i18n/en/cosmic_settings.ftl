@@ -285,6 +285,7 @@ accessibility = Accessibility
     .color-filters = Color filters
     .shake-cursor = Shake pointer to find it
     .shake-cursor-desc = Quickly shake the mouse to temporarily enlarge the pointer
+    .cursor-size = Pointer size
 
 hearing = Hearing
     .mono = Play stereo audio as mono
