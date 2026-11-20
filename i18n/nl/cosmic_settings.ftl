@@ -24,11 +24,11 @@ xdg-entry-displays-comment = Weergaveopties, grafische modi en nachtlicht
 xdg-entry-dock = Dock
 xdg-entry-dock-comment = Een optionele balk voor apps en applets
 xdg-entry-input = Invoerapparaten
-xdg-entry-input-comment = Toetsenbord, muis, enz.
+xdg-entry-input-comment = Toetsenbord- en muisinstellingen
 xdg-entry-keyboard = Toetsenbord
 xdg-entry-keyboard-comment = Invoermethodes, speciale tekens, en sneltoetsen
 xdg-entry-mouse = Muis
-xdg-entry-mouse-comment = Muissnelheid en -versnelling, en 'natuurlijk' scrollen
+xdg-entry-mouse-comment = Muissnelheid en -versnelling, en natuurlijk scrollen
 xdg-entry-network = Netwerk en wifi
 xdg-entry-network-comment = Netwerkverbindingen beheren
 xdg-entry-notifications = Meldingsinstellingen
@@ -260,7 +260,6 @@ export = Exporteren
 hex = Hex
 import = Importeren
 light = Licht
-mode-and-colors = Kleuren en lichte/donkere modus
 recent-colors = Recente kleuren
 reset-to-default = Naar standaardinstellingen terugzetten
 rgb = RGB
@@ -299,8 +298,6 @@ window-management-appearance = Vensterbeheer
 
 ### Experimental
 
-experimental-settings = Experimentele instellingen
-icons-and-toolkit = Thema's voor pictogrammen en de toolkit
 interface-font = Systeemlettertype
 monospace-font = Lettertype met gelijke letterbreedte
 
@@ -477,7 +474,6 @@ sound-applications = Toepassingen
 ## Power
 
 power = Energie en batterij
-    .desc = Energie-instellingen beheren
 battery = Batterij
     .minute =
         { $value } { $value ->
@@ -537,7 +533,6 @@ fast = Snel
 short = Kort
 long = Lang
 keyboard = Toetsenbord
-    .desc = Invoermethodes, omschakelen, invoer van speciale tekens en sneltoetsen.
 keyboard-sources = Invoermethodes
     .desc = Invoermethodes kunnen worden gewisseld met de sneltoetscombinatie Super + Spatie. Dit kan aangepast worden in de instellingen voor sneltoetsen.
     .move-up = Omhoog
@@ -710,7 +705,6 @@ tap-to-click = Tikken om te klikken
     .desc = Met één vinger tikken voor de primaire klik, met twee vingers voor de secundaire klik en met drie vingers voor de middelklik.
 touchpad = Touchpad
     .acceleration = Schakelt muisversnelling voor touchpad in
-    .desc = Muissnelheid, klikopties en veeggebaren voor touchpad.
     .speed = Touchpad muissnelheid
 
 ## Input: Gestures
@@ -748,8 +742,7 @@ time-format = Datum- en tijdnotatie
     .saturday = Zaterdag
     .sunday = Zondag
     .monday = Maandag
-time-region = Taal en regio
-    .desc = Regionale datum-, tijd- en getalweergave.
+time-region = Regio en taal
 formatting = Opmaak
     .dates = Datum
     .time = Tijd
@@ -821,8 +814,7 @@ system = Systeem- en gebruikersaccounts
 
 ## System: About
 
-about = Over dit apparaat
-    .desc = Apparaatnaam, informatie over de hardware, standaardinstellingen van het besturingssysteem.
+about = Over
 about-device = Apparaatnaam
     .desc = Deze naam is zichtbaar voor andere netwerk- en bluetoothapparaten
 about-hardware = Hardware
@@ -843,7 +835,6 @@ about-related = Gerelateerde instellingen
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmwaredetails
 
 ## System: Users
 
@@ -884,3 +875,42 @@ xdg-entry-desktop-comment = Schermachtergrond, uiterlijk, paneel, dock, vensterb
 xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
 xdg-entry-default-apps-keywords = COSMIC;Standaard;Toepassing;Standaardtoepassing
 xdg-entry-applications-keywords = COSMIC;Standaard;Opstart;Autostart;Toepassingen;Standaardtoepassingen;Autostarttoepassingen;X11;Compatibiliteit;
+xdg-entry-dock-keywords = COSMIC;Dock;Paneel;Applets
+xdg-entry-wireless = Wifi
+xdg-entry-workspaces = Werkbladen
+sound-device-port-unplugged = Niet verbonden
+place-here = Applets hier plaatsen
+add-another-keybinding = Andere sneltoets toevoegen
+frequency-daily = Dagelijks
+frequency-weekly = Wekelijks
+frequency-monthly = Maandelijks
+time-am = a.m.
+time-friday = Vrijdag
+time-hour = Uur
+time-minute = Minuut
+time-monday = Maandag
+time-pm = p.m.
+time-saturday = Zaterdag
+time-sunday = Zondag
+time-thursday = Donderdag
+time-tuesday = Dinsdag
+time-wednesday = Woensdag
+edit = Bewerken
+change-wallpaper = Achtergrond wijzigen
+theme-bundles-dark = Donker thema
+theme-bundles-empty = Nog geen opgeslagen thema's
+theme-bundles-import = Thema importeren
+theme-bundles-import-file = Bestand selecteren
+theme-bundles-import-input-label = Thema-naam
+theme-bundles-import-title = Thema importeren
+theme-bundles-light = Licht thema
+theme-bundles-rename-title = Thema hernoemen
+theme-bundles-save-as = Opslaan als…
+theme-bundles-save-as-title = Thema opslaan als
+xdg-entry-drawing-tablet = Tekentablet
+rename = Hernoemen
+bluetooth-rename-device = Apparaat hernoemen
+mobility = Mobiliteit
+mode = Modus
+no-search-results = Geen netwerken gevonden die overeenkwamen met uw zoekopdracht.
+tap-and-drag = Klik en sleep

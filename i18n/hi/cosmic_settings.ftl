@@ -158,7 +158,6 @@ export = निर्यात
 hex = हेक्स
 import = आयात
 light = लाइट
-mode-and-colors = मोड और रंग
 recent-colors = हाल के रंग
 reset-to-default = डिफ़ॉल्ट पर पुनर्स्थापित करें
 rgb = RGB
@@ -197,8 +196,6 @@ window-management-appearance = विंडो प्रबंधन
 
 ### Experimental
 
-experimental-settings = प्रायोगिक सेटिंग्स
-icons-and-toolkit = आइकन और टूलकिट थीमिंग
 interface-font = सिस्टम फ़ॉन्ट
 monospace-font = मोनोस्पेस फ़ॉन्ट
 
