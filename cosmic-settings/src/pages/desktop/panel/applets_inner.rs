@@ -412,6 +412,7 @@ impl Page {
             }
             Message::AddAppletDrawer => {
                 self.context = Some(ContextDrawerVariant::AddApplet);
+                self.search = "".to_string();
                 return cosmic::task::message(app::Message::OpenContextDrawer(self.entity));
             }
         };
