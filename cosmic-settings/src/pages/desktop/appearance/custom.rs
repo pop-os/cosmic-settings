@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::app::ContextDrawer;
+use cosmic::cosmic_config::ConfigSet;
 use cosmic::cosmic_theme::Roundness;
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::text_input::focus;
-use cosmic::widget::{button, container, settings, text};
+use cosmic::widget::{button, container, icon, settings, text};
 use cosmic::{Apply, Element, Task, task};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_theme_bundle_config::Mode;
@@ -15,9 +16,10 @@ use slotmap::{Key, SlotMap};
 
 use crate::pages::desktop::appearance::font_config::FONT_SEARCH;
 
-use super::theme_manager;
+use super::icon_themes::IconTheme;
 use super::{
-    ContextView, Message, colors_and_style, drawer, font_config, style, theme_bundles, wallpaper,
+    ContextView, Message, colors_and_style, drawer, font_config, style, theme_bundles,
+    theme_manager, wallpaper,
 };
 
 pub struct Page {
@@ -60,6 +62,7 @@ impl Page {
         self.roundness = self.theme_manager.theme().corner_radii.into();
         self.drawer.reset(&self.theme_manager);
         self.drawer.sync_fonts(&self.theme_manager);
+        self.drawer.sync_themes(&self.theme_manager);
         self.context_view = None;
     }
 
@@ -158,6 +161,43 @@ impl Page {
                     .theme_manager
                     .selected_customizer_mut()
                     .set_window_hint(window_hint);
+            }
+
+            Message::CursorTheme(idx) => {
+                let cursor_theme = (idx > 0)
+                    .then(|| {
+                        self.drawer
+                            .cursor_themes
+                            .get(idx)
+                            .map(|(t, _)| t.id.clone())
+                    })
+                    .flatten();
+                self.theme_manager.set_cursor_theme(cursor_theme.clone());
+                self.drawer.sync_themes(&self.theme_manager);
+
+                let is_dark = self.mode.is_dark();
+                let configs = if is_dark {
+                    (
+                        cosmic::cosmic_theme::Theme::dark_config(),
+                        cosmic::cosmic_theme::ThemeBuilder::dark_config(),
+                    )
+                } else {
+                    (
+                        cosmic::cosmic_theme::Theme::light_config(),
+                        cosmic::cosmic_theme::ThemeBuilder::light_config(),
+                    )
+                };
+                if let (Ok(config), Ok(builder_config)) = configs {
+                    _ = config.set("cursor_theme", &cursor_theme);
+                    _ = builder_config.set("cursor_theme", &cursor_theme);
+                    if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+                        && let Err(error) = store.sync_active(Mode::from_is_dark(is_dark))
+                    {
+                        tracing::warn!(?error, "failed to sync the active theme bundle");
+                    }
+                }
+
+                theme_changed = self.is_active_mode();
             }
 
             Message::Roundness(r) => {
@@ -433,6 +473,7 @@ fn font_and_icons() -> Section<crate::pages::Message> {
         interface_font_txt = fl!("interface-font");
         monospace_font_txt = fl!("monospace-font");
         icons_theme_txt = fl!("icons-theme");
+        cursor_theme_txt = fl!("cursor-theme");
     });
 
     Section::default()
@@ -453,9 +494,16 @@ fn font_and_icons() -> Section<crate::pages::Message> {
                 Message::DrawerOpen(ContextView::MonospaceFont),
             );
 
-            let icon_theme = crate::widget::go_next_item(
+            let icon_theme = crate::widget::go_next_with_item(
                 &descriptions[icons_theme_txt],
+                text::body(page.drawer.current_theme_name(&ContextView::IconThemes)),
                 Message::DrawerOpen(ContextView::IconThemes),
+            );
+
+            let cursor_theme = crate::widget::go_next_with_item(
+                &descriptions[cursor_theme_txt],
+                text::body(page.drawer.current_theme_name(&ContextView::CursorThemes)),
+                Message::DrawerOpen(ContextView::CursorThemes),
             );
 
             settings::section()
@@ -463,6 +511,7 @@ fn font_and_icons() -> Section<crate::pages::Message> {
                 .add(system_font)
                 .add(mono_font)
                 .add(icon_theme)
+                .add(cursor_theme)
                 .apply(Element::from)
                 .map(crate::pages::Message::AppearanceTheme)
         })
@@ -478,4 +527,123 @@ fn export_action() -> Section<crate::pages::Message> {
         .align_x(Alignment::End)
         .apply(Element::from)
     })
+}
+
+/// Installed cursor themes as (directory id, display name), sorted by id.
+pub fn cursor_themes() -> Vec<(String, String)> {
+    let search = super::icon_themes::search_dirs();
+
+    let mut themes = std::collections::BTreeMap::new();
+    for dir in search {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            continue;
+        };
+        for entry in entries.filter_map(Result::ok) {
+            let path = entry.path();
+            if path.join("cursors").is_dir()
+                && let Ok(id) = entry.file_name().into_string()
+            {
+                // First match wins, that's how cursor loading works too. So keeping them insync.
+                themes.entry(id).or_insert_with_key(|id| {
+                    std::fs::read_to_string(path.join("index.theme"))
+                        .ok()
+                        .and_then(|index| {
+                            index
+                                .lines()
+                                .find_map(|l| l.strip_prefix("Name="))
+                                .map(|n| n.trim().to_owned())
+                        })
+                        .filter(|n| !n.is_empty())
+                        .unwrap_or_else(|| id.clone())
+                });
+            }
+        }
+    }
+    themes.into_iter().collect()
+}
+
+/// Cursor themes with preview icons
+/// NOTE: the first entry is the system default, with an empty id.
+pub fn load_cursor_themes() -> Vec<(IconTheme, Vec<icon::Handle>)> {
+    let default = IconTheme {
+        id: String::new(),
+        name: fl!("default"),
+    };
+    std::iter::once((default, cursor_previews("default")))
+        .chain(cursor_themes().into_iter().map(|(id, name)| {
+            let previews = cursor_previews(&id);
+            (IconTheme { id, name }, previews)
+        }))
+        .collect()
+}
+
+/// Each slot lists the legacy X11 name and its CSS alias, since themes may ship either.
+const CURSOR_PREVIEWS: [[&str; 2]; 6] = [
+    ["left_ptr", "default"],
+    ["hand2", "pointer"],
+    ["xterm", "text"],
+    ["watch", "wait"],
+    ["crosshair", "cross"],
+    ["fleur", "move"],
+];
+
+fn cursor_previews(theme: &str) -> Vec<icon::Handle> {
+    let theme = xcursor::CursorTheme::load(theme);
+    CURSOR_PREVIEWS
+        .iter()
+        .filter_map(|names| {
+            let path = names.iter().find_map(|name| theme.load_icon(name))?;
+            let images = xcursor::parser::parse_xcursor(&std::fs::read(path).ok()?)?;
+            // First frame of a large size, so the preview scales down rather than up.
+            let image = images.into_iter().min_by_key(|i| i.size.abs_diff(64))?;
+            let (side, pixels) = crop_to_square(
+                &xcursor_to_rgba(&image.pixels_rgba),
+                image.width as usize,
+                image.height as usize,
+            );
+            Some(icon::from_raster_pixels(side as u32, side as u32, pixels))
+        })
+        .collect()
+}
+
+/// XCursor pixels are premultiplied little-endian ARGB, i.e. BGRA bytes in file order.
+fn xcursor_to_rgba(bgra: &[u8]) -> Vec<u8> {
+    bgra.chunks_exact(4)
+        .flat_map(|p| {
+            let a = u16::from(p[3]);
+            let un = |c: u8| {
+                (u16::from(c) * 255)
+                    .checked_div(a)
+                    .map_or(0, |v| v.min(255) as u8)
+            };
+            [un(p[2]), un(p[1]), un(p[0]), p[3]]
+        })
+        .collect()
+}
+
+/// Trims the transparent margin (cursors pad around the hotspot)
+fn crop_to_square(rgba: &[u8], width: usize, height: usize) -> (usize, Vec<u8>) {
+    let opaque = |x: usize, y: usize| rgba[(y * width + x) * 4 + 3] > 0;
+    let (mut x0, mut y0, mut x1, mut y1) = (width, height, 0, 0);
+    for y in 0..height {
+        for x in 0..width {
+            if opaque(x, y) {
+                (x0, y0, x1, y1) = (x0.min(x), y0.min(y), x1.max(x + 1), y1.max(y + 1));
+            }
+        }
+    }
+    if x0 >= x1 {
+        return (width.max(height), rgba.to_vec());
+    }
+
+    let (w, h) = (x1 - x0, y1 - y0);
+    let side = w.max(h);
+    let (dx, dy) = ((side - w) / 2, (side - h) / 2);
+    let mut out = vec![0; side * side * 4];
+    for y in 0..h {
+        let src = ((y0 + y) * width + x0) * 4;
+        let dst = ((dy + y) * side + dx) * 4;
+        out[dst..dst + w * 4].copy_from_slice(&rgba[src..src + w * 4]);
+    }
+    (side, out)
 }
