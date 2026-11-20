@@ -6,9 +6,9 @@
     selected_text: "#63D0DFFF",
     focus: "#63D0DFFF",
     divider: "#030303FF",
-    on: "#000000FF",
+    on: "#030303FF",
     disabled: "#63D0DFFF",
-    on_disabled: "#00000080",
+    on_disabled: "#03030380",
     border: "#63D0DFFF",
     disabled_border: "#63D0DF80",
 )
