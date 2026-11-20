@@ -1,247 +1,369 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::{Adapter, AdapterUpdate, Device, DeviceUpdate, Event};
-use std::pin::Pin;
-
-use cosmic_bluez_zbus::BluetoothDevice;
+use crate::properties::Properties;
+use crate::{
+    ADAPTER_INTERFACE, Adapter, AdapterUpdate, BATTERY_INTERFACE, DEVICE_INTERFACE, Device,
+    DeviceUpdate, Event, SERVICE,
+};
 use futures::channel::mpsc;
-use futures::stream::FusedStream;
-use iced_futures::futures::{SinkExt, StreamExt};
-use zbus::{OwnedObjectPath, fdo};
+use futures::future::Either;
+use futures::{SinkExt, StreamExt};
+use std::collections::HashMap;
+use std::num::NonZeroUsize;
+use std::pin::pin;
+use std::time::Duration;
+use tracing::Instrument;
+use zbus::fdo;
+use zbus::message::Type;
+use zbus::names::UniqueName;
+use zbus::{MatchRule, Message, MessageStream, OwnedObjectPath};
 
-enum DevicePropertyWatcherTask {
-    Add(OwnedObjectPath),
-    Removed(OwnedObjectPath),
-}
+const BUS: &str = "org.freedesktop.DBus";
 
-struct DevicePropertyWatcher {
-    stream: futures::stream::SelectAll<SignalWatcher>,
-    rx: mpsc::Receiver<DevicePropertyWatcherTask>,
-}
+const QUEUE: usize = 1024;
 
-struct SignalWatcher {
-    stream: zbus::fdo::PropertiesChangedStream,
-    path: OwnedObjectPath,
-}
+pub async fn watch(connection: zbus::Connection, mut tx: mpsc::Sender<Event>) {
+    let (queue, mut queued) = mpsc::unbounded();
 
-impl futures::Stream for SignalWatcher {
-    type Item = zbus::fdo::PropertiesChanged;
+    let _reader = AbortOnDrop(tokio::spawn(
+        read(connection, queue).instrument(tracing::info_span!("bluetooth::subscription::watch")),
+    ));
 
-    fn poll_next(
-        mut self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Option<Self::Item>> {
-        futures::Stream::poll_next(Pin::new(&mut self.stream), cx)
-    }
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.stream.size_hint()
-    }
-}
-
-impl DevicePropertyWatcher {
-    fn new() -> (Self, mpsc::Sender<DevicePropertyWatcherTask>) {
-        let stream = futures::stream::select_all(vec![]);
-        let (tx, rx) = mpsc::channel(10);
-
-        (Self { stream, rx }, tx)
-    }
-    async fn insert(
-        &mut self,
-        connection: &zbus::Connection,
-        path: OwnedObjectPath,
-    ) -> zbus::Result<()> {
-        if let Some(signal) = self.stream.iter_mut().find(|s| s.path.eq(&path)) {
-            if signal.stream.is_terminated() {
-                let property_proxy =
-                    zbus::fdo::PropertiesProxy::new(connection, "org.bluez", path.clone()).await?;
-                signal.stream = property_proxy.receive_properties_changed().await?;
-            }
-            return Ok(());
+    while let Some(event) = queued.next().await {
+        if tx.send(event).await.is_err() {
+            return;
         }
-        let property_proxy =
-            zbus::fdo::PropertiesProxy::new(connection, "org.bluez", path.clone()).await?;
-        let stream = property_proxy.receive_properties_changed().await?;
-        self.stream.push(SignalWatcher { stream, path });
-        Ok(())
-    }
-    fn remove(mut self, path: &OwnedObjectPath) -> Self {
-        self.stream =
-            futures::stream::select_all(self.stream.into_iter().filter(|p| !p.path.eq(path)));
-        self
     }
 }
 
-/// Watching new/removed devices, connected state changed
-pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc::Sender<Event>) {
-    let span = tracing::span!(tracing::Level::INFO, "bluetooth::subscription::watch");
-    let _span = span.enter();
+struct AbortOnDrop(tokio::task::JoinHandle<()>);
+
+impl Drop for AbortOnDrop {
+    fn drop(&mut self) {
+        self.0.abort();
+    }
+}
+
+async fn read(connection: zbus::Connection, queue: mpsc::UnboundedSender<Event>) {
+    let mut delay = Duration::from_secs(1);
+    let mut loaded = false;
 
     loop {
-        let result = async {
-            let managed_object_proxy =
-                zbus::fdo::ObjectManagerProxy::new(&connection, "org.bluez", "/")
-                    .await?;
+        let why = match follow(&connection, &queue, &mut loaded).await {
+            Ok(()) => None,
+            Err(why) if loaded && unavailable(&why).is_some() => None,
+            Err(why) => Some(why),
+        };
 
-            let mut receive_interfaces_added = managed_object_proxy
-                .receive_interfaces_added()
-                .await?;
-            let mut receive_interfaces_removed = managed_object_proxy
-                .receive_interfaces_removed()
-                .await?;
+        let why = match why {
+            None => {
+                tracing::warn!("bluetoothd stopped");
+                _ = queue.unbounded_send(Event::SetAdapters(HashMap::new()));
+                _ = queue.unbounded_send(Event::SetDevices(HashMap::new()));
+                match wait_for_bluetoothd(&connection).await {
+                    Ok(()) => {
+                        delay = Duration::from_secs(1);
+                        continue;
+                    }
+                    Err(why) => why,
+                }
+            }
+            Some(why) => why,
+        };
 
-            let (mut property_watcher, mut property_watcher_task) = DevicePropertyWatcher::new();
+        if queue.is_closed() {
+            return;
+        }
 
-            for (path, interfaces) in managed_object_proxy.get_managed_objects().await? {
-                if interfaces.contains_key("org.bluez.Device1")
-                || interfaces.contains_key("org.bluez.Adapter1")
-                || interfaces.contains_key("org.bluez.Battery1")
+        tracing::error!("failed to watch bluetooth event: {why:?}.");
+        _ = queue.unbounded_send(Event::DBusError(why.clone()));
+
+        if let Some(event) = unavailable(&why) {
+            match event {
+                Event::DBusServiceUnknown => tracing::error!(
+                    "The org.bluez dbus service is unknown. Is the bluez service installed and activatable?"
+                ),
+                _ => tracing::error!("The org.bluez dbus service is not enabled or active"),
+            }
+            _ = queue.unbounded_send(event);
+            return;
+        }
+
+        tokio::time::sleep(delay).await;
+        delay = (delay * 2).min(Duration::from_secs(60));
+    }
+}
+
+fn unavailable(why: &zbus::Error) -> Option<Event> {
+    match fdo::Error::from(why.clone()) {
+        fdo::Error::ServiceUnknown(_) => Some(Event::DBusServiceUnknown),
+        fdo::Error::NameHasNoOwner(_) => Some(Event::NameHasNoOwner),
+        _ => None,
+    }
+}
+
+async fn wait_for_bluetoothd(connection: &zbus::Connection) -> zbus::Result<()> {
+    let bus = fdo::DBusProxy::new(connection).await?;
+    let mut owners = bus
+        .receive_name_owner_changed_with_args(&[(0, SERVICE)])
+        .await?;
+
+    if bus.name_has_owner(SERVICE.try_into()?).await? {
+        return Ok(());
+    }
+
+    while let Some(signal) = owners.next().await {
+        if signal.args().is_ok_and(|args| args.new_owner().is_some()) {
+            return Ok(());
+        }
+    }
+
+    Err(closed())
+}
+
+enum Signal {
+    Bluez(zbus::Result<Message>),
+    Bus(zbus::Result<Message>),
+}
+
+async fn follow(
+    connection: &zbus::Connection,
+    queue: &mpsc::UnboundedSender<Event>,
+    loaded: &mut bool,
+) -> zbus::Result<()> {
+    let bluez = MessageStream::for_match_rule(
+        MatchRule::builder()
+            .msg_type(Type::Signal)
+            .sender(SERVICE)
+            .build()?,
+        connection,
+        NonZeroUsize::new(QUEUE),
+    )
+    .await?;
+    let owners = MessageStream::for_match_rule(
+        MatchRule::builder()
+            .msg_type(Type::Signal)
+            .sender(BUS)
+            .interface(BUS)
+            .member("NameOwnerChanged")
+            .arg(0, SERVICE)
+            .build()?,
+        connection,
+        None,
+    )
+    .await?;
+    let mut signals = pin!(futures::stream::select(
+        bluez.map(Signal::Bluez),
+        owners.map(Signal::Bus),
+    ));
+
+    let mut owner_changes = Vec::new();
+    let (owner, objects) = {
+        let mut read = pin!(managed_objects(connection));
+        loop {
+            match futures::future::select(read.as_mut(), signals.next()).await {
+                Either::Left((objects, _)) => break objects?,
+                Either::Right((Some(Signal::Bus(message)), _)) => owner_changes.push(message?),
+                Either::Right((Some(Signal::Bluez(message)), _)) => _ = message?,
+                Either::Right((None, _)) => return Err(closed()),
+            }
+        }
+    };
+
+    if owner_changes.iter().any(|message| left(message, &owner)) {
+        return Ok(());
+    }
+
+    tracing::debug!("{} objects from bluetoothd {owner}", objects.len());
+    _ = queue.unbounded_send(Event::SetAdapters(adapters(&objects)));
+    _ = queue.unbounded_send(Event::SetDevices(devices(&objects)));
+    *loaded = true;
+
+    while let Some(signal) = signals.next().await {
+        match signal {
+            Signal::Bus(message) => {
+                if left(&message?, &owner) {
+                    return Ok(());
+                }
+            }
+
+            Signal::Bluez(message) => {
+                let message = message?;
+                let header = message.header();
+                if header
+                    .sender()
+                    .is_none_or(|sender| sender.as_str() != owner.as_str())
                 {
-                    property_watcher.insert(&connection, path).await?;
+                    continue;
                 }
-            }
 
-            while !property_watcher.rx.is_terminated() {
-                futures::select! {
-                    task = property_watcher.rx.next() => match task {
-                        Some(DevicePropertyWatcherTask::Add(path)) => {
-                            property_watcher.insert(&connection, path).await?;
+                match changes(&message) {
+                    Ok(events) => {
+                        for event in events {
+                            _ = queue.unbounded_send(event);
                         }
-                        Some(DevicePropertyWatcherTask::Removed(path)) => {
-                            property_watcher = property_watcher.remove(&path);
-                        }
-                        None => {
-                            tracing::error!("Bluetooth property watcher has shutdown unexpectedly");
-                        }
-                    },
-                    signal = property_watcher.stream.next() => match signal {
-                        Some(signal) => {
-                            let args = signal.args()?;
-                            let header = signal.message().header();
-                            let Some(path) = header.path() else { continue };
-                            match args.interface_name.as_str() {
-                                "org.bluez.Adapter1" => tx
-                                        .send(Event::UpdatedAdapter(path.to_owned().into(), AdapterUpdate::from_update(args.changed_properties)))
-                                        .await
-                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                "org.bluez.Device1" | "org.bluez.Battery1" =>
-                                    tx
-                                        .send(Event::UpdatedDevice(path.to_owned().into(), DeviceUpdate::from_update(args.changed_properties)))
-                                        .await
-                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                _ => continue,
-                            }
-                        }
-                        None => {
-                            tracing::error!("Bluetooth object watcher has shutdown unexpectedly");
-                        }
-                    },
-                    signal = receive_interfaces_added.next() => match signal {
-                        Some(signal) => {
-                            let args = signal.args()?;
-                            if args.interfaces_and_properties.contains_key("org.bluez.Adapter1") {
-                                let path: OwnedObjectPath = args.object_path.to_owned().into();
-                                let adapter: zbus::Result<Adapter> = async {
-                                    let proxy = cosmic_bluez_zbus::get_adapter(&connection, path.clone()).await?;
-                                    Adapter::from_device(&proxy).await
-                                }
-                                .await;
-                                match adapter {
-                                    Ok(adapter) => {
-                                        tx
-                                            .send(Event::AddedAdapter(path, adapter))
-                                            .await
-                                            .map_err(|e| zbus::Error::Failure(e.to_string()))?;
-                                    }
-                                    Err(why) => tracing::warn!("Cannot read the adapter: {why}"),
-                                }
-                                continue;
-                            }
-                            match BluetoothDevice::new(&connection, args.object_path.clone()).await {
-                                Ok(device) => {
-                                    match Device::from_device(&device).await {
-                                        Ok(device) => {
-                                            property_watcher_task
-                                                .send(DevicePropertyWatcherTask::Add(args.object_path.to_owned().into())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
-
-                                            tx
-                                                .send(Event::AddedDevice(args.object_path.to_owned().into(), device))
-                                                .await
-                                                .map_err(|e| zbus::Error::Failure(e.to_string()))?;
-
-                                        }
-                                        Err(why) => {
-                                            tracing::warn!("Cannot deserialise device: {why}");
-                                        }
-                                    }
-                                }
-                                Err(zbus::Error::InterfaceNotFound) => continue,
-                                Err(e) => return Err(e),
-                            }
-                        }
-                        None => {
-                            tracing::error!("Bluetooth object watcher has shutdown unexpectedly");
-                        }
-                    },
-                    signal = receive_interfaces_removed.next() => match signal {
-                        Some(signal) => {
-                            let args = signal.args()?;
-                            if args.interfaces.iter().any(|i| i == "org.bluez.Device1") {
-                                property_watcher_task.send(DevicePropertyWatcherTask::Removed(
-                                    args.object_path.to_owned().into(),
-                                )).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
-                                tx
-                                    .send(Event::RemovedDevice(args.object_path.to_owned().into()))
-                                    .await
-                                    .map_err(|e| zbus::Error::Failure(e.to_string()))?;
-
-                            } else if args.interfaces.iter().any(|i| i == "org.bluez.Battery1") {
-                                tx
-                                    .send(Event::UpdatedDevice(args.object_path.to_owned().into(), vec![DeviceUpdate::Battery(None)]))
-                                    .await
-                                    .map_err(|e| zbus::Error::Failure(e.to_string()))?;
-                            } else if args.interfaces.iter().any(|i| i == "org.bluez.Adapter1") {
-                                tx
-                                    .send(Event::RemovedAdapter(args.object_path.to_owned().into()))
-                                    .await
-                                    .map_err(|e| zbus::Error::Failure(e.to_string()))?;
-                            }
-                        },
-                        None => {
-                            tracing::error!("Bluetooth object watcher has shutdown unexpectedly");
-                        }
-                    },
-                }
-            }
-            tracing::warn!("bluetooth event loop gracefully terminated");
-            Ok(())
-        }.await;
-
-        if let Err(why) = result {
-            _ = tx.send(Event::DBusError(why.clone())).await;
-
-            tracing::error!("failed to watch bluetooth event: {why:?}.");
-
-            // Exit if the dbus service is not found.
-            if let zbus::Error::FDO(fdo_error) = why {
-                match *fdo_error {
-                    fdo::Error::ServiceUnknown(_) => {
-                        tracing::error!(
-                            "The org.bluez dbus service is unknown. Is the bluez service installed and activatable?"
-                        );
-                        _ = tx.send(Event::DBusServiceUnknown).await;
-                        return;
                     }
-
-                    fdo::Error::NameHasNoOwner(_) => {
-                        tracing::error!("The org.bluez dbus service is not enabled or active");
-                        _ = tx.send(Event::NameHasNoOwner).await;
-                        return;
-                    }
-
-                    _ => (),
+                    Err(why) => tracing::warn!("Ignoring a signal of bluetoothd: {why}"),
                 }
             }
         }
     }
+
+    Err(closed())
+}
+
+fn closed() -> zbus::Error {
+    zbus::Error::Failure("The D-Bus connection closed".to_owned())
+}
+
+fn left(message: &Message, owner: &UniqueName<'_>) -> bool {
+    if message
+        .header()
+        .sender()
+        .is_none_or(|sender| sender.as_str() != BUS)
+    {
+        return false;
+    }
+    let Some(signal) = fdo::NameOwnerChanged::from_message(message.clone()) else {
+        return false;
+    };
+    let Ok(args) = signal.args() else {
+        return false;
+    };
+    let old_owner: &Option<UniqueName<'_>> = &args.old_owner;
+    args.name.as_str() == SERVICE
+        && old_owner
+            .as_ref()
+            .is_some_and(|old_owner| old_owner.as_str() == owner.as_str())
+}
+
+fn changes(message: &Message) -> zbus::Result<Vec<Event>> {
+    if let Some(signal) = fdo::PropertiesChanged::from_message(message.clone()) {
+        let Some(path) = message.header().path().map(|path| path.to_owned().into()) else {
+            return Ok(Vec::new());
+        };
+        let args = signal.args()?;
+
+        let event = match args.interface_name.as_str() {
+            ADAPTER_INTERFACE => {
+                let updates = AdapterUpdate::from_update(args.changed_properties);
+                (!updates.is_empty()).then(|| Event::UpdatedAdapter(path, updates))
+            }
+            DEVICE_INTERFACE | BATTERY_INTERFACE => {
+                let updates = DeviceUpdate::from_update(args.changed_properties);
+                (!updates.is_empty()).then(|| Event::UpdatedDevice(path, updates))
+            }
+            _ => None,
+        };
+
+        return Ok(event.into_iter().collect());
+    }
+
+    if let Some(signal) = fdo::InterfacesAdded::from_message(message.clone()) {
+        let args = signal.args()?;
+        let path = OwnedObjectPath::from(args.object_path.clone());
+        let interfaces = &args.interfaces_and_properties;
+        let mut events = Vec::new();
+
+        if let Some(adapter) = interfaces.get(ADAPTER_INTERFACE) {
+            match Adapter::from_properties(adapter) {
+                Some(adapter) => events.push(Event::AddedAdapter(path.clone(), adapter)),
+                None => tracing::warn!("Ignoring the adapter {path}, which has no address"),
+            }
+        }
+
+        if let Some(device) = interfaces.get(DEVICE_INTERFACE) {
+            match Device::from_properties(device, interfaces.get(BATTERY_INTERFACE)) {
+                Some(device) => events.push(Event::AddedDevice(path, device)),
+                None => {
+                    tracing::warn!("Ignoring the device {path}, which has no address or adapter")
+                }
+            }
+        } else if let Some(percentage) = interfaces
+            .get(BATTERY_INTERFACE)
+            .and_then(|battery| battery.byte("Percentage"))
+        {
+            events.push(Event::UpdatedDevice(
+                path,
+                vec![DeviceUpdate::Battery(Some(percentage.to_string()))],
+            ));
+        }
+
+        return Ok(events);
+    }
+
+    if let Some(signal) = fdo::InterfacesRemoved::from_message(message.clone()) {
+        let args = signal.args()?;
+        let path = OwnedObjectPath::from(args.object_path.clone());
+        let removed = |name: &str| args.interfaces.iter().any(|interface| interface == name);
+        let mut events = Vec::new();
+
+        if removed(DEVICE_INTERFACE) {
+            events.push(Event::RemovedDevice(path.clone()));
+        } else if removed(BATTERY_INTERFACE) {
+            events.push(Event::UpdatedDevice(
+                path.clone(),
+                vec![DeviceUpdate::Battery(None)],
+            ));
+        }
+
+        if removed(ADAPTER_INTERFACE) {
+            events.push(Event::RemovedAdapter(path));
+        }
+
+        return Ok(events);
+    }
+
+    Ok(Vec::new())
+}
+
+pub(crate) async fn managed_objects(
+    connection: &zbus::Connection,
+) -> zbus::Result<(UniqueName<'static>, fdo::ManagedObjects)> {
+    let reply = connection
+        .call_method(
+            Some(SERVICE),
+            "/",
+            Some("org.freedesktop.DBus.ObjectManager"),
+            "GetManagedObjects",
+            &(),
+        )
+        .await?;
+    let owner = reply
+        .header()
+        .sender()
+        .ok_or(zbus::Error::MissingField)?
+        .to_owned();
+    let objects = reply.body().deserialize()?;
+    Ok((owner, objects))
+}
+
+pub(crate) fn adapters(objects: &fdo::ManagedObjects) -> HashMap<OwnedObjectPath, Adapter> {
+    objects
+        .iter()
+        .filter_map(|(path, interfaces)| {
+            let adapter = interfaces.get(ADAPTER_INTERFACE)?;
+            let Some(adapter) = Adapter::from_properties(adapter) else {
+                tracing::warn!("Ignoring the adapter {path}, which has no address");
+                return None;
+            };
+            Some((path.clone(), adapter))
+        })
+        .collect()
+}
+
+pub(crate) fn devices(objects: &fdo::ManagedObjects) -> HashMap<OwnedObjectPath, Device> {
+    objects
+        .iter()
+        .filter_map(|(path, interfaces)| {
+            let device = interfaces.get(DEVICE_INTERFACE)?;
+            let Some(device) = Device::from_properties(device, interfaces.get(BATTERY_INTERFACE))
+            else {
+                tracing::warn!("Ignoring the device {path}, which has no address or adapter");
+                return None;
+            };
+            Some((path.clone(), device))
+        })
+        .collect()
 }
