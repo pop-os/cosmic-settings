@@ -210,7 +210,6 @@ export = Экспарт
 hex = Hex
 import = Імпартаваць
 light = Светлая
-mode-and-colors = Рэжым і колеры
 recent-colors = Апошнія колеры
 reset-to-default = Скінуць да стандартных налад
 rgb = RGB
@@ -249,8 +248,6 @@ window-management-appearance = Кіраванне вокнамі
 
 ### Experimental
 
-experimental-settings = Эксперыментальныя налады
-icons-and-toolkit = Тэмы значкоў і набору інструментаў
 interface-font = Сістэмны шрыфт
 monospace-font = Манашырынны шрыфт
 

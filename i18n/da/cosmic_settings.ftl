@@ -204,7 +204,6 @@ export = Eksporter
 hex = Hex
 import = Importer
 light = Lyst
-mode-and-colors = Tilstand og farver
 recent-colors = Seneste farver
 reset-to-default = Nulstil til standard
 rgb = RGB
@@ -243,8 +242,6 @@ window-management-appearance = Window Management
 
 ### Experimental
 
-experimental-settings = Eksperimentelle Indstillinger
-icons-and-toolkit = Ikoner og toolkit tema
 interface-font = System skrifttype
 monospace-font = Monospace skrifttype
 

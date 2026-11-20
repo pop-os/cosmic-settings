@@ -272,7 +272,6 @@ export = Exportovať
 hex = Hex
 import = Importovať
 light = Svetlý
-mode-and-colors = Režim a farby
 recent-colors = Nedávne farby
 reset-to-default = Obnoviť predvolené
 rgb = RGB
@@ -311,8 +310,6 @@ window-management-appearance = Správa okien
 
 ### Experimentálne
 
-experimental-settings = Experimentálne nastavenia
-icons-and-toolkit = Ikony a témy toolkitov
 interface-font = Systémové písmo
 monospace-font = Monospace písmo
 
