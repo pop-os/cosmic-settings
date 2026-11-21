@@ -62,6 +62,9 @@ pub struct Card {
     pub preview: Preview,
 }
 
+/// Cards in display order, each paired with whether it is the active look.
+type CardRow<'a> = Vec<(&'a Card, bool)>;
+
 #[derive(Debug, Clone)]
 pub struct Deck {
     pub mode: Mode,
@@ -92,9 +95,9 @@ impl Deck {
             .find(|card| !card.system && !card.slug.is_empty() && card.name == self.live_name)
     }
 
-    fn row(&self) -> Vec<(&Card, bool)> {
+    fn row(&self) -> CardRow<'_> {
         let active = self.active();
-        let mut row: Vec<(&Card, bool)> = self
+        let mut row: CardRow<'_> = self
             .cards
             .iter()
             .enumerate()
@@ -112,6 +115,12 @@ impl Deck {
         }
 
         row
+    }
+
+    fn groups(&self) -> (CardRow<'_>, CardRow<'_>) {
+        self.row()
+            .into_iter()
+            .partition(|(card, _)| card.system || card.slug.is_empty())
     }
 }
 
@@ -559,15 +568,28 @@ pub fn section(mode: Mode) -> Section<crate::pages::Message> {
             let body: Element<'_, crate::pages::Message> = match deck {
                 Some(deck) => {
                     let activating = page.activating.is_some();
-                    let cards = deck
-                        .row()
-                        .into_iter()
-                        .map(|(card, active)| card_button(card, active, activating))
-                        .collect();
+                    let (installed, custom) = deck.groups();
 
-                    container(widget::flex_row(cards).spacing(spacing.space_s))
-                        .center_x(Length::Fill)
-                        .apply(Element::from)
+                    if installed.is_empty() || custom.is_empty() {
+                        let all = if custom.is_empty() { installed } else { custom };
+                        container(cards_row(all, activating))
+                            .center_x(Length::Fill)
+                            .apply(Element::from)
+                    } else {
+                        let groups = column::with_capacity(3)
+                            .push(card_group(
+                                fl!("theme-bundles-builtin"),
+                                installed,
+                                activating,
+                            ))
+                            .push(space::vertical().height(spacing.space_m))
+                            .push(card_group(fl!("theme-bundles-custom"), custom, activating))
+                            .width(Length::Shrink);
+
+                        container(groups)
+                            .center_x(Length::Fill)
+                            .apply(Element::from)
+                    }
                 }
                 None => container(text::body(fl!("theme-bundles-empty")))
                     .apply(Element::from)
@@ -606,6 +628,35 @@ pub fn section(mode: Mode) -> Section<crate::pages::Message> {
                 .push(body)
                 .apply(Element::from)
         })
+}
+
+fn card_group<'a>(
+    title: String,
+    cards: CardRow<'a>,
+    activating: bool,
+) -> Element<'a, crate::pages::Message> {
+    let spacing = cosmic::theme::spacing();
+
+    column::with_capacity(3)
+        .push(text::heading(title))
+        .push(space::vertical().height(spacing.space_xs))
+        .push(cards_row(cards, activating))
+        .apply(Element::from)
+}
+
+fn cards_row<'a>(
+    cards: CardRow<'a>,
+    activating: bool,
+) -> Element<'a, crate::pages::Message> {
+    let spacing = cosmic::theme::spacing();
+    let cards = cards
+        .into_iter()
+        .map(|(card, active)| card_button(card, active, activating))
+        .collect();
+
+    widget::flex_row(cards)
+        .spacing(spacing.space_s)
+        .apply(Element::from)
 }
 
 fn title_row<'a>(section: &'a Section<crate::pages::Message>) -> Element<'a, Message> {
