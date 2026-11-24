@@ -368,7 +368,6 @@ appearance = Appearance
 
 change-wallpaper = Change wallpaper
 no-wallpaper-selected = No wallpaper selected
-choose-wallpaper = Choose a wallpaper
 accent-color = Accent color
 app-background = Window background
 auto = Auto
