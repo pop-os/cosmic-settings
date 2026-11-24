@@ -1173,15 +1173,24 @@ pub fn archive_name(path: &Path) -> Result<String, Error> {
 }
 
 fn read_manifest(archive: &mut ZipArchive<File>) -> Result<Manifest, Error> {
-    let name = archive
-        .file_names()
-        .find(|name| !name.contains('/') && name.ends_with(METAINFO_SUFFIX))
-        .map(str::to_owned)
-        .ok_or_else(|| {
-            Error::Archive(format!(
-                "the archive holds no root *{METAINFO_SUFFIX} metadata file"
-            ))
+    let mut found_name: Option<String> = None;
+    for result in archive.file_names() {
+        let name = result.map_err(|why| {
+            Error::Archive(format!("the archive contains a malformed file: {why:?}"))
         })?;
+
+        if !name.contains('/') && name.ends_with(METAINFO_SUFFIX) {
+            found_name = Some(String::from(name));
+            break;
+        }
+    }
+
+    let name = found_name.ok_or_else(|| {
+        Error::Archive(format!(
+            "the archive holds no root *{METAINFO_SUFFIX} metadata file"
+        ))
+    })?;
+
     let mut entry = archive.by_name(&name)?;
     let mut bytes = Vec::new();
     entry
@@ -1197,13 +1206,13 @@ fn extract(archive: &mut ZipArchive<File>, into: &Path) -> Result<(), Error> {
         let mut entry = archive.by_index(index)?;
         let Some(name) = entry.enclosed_name() else {
             return Err(Error::Archive(format!(
-                "the archive holds a path that leaves it: {}",
+                "the archive holds a path that leaves it: {:?}",
                 entry.name()
             )));
         };
         if entry.is_symlink() {
             return Err(Error::Archive(format!(
-                "the archive holds a symlink, which is not accepted: {}",
+                "the archive holds a symlink, which is not accepted: {:?}",
                 entry.name()
             )));
         }

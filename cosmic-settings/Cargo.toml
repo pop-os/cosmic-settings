@@ -10,15 +10,16 @@ xdgen = "0.1"
 
 [dependencies]
 
-zbus_polkit = { version = "6.0.0", optional = true }
+zbus_polkit = { version = "7.0.0", optional = true }
 accounts-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 anyhow = "1.0"
-ashpd = { version = "0.12", default-features = false, features = [
+ashpd = { version = "0.14", default-features = false, features = [
+    "location",
     "tokio",
 ], optional = true }
 chrono = "0.4"
-jiff = "0.2"
-clap = { version = "4.6.4", features = ["derive"] }
+jiff = "1.0"
+clap = { version = "4.6.9", features = ["derive"] }
 color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
@@ -43,18 +44,18 @@ cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 cosmic-theme-bundle-config = { path = "../theme-bundle-config" }
 derive_setters = "0.1.9"
-dirs = "6.0.0"
-eyre = "0.6.12"
-freedesktop-desktop-entry = "0.8.1"
-futures = "0.3.33"
+dirs = "7.0.0"
+eyre = "0.6.14"
+freedesktop-desktop-entry = "0.8.4"
+futures = "0.3.34"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 i18n-embed-fl = "0.10.1"
 image.workspace = true
 jxl-image-rs-integration.workspace = true
-indexmap = "2.14.0"
-itertools = "0.14.0"
-itoa = "1.0.18"
+indexmap = "2.14.2"
+itertools = "0.15.0"
+itoa = "1.0.19"
 libcosmic.workspace = true
 iced_winit.workspace = true
 locale1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
@@ -63,15 +64,16 @@ sysinfo = { version = "=0.38.0", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = [
     "tokio",
 ], optional = true }
-notify = "8.2.0"
-nmrs = { version = "3.5.3", optional = true }
-regex = "1.13.1"
+notify = "9.0.0"
+nmrs = { version = "3.5.13", optional = true }
+regex = "1.13.2"
 ron = "0.12"
-rust-embed = "8.12.0"
+rust-embed = "8.14.0"
 sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
-secret-service = { version = "5.1.0", features = [
-    "rt-tokio-crypto-rust",
+secret-service = { version = "6.0.0", features = [
+    "crypto-rust",
+    "rt-tokio",
 ], optional = true }
 serde = { version = "1.0.229", features = ["derive"] }
 slab = "0.4.12"
@@ -85,21 +87,21 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 udev = { version = "0.9.3", optional = true }
 upower-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 cosmic-bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-url = "2.5.8"
+url = "2.5.9"
 xkb-data = "0.2.2"
 xkeysym = { version = "0.2.1", optional = true }
-zbus = { version = "6.0", default-features = false, features = [
+zbus = { version = "6.5", default-features = false, features = [
     "tokio",
 ], optional = true }
 fontdb.workspace = true
-mime = "0.3.17"
-rustix = { version = "1.1.4", features = ["process"] }
-gettext-rs = { version = "0.7.7", features = [
+mime = "0.3.18"
+rustix = { version = "1.1.6", features = ["process"] }
+gettext-rs = { version = "0.8.0", features = [
     "gettext-system",
 ], optional = true }
 num-traits = "0.2"
 pwhash = "1"
-which = "8.0.5"
+which = "8.0.6"
 intmap = "3.1.3"
 
 [dependencies.cosmic-settings-audio-client]
@@ -108,7 +110,7 @@ features = ["codec"]
 optional = true
 
 [dependencies.icu]
-version = "2.2.0"
+version = "2.4.0"
 features = ["compiled_data"]
 
 [dependencies.i18n-embed]
