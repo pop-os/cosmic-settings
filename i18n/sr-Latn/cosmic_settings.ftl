@@ -209,7 +209,6 @@ export = Izvezi
 hex = Hex
 import = Uvezi
 light = Svetlo
-mode-and-colors = Režim i boje
 recent-colors = Nedavne boje
 reset-to-default = Vrati na podrazumevano
 rgb = RGB
@@ -248,8 +247,6 @@ window-management-appearance = Upravljanje prozorima
 
 ### Experimental
 
-experimental-settings = Eksperimentalna podešavanja
-icons-and-toolkit = Tema ikonica i toolkit-a
 interface-font = Font sistema
 monospace-font = Monoprostorni font
 
