@@ -1,6 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::properties::Properties;
 use crate::{Active, Event};
 use cosmic_bluez_zbus::adapter1::Adapter1Proxy;
 use std::collections::HashMap;
@@ -35,35 +36,15 @@ impl PartialEq for Adapter {
 impl Eq for Adapter {}
 
 impl Adapter {
-    pub async fn from_device(
-        proxy: &cosmic_bluez_zbus::adapter1::Adapter1Proxy<'_>,
-    ) -> zbus::Result<Self> {
-        let (address, alias, scanning, enabled) = futures::try_join!(
-            proxy.address(),
-            proxy.alias(),
-            async {
-                Ok(
-                    if proxy.discoverable().await? && proxy.discovering().await? {
-                        Active::Enabled
-                    } else {
-                        Active::Disabled
-                    },
-                )
-            },
-            async {
-                Ok(if proxy.powered().await? {
-                    Active::Enabled
-                } else {
-                    Active::Disabled
-                })
-            }
-        )?;
-
-        Ok(Self {
-            alias,
-            address,
-            scanning,
-            enabled,
+    pub(crate) fn from_properties(adapter: &impl Properties) -> Option<Self> {
+        Some(Self {
+            alias: adapter.string("Alias").unwrap_or_default(),
+            address: adapter.string("Address")?,
+            scanning: Active::from(
+                adapter.boolean("Discoverable").unwrap_or(false)
+                    && adapter.boolean("Discovering").unwrap_or(false),
+            ),
+            enabled: Active::from(adapter.boolean("Powered").unwrap_or(false)),
         })
     }
 
@@ -327,22 +308,8 @@ async fn rfkill(adapter_path: &OwnedObjectPath, active: bool) -> bool {
 }
 
 pub async fn get_adapters(connection: zbus::Connection) -> Event {
-    let result: zbus::Result<HashMap<OwnedObjectPath, Adapter>> = async {
-        futures::future::join_all(
-            cosmic_bluez_zbus::get_adapters(&connection)
-                .await?
-                .into_iter()
-                .map(|(path, proxy)| async move {
-                    Ok((path.to_owned(), Adapter::from_device(&proxy).await?))
-                }),
-        )
-        .await
-        .into_iter()
-        .collect::<zbus::Result<HashMap<_, _>>>()
-    }
-    .await;
-    match result {
-        Ok(adapters) => Event::SetAdapters(adapters),
+    match crate::subscription::managed_objects(&connection).await {
+        Ok((_, objects)) => Event::SetAdapters(crate::subscription::adapters(&objects)),
         Err(why) => {
             tracing::error!("dbus connection failed. {why}");
             Event::DBusError(why)
