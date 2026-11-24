@@ -253,7 +253,6 @@ export = تصدير
 hex = Hex
 import = استورد
 light = فاتح
-mode-and-colors = الوضع والألوان
 recent-colors = الألوان الحديثة
 reset-to-default = استعد المبدئيات
 rgb = RGB
@@ -305,8 +304,6 @@ window-management-appearance = إدارة النوافذ
 
 ### Experimental
 
-experimental-settings = الإعدادات التجريبية
-icons-and-toolkit = نسق الأيقونات وعُدّة الأدوات المستخدمة
 interface-font = خط النظام
 monospace-font = خط أحادي المسافة
 

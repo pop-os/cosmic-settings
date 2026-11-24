@@ -159,7 +159,6 @@ export = Exportar
 hex = Hex
 import = Importar
 light = Claro
-mode-and-colors = Modo y colores
 recent-colors = Colores recientes
 reset-to-default = Restablecer a predeterminado
 rgb = RGB
@@ -198,8 +197,6 @@ window-management-appearance = Gestión de ventanas
 
 ### Experimental
 
-experimental-settings = Configuraciones experimentales
-icons-and-toolkit = Iconos y tematización del toolkit
 interface-font = Fuente del sistema
 monospace-font = Fuente monoespaciada
 
