@@ -44,7 +44,7 @@ async fn inner(mut tx: Sender<bool>) -> anyhow::Result<()> {
         };
 
         let coord = Coordinates::new(loc.latitude(), loc.longitude()).unwrap();
-        let now = jiff::Zoned::now();
+        let now = jiff::ZonedDateTime::now();
         let now_in_seconds = now.timestamp().as_second();
         // roughly matches the dates of the spring and autumn equinoxes
         let northern_tilt = (79..=266).contains(&now.day_of_year());

@@ -222,7 +222,7 @@ pub fn main() -> color_eyre::Result<()> {
     init_localizer();
 
     #[cfg(feature = "gettext")]
-    {
+    unsafe {
         let _ = gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
     }
 

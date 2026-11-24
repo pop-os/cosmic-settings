@@ -14,7 +14,7 @@ rust-version = "1.95"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
-tokio = { version = "1.53.1", features = ["macros"] }
+tokio = { version = "1.54.1", features = ["macros"] }
 iced_winit = { git = "https://github.com/pop-os/libcosmic", default-features = false }
 image = { version = "0.25.10", default-features = false, features = [
     "jpeg",
@@ -40,14 +40,14 @@ features = [
 git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.ron]
-version = "0.8"
+version = "0.12"
 
 [workspace.dependencies.serde]
 version = "1"
 features = ["derive"]
 
 [workspace.dependencies.zip]
-version = "2"
+version = "9"
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
