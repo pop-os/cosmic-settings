@@ -14,6 +14,7 @@ use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_sound::model;
 use futures::executor::block_on;
 use slotmap::SlotMap;
+use std::process::Stdio;
 use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, atomic};
 use std::time::Duration;
@@ -38,6 +39,10 @@ pub enum Message {
     SetSinkVolume(u32),
     /// Request to change the input volume.
     SetSourceVolume(u32),
+    /// Play the output test sound through the active sink.
+    TestOutput,
+    /// The output test has finished; re-enable the Test button.
+    TestOutputDone,
     /// Surface Action
     Surface(surface::Action<crate::app::Message>),
     /// Toggle the mute status of the output.
@@ -74,6 +79,8 @@ pub struct Page {
     applied_source_volume: Arc<AtomicU32>,
     amplification_sink: bool,
     amplification_source: bool,
+    /// Whether the output test sound is currently playing.
+    test_running: bool,
 }
 
 impl Default for Page {
@@ -96,6 +103,7 @@ impl Default for Page {
             applied_source_volume: Arc::new(AtomicU32::new(0)),
             amplification_sink: false,
             amplification_source: false,
+            test_running: false,
         }
     }
 }
@@ -300,6 +308,22 @@ impl Page {
                 }
             }
 
+            Message::TestOutput => {
+                if self.test_running || self.model.sinks.active().is_none() {
+                    return Task::none();
+                }
+
+                self.test_running = true;
+                return Task::future(async move {
+                    _ = tokio::time::timeout(TEST_OUTPUT_DURATION, play_output_test_sound()).await;
+                    Message::TestOutputDone.into()
+                });
+            }
+
+            Message::TestOutputDone => {
+                self.test_running = false;
+            }
+
             Message::ToggleOverAmplificationSink(enabled) => {
                 self.amplification_sink = enabled;
 
@@ -411,6 +435,7 @@ fn output() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         volume = fl!("sound-output", "volume");
         device = fl!("sound-output", "device");
+        test = fl!("sound-output", "test");
         _level = fl!("sound-output", "level");
         balance = fl!("sound-output", "balance");
         left = fl!("sound-output", "left");
@@ -466,6 +491,26 @@ fn output() -> Section<crate::pages::Message> {
             .apply(Element::from)
             .map(crate::pages::Message::from);
 
+            let test_output = widget::button::standard(if page.test_running {
+                fl!("sound-output", "testing")
+            } else {
+                section.descriptions[test].clone()
+            })
+            .on_press_maybe(if page.test_running {
+                None
+            } else {
+                page.model
+                    .sinks
+                    .active()
+                    .map(|_| Message::TestOutput.into())
+            });
+
+            // The test button sits below the output device dropdown so long
+            // device names do not push it out of the item on narrow windows.
+            let output_device_controls = widget::column::with_capacity(2)
+                .push(devices)
+                .push(test_output);
+
             let mut controls = settings::section()
                 .title(&section.title)
                 .add(
@@ -473,7 +518,10 @@ fn output() -> Section<crate::pages::Message> {
                         .flex_control(volume_control)
                         .align_items(Alignment::Center),
                 )
-                .add(settings::item(&*section.descriptions[device], devices))
+                .add(settings::item(
+                    &*section.descriptions[device],
+                    output_device_controls,
+                ))
                 .add(settings::item(
                     &*section.descriptions[balance],
                     widget::row::with_capacity(5)
@@ -574,3 +622,60 @@ fn applications() -> Section<crate::pages::Message> {
 //                 .into()
 //         })
 // }
+
+/// How long the output test button stays disabled after a test is clicked,
+/// covering the playback fallback chain.
+const TEST_OUTPUT_DURATION: Duration = Duration::from_secs(10);
+
+async fn play_output_test_sound() -> bool {
+    if run_command("canberra-gtk-play", &["-i", "audio-test-signal"]).await {
+        return true;
+    }
+
+    let test_sound_paths = [
+        "/usr/share/sounds/freedesktop/stereo/audio-test-signal.oga",
+        "/usr/share/sounds/freedesktop/stereo/audio-test-signal.ogg",
+        "/usr/share/sounds/freedesktop/stereo/audio-test-signal.wav",
+        "/usr/share/sounds/freedesktop/stereo/bell.oga",
+        "/usr/share/sounds/freedesktop/stereo/bell.ogg",
+        "/usr/share/sounds/freedesktop/stereo/bell.wav",
+        "/usr/share/sounds/freedesktop/stereo/audio-test.ogg",
+    ];
+
+    for sound_path in test_sound_paths {
+        if run_command("paplay", &[sound_path]).await {
+            return true;
+        }
+    }
+
+    for sound_path in test_sound_paths {
+        if run_command("pw-play", &[sound_path]).await {
+            return true;
+        }
+    }
+
+    false
+}
+
+async fn run_command(command: &str, args: &[&str]) -> bool {
+    match tokio::time::timeout(
+        Duration::from_secs(5),
+        tokio::process::Command::new(command)
+            .args(args)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status(),
+    )
+    .await
+    {
+        Ok(Ok(status)) => status.success(),
+        Ok(Err(why)) => {
+            tracing::debug!(target: "sound", ?why, command, "failed to run test sound command");
+            false
+        }
+        Err(why) => {
+            tracing::warn!(target: "sound", ?why, command, "test sound command timed out");
+            false
+        }
+    }
+}
