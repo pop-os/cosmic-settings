@@ -77,7 +77,12 @@ fn empty_wallpaper_card() -> Element<'static, Message> {
     let spacing = cosmic::theme::spacing();
 
     let content = widget::column::with_capacity(2)
-        .push(icon::from_name("image-x-generic-symbolic").size(40).icon())
+        .push(
+            icon::from_name("image-x-generic-symbolic")
+                .size(40)
+                .icon()
+                .opacity(0.75),
+        )
         .push(text::body(fl!("no-wallpaper-selected")))
         .align_x(Alignment::Center)
         .spacing(spacing.space_xxs);
