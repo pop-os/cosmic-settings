@@ -18,6 +18,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::future::Future;
 use std::io::{BufRead, BufReader};
+use std::ops::ControlFlow;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use url::Url;
@@ -74,6 +75,7 @@ pub struct Page {
     fullname_label: String,
     password_hidden: bool,
     password_confirm_hidden: bool,
+    has_multiple_admin_accounts: bool,
 }
 
 impl Default for Page {
@@ -92,6 +94,7 @@ impl Default for Page {
             fullname_label: crate::fl!("full-name"),
             password_hidden: true,
             password_confirm_hidden: true,
+            has_multiple_admin_accounts: false,
         }
     }
 }
@@ -472,6 +475,7 @@ impl Page {
                 for user in &mut self.users {
                     if user.id == uid {
                         user.is_admin = is_admin;
+                        self.update_admin_toggle();
                         return cosmic::Task::none();
                     }
                 }
@@ -656,6 +660,7 @@ impl Page {
             Message::LoadPage(uid, users) => {
                 self.current_user_id = uid;
                 self.users = users;
+                self.update_admin_toggle();
             }
 
             Message::SelectUser(user_idx) => {
@@ -768,6 +773,25 @@ impl Page {
 
         cosmic::Task::none()
     }
+
+    /// The admin account toggle will only be displayed when there are 2+ admin accounts.
+    fn update_admin_toggle(&mut self) {
+        self.has_multiple_admin_accounts = self
+            .users
+            .iter()
+            .try_fold(false, |found_admin, user| {
+                if user.is_admin {
+                    if found_admin {
+                        ControlFlow::Break(())
+                    } else {
+                        ControlFlow::Continue(true)
+                    }
+                } else {
+                    ControlFlow::Continue(found_admin)
+                }
+            })
+            .is_break();
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -869,8 +893,10 @@ fn user_list() -> Section<crate::pages::Message> {
                         user_list = user_list
                             .add(settings::item(&page.fullname_label, fullname))
                             .add(settings::item(&page.username_label, username))
-                            .add(settings::item(&page.password_label, password))
-                            .add(settings::item_row(vec![
+                            .add(settings::item(&page.password_label, password));
+
+                        if page.has_multiple_admin_accounts || !user.is_admin {
+                            user_list = user_list.add(settings::item_row(vec![
                                 column::with_capacity(2)
                                     .push(text::body(crate::fl!("administrator")))
                                     .push(text::caption(crate::fl!("administrator", "desc")))
@@ -883,6 +909,7 @@ fn user_list() -> Section<crate::pages::Message> {
                                     })
                                     .into(),
                             ]));
+                        }
 
                         if page.users.len() > 1 {
                             user_list = user_list.add(settings::item_row(vec![
