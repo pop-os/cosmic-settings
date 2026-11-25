@@ -1,7 +1,7 @@
 use cosmic::app::ContextDrawer;
 use cosmic::cosmic_config::CosmicConfigEntry;
 use cosmic::iced::{Alignment, Length};
-use cosmic::widget::{button, container, row};
+use cosmic::widget::{button, container, row, text_input};
 use cosmic::{Apply, Element, Task};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, Section, section};
@@ -94,16 +94,26 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
-        Some(cosmic::app::context_drawer(
-            match self.inner.context {
-                Some(ContextDrawerVariant::AddApplet) => self
-                    .inner
-                    .add_applet_view(|msg| crate::pages::Message::DockApplet(Message(msg))),
+        Some(match self.inner.context {
+            Some(ContextDrawerVariant::AddApplet) => {
+                let search_input =
+                    text_input::search_input(fl!("search-applets"), &self.inner.search)
+                        .on_input(|s| Message(applets_inner::Message::Search(s)))
+                        .on_paste(|s| Message(applets_inner::Message::Search(s)))
+                        .width(Length::Fixed(312.0))
+                        .apply(Element::from)
+                        .map(crate::pages::Message::DockApplet);
 
-                None => return None,
-            },
-            crate::pages::Message::CloseContextDrawer,
-        ))
+                let return_value = self
+                    .inner
+                    .add_applet_view(|msg| crate::pages::Message::DockApplet(Message(msg)));
+
+                cosmic::app::context_drawer(return_value, crate::pages::Message::CloseContextDrawer)
+                    .title(fl!("add-applet"))
+                    .header(search_input)
+            }
+            None => return None,
+        })
     }
 
     fn set_id(&mut self, entity: cosmic_settings_page::Entity) {
