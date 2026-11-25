@@ -494,47 +494,44 @@ fn sort_entries_by_name(entries: &mut [DesktopEntry], locales: &[String]) {
     });
 }
 
-fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
+fn is_eligible_app(entry: &DesktopEntry) -> bool {
+    entry.exec().is_some()
+        && super::desktop_entry_is_visible(entry)
+        && entry.desktop_entry("X-CosmicApplet").is_none()
+        && entry
+            .only_show_in()
+            .is_none_or(|only_show_in| only_show_in.contains(&"COSMIC"))
+        && entry
+            .not_show_in()
+            .is_none_or(|not_show_in| !not_show_in.contains(&"COSMIC"))
+}
+
+fn collect_eligible_apps(entries: impl IntoIterator<Item = DesktopEntry>) -> Vec<DesktopEntry> {
     let mut dedupe = HashSet::new();
-
-    let entries = freedesktop_desktop_entry::Iter::new(freedesktop_desktop_entry::default_paths())
-        .entries(Some(&locales));
-
     let mut result = Vec::new();
 
     for entry in entries {
         let app_id = entry.flatpak().unwrap_or_else(|| entry.appid.as_ref());
 
-        if dedupe.contains(app_id) {
+        // Reserve the ID before eligibility checks: a hidden or otherwise ineligible
+        // higher-priority entry must still shadow lower-priority entries with that ID.
+        if !dedupe.insert(app_id.to_owned()) {
             continue;
         }
 
-        if entry.exec().is_none() {
-            continue;
+        if is_eligible_app(&entry) {
+            result.push(entry);
         }
-
-        if entry.desktop_entry("X-CosmicApplet").is_some() {
-            continue;
-        }
-
-        // skip if we can't run this in COSMIC
-        if let Some(only_show_in) = entry.only_show_in()
-            && !only_show_in.contains(&"COSMIC")
-        {
-            continue;
-        }
-
-        if let Some(not_show_in) = entry.not_show_in()
-            && not_show_in.contains(&"COSMIC")
-        {
-            continue;
-        }
-
-        result.push(entry.clone());
-        dedupe.insert(app_id.to_owned());
     }
 
-    sort_entries_by_name(&mut result, &locales);
+    result
+}
 
+fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
+    let entries = freedesktop_desktop_entry::Iter::new(freedesktop_desktop_entry::default_paths())
+        .entries(Some(&locales));
+
+    let mut result = collect_eligible_apps(entries);
+    sort_entries_by_name(&mut result, &locales);
     result
 }

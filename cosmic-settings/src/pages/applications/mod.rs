@@ -10,6 +10,26 @@ pub mod startup_apps;
 pub mod legacy_applications;
 
 use cosmic_settings_page as page;
+use freedesktop_desktop_entry::DesktopEntry;
+use std::path::Path;
+
+fn desktop_entry_is_visible(entry: &DesktopEntry) -> bool {
+    !entry.no_display() && !entry.hidden()
+}
+
+fn desktop_file_is_visible(path: &Path) -> bool {
+    match DesktopEntry::from_path(path, None::<&[String]>) {
+        Ok(entry) => desktop_entry_is_visible(&entry),
+        Err(error) => {
+            tracing::warn!(
+                ?path,
+                ?error,
+                "Unable to parse desktop entry; keeping it visible"
+            );
+            true
+        }
+    }
+}
 
 #[derive(Default)]
 pub struct Page {
