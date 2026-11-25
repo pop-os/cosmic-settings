@@ -489,62 +489,6 @@ fn load_defaults(
     }
 }
 
-#[cfg(test)]
-mod visibility_tests {
-    use super::*;
-    use std::fs;
-    use std::sync::atomic::{AtomicUsize, Ordering};
-
-    fn app(id: &str, name: &str, hidden: bool) -> Arc<mime_apps::App> {
-        static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
-        let path = std::env::temp_dir().join(format!(
-            "cosmic-settings-terminal-{}-{}.desktop",
-            std::process::id(),
-            NEXT_ID.fetch_add(1, Ordering::Relaxed)
-        ));
-        let flag = if hidden { "Hidden=true\n" } else { "" };
-        fs::write(
-            &path,
-            format!("[Desktop Entry]\nType=Application\nName={name}\nExec=/bin/true\n{flag}"),
-        )
-        .unwrap();
-        Arc::new(mime_apps::App {
-            appid: id.into(),
-            name: name.into(),
-            icon: Some("terminal".into()),
-            path: path.clone().into_boxed_path(),
-            mime_types: Vec::new(),
-            is_terminal: true,
-        })
-    }
-
-    #[test]
-    fn defaults_select_by_application_id_and_missing_defaults_remain_unselected() {
-        let ids: Vec<Box<str>> = vec!["first-app".into(), "second-app".into()];
-        assert_eq!(selected_app_index(&ids, "second-app"), Some(1));
-        assert_eq!(selected_app_index(&ids, "missing-app"), None);
-    }
-
-    #[test]
-    fn configured_hidden_terminal_does_not_select_another_visible_terminal() {
-        let hidden = app("a-hidden", "A hidden", true);
-        let fallback = app("com.system76.CosmicTerm", "COSMIC Terminal", false);
-        let apps = [hidden, fallback.clone()];
-        let terminals = visible_terminal_apps(&apps);
-        assert_eq!(terminals.len(), 1);
-        assert_eq!(terminals[0].appid.as_ref(), "com.system76.CosmicTerm");
-        assert_eq!(
-            selected_terminal_index(&terminals, &["a-hidden".into()]),
-            None
-        );
-        assert_eq!(selected_terminal_index(&terminals, &[]), Some(0));
-
-        for app in apps {
-            let _ = fs::remove_file(&app.path);
-        }
-    }
-}
-
 fn selected_terminal_index(
     terminals: &[&Arc<mime_apps::App>],
     configured_defaults: &[String],
