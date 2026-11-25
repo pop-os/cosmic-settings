@@ -262,6 +262,12 @@ fn is_final(why: &zbus::Error) -> bool {
     matches!(why, zbus::Error::MethodError(name, ..) if FINAL_ERRORS.contains(&name.as_str()))
 }
 
+async fn trust(device: &Device1Proxy<'_>) {
+    if let Err(why) = device.set_trusted(true).await {
+        tracing::error!("Failed to trust the device: {why}");
+    }
+}
+
 pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Event {
     let device = match proxy(&connection, device_path.clone()).await {
         Err(why) => {
@@ -278,13 +284,17 @@ pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObje
             }
             if !device.paired().await.unwrap_or(false) {
                 device.pair().await?;
+                trust(&device).await;
             }
             device.connect().await
         }
         .await;
 
         match result {
-            Ok(()) => return Event::Ok,
+            Ok(()) => {
+                trust(&device).await;
+                return Event::Ok;
+            }
             Err(why) => {
                 tracing::warn!("Unable to connect to device: {why}");
                 if is_final(&why) {
