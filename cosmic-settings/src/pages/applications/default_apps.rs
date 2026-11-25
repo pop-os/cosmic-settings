@@ -527,15 +527,16 @@ mod visibility_tests {
         let terminals = visible_terminal_apps(&apps);
         assert_eq!(terminals.len(), 1);
         assert_eq!(terminals[0].appid.as_ref(), "b-visible");
-        let selected = terminals
-            .iter()
-            .position(|app| app.appid.as_ref() == "b-visible");
-        assert_eq!(selected, Some(0));
+        assert_eq!(terminal_index(&terminals, "b-visible"), Some(0));
 
         for app in apps {
             let _ = fs::remove_file(&app.path);
         }
     }
+}
+
+fn terminal_index(terminals: &[&Arc<mime_apps::App>], appid: &str) -> Option<usize> {
+    terminals.iter().position(|app| app.appid.as_ref() == appid)
 }
 
 fn visible_terminal_apps(apps: &[Arc<mime_apps::App>]) -> Vec<&Arc<mime_apps::App>> {
@@ -568,11 +569,9 @@ async fn load_terminal_apps(list: &mime_apps::List, assocs: &mime_apps::Associat
         for default in list.default_app_for(&mime).into_iter().flatten() {
             let appid = default.strip_suffix(".desktop").unwrap_or(default.as_ref());
 
-            for (id, app) in terminals.iter().enumerate() {
-                if app.appid.as_ref() == appid {
-                    selected = Some(id);
-                    break 'outer;
-                }
+            if let Some(id) = terminal_index(&terminals, appid) {
+                selected = Some(id);
+                break 'outer;
             }
         }
     }

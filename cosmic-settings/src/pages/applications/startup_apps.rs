@@ -506,31 +506,33 @@ fn is_eligible_app(entry: &DesktopEntry) -> bool {
             .is_none_or(|not_show_in| !not_show_in.contains(&"COSMIC"))
 }
 
-fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
+fn collect_eligible_apps(entries: impl IntoIterator<Item = DesktopEntry>) -> Vec<DesktopEntry> {
     let mut dedupe = HashSet::new();
-
-    let entries = freedesktop_desktop_entry::Iter::new(freedesktop_desktop_entry::default_paths())
-        .entries(Some(&locales));
-
     let mut result = Vec::new();
 
     for entry in entries {
         let app_id = entry.flatpak().unwrap_or_else(|| entry.appid.as_ref());
 
-        if dedupe.contains(app_id) {
+        // Reserve the ID before eligibility checks: a hidden or otherwise ineligible
+        // higher-priority entry must still shadow lower-priority entries with that ID.
+        if !dedupe.insert(app_id.to_owned()) {
             continue;
         }
 
-        if !is_eligible_app(&entry) {
-            continue;
+        if is_eligible_app(&entry) {
+            result.push(entry);
         }
-
-        result.push(entry.clone());
-        dedupe.insert(app_id.to_owned());
     }
 
-    sort_entries_by_name(&mut result, &locales);
+    result
+}
 
+fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
+    let entries = freedesktop_desktop_entry::Iter::new(freedesktop_desktop_entry::default_paths())
+        .entries(Some(&locales));
+
+    let mut result = collect_eligible_apps(entries);
+    sort_entries_by_name(&mut result, &locales);
     result
 }
 
@@ -542,14 +544,17 @@ mod visibility_tests {
 
     fn entry(contents: &str, id: &str) -> DesktopEntry {
         static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
-        let path = std::env::temp_dir().join(format!(
-            "cosmic-settings-{id}-{}-{}.desktop",
+        let dir = std::env::temp_dir().join(format!(
+            "cosmic-settings-{id}-{}-{}",
             std::process::id(),
             NEXT_ID.fetch_add(1, Ordering::Relaxed)
         ));
+        fs::create_dir(&dir).unwrap();
+        let path = dir.join(format!("{id}.desktop"));
         fs::write(&path, contents).unwrap();
         let entry = DesktopEntry::from_path(&path, None::<&[String]>).unwrap();
         fs::remove_file(path).unwrap();
+        fs::remove_dir(dir).unwrap();
         entry
     }
 
@@ -583,14 +588,39 @@ mod visibility_tests {
     }
 
     #[test]
+    fn hidden_first_entry_shadows_visible_duplicate() {
+        let hidden = entry(&format!("{BASE}Hidden=true\n"), "same");
+        let visible = entry(BASE, "same");
+        assert!(collect_eligible_apps([hidden, visible]).is_empty());
+    }
+
+    #[test]
+    fn visible_first_entry_shadows_system_duplicate() {
+        let user = entry(
+            "[Desktop Entry]\nType=Application\nName=User version\nExec=/bin/true\n",
+            "same",
+        );
+        let system = entry(
+            "[Desktop Entry]\nType=Application\nName=System version\nExec=/bin/true\n",
+            "same",
+        );
+        let result = collect_eligible_apps([user, system]);
+        assert_eq!(result.len(), 1);
+        assert_eq!(
+            result[0].name(&[] as &[String]).as_deref(),
+            Some("User version")
+        );
+    }
+
+    #[test]
     fn different_desktop_ids_with_the_same_name_remain_distinct() {
         let first = entry(BASE, "first");
         let second = entry(BASE, "second");
-        let mut found_ids = HashSet::new();
-        for app in [first, second] {
-            let app_id = app.flatpak().unwrap_or_else(|| app.appid.as_ref());
-            found_ids.insert(app_id.to_owned());
-        }
-        assert_eq!(found_ids.len(), 2);
+        let result = collect_eligible_apps([first, second]);
+        assert_eq!(result.len(), 2);
+        assert_eq!(
+            result[0].name(&[] as &[String]).as_deref(),
+            result[1].name(&[] as &[String]).as_deref()
+        );
     }
 }
