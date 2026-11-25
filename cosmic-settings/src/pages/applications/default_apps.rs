@@ -304,7 +304,7 @@ fn app_item(meta: &AppMeta, label: String, category: Category) -> widget::FlexRo
         } else {
             dropdown::popup_dropdown(
                 &meta.apps,
-                Some(meta.selected.unwrap_or(0)),
+                meta.selected,
                 move |id| Message::SetDefault(category, id),
                 cosmic::iced::window::Id::RESERVED,
                 Message::Surface,
@@ -411,13 +411,19 @@ fn assign_default_terminal(config: &cosmic_config::Config, appid: &str) {
     }
 }
 
+fn selected_app_index(app_ids: &[Box<str>], default_app_id: &str) -> Option<usize> {
+    app_ids
+        .iter()
+        .position(|app_id| app_id.as_ref() == default_app_id)
+}
+
 fn load_defaults(
     list: &mime_apps::List,
     assocs: &mime_apps::Associations,
     for_mimes: &[&str],
 ) -> AppMeta {
     let mut unsorted = Vec::new();
-    let mut default_app = None;
+    let mut default_app_id = None;
 
     for for_mime in for_mimes {
         let Ok(mime) = Mime::from_str(for_mime) else {
@@ -428,11 +434,9 @@ fn load_defaults(
             let appid = default.strip_suffix(".desktop").unwrap_or(default.as_ref());
 
             tracing::info!(target: "default-apps", ?mime, appid, "entry for mime");
-            if default_app.is_none() {
-                default_app = assocs.by_app_id.get(appid);
-                if default_app.is_some() {
-                    break;
-                }
+            if default_app_id.is_none() && assocs.by_app_id.contains_key(appid) {
+                default_app_id = Some(appid.to_owned());
+                break;
             }
         }
 
@@ -455,31 +459,26 @@ fn load_defaults(
 
     unsorted.sort_unstable_by_key(|(_, app)| app.name.clone());
 
-    let mut selected = None;
-    let mut app_ids = Vec::new();
+    let app_ids: Vec<Box<str>> = unsorted
+        .iter()
+        .map(|(appid, _)| appid.as_ref().into())
+        .collect();
+    let selected = default_app_id
+        .as_deref()
+        .and_then(|default_id| selected_app_index(&app_ids, default_id));
     let mut apps = Vec::new();
     let mut icons = Vec::new();
 
-    let mut id = 0;
-    for (appid, app) in unsorted.iter() {
+    for (_, app) in unsorted.iter() {
         let Some(icon) = app.icon.as_deref() else {
             continue;
         };
-        if let Some(default_app) = default_app
-            && app.name.as_ref() == default_app.name.as_ref()
-        {
-            selected = Some(id);
-        }
-
-        app_ids.push(appid.as_ref().into());
         apps.push(app.name.as_ref().into());
         icons.push(if icon.starts_with('/') {
             icon::from_path(PathBuf::from(icon))
         } else {
             icon::from_name(icon).size(20).handle()
         });
-
-        id += 1;
     }
 
     AppMeta {
@@ -520,14 +519,25 @@ mod visibility_tests {
     }
 
     #[test]
-    fn hidden_terminals_are_removed_before_selection_indices_are_assigned() {
+    fn defaults_select_by_application_id_and_missing_defaults_remain_unselected() {
+        let ids: Vec<Box<str>> = vec!["first-app".into(), "second-app".into()];
+        assert_eq!(selected_app_index(&ids, "second-app"), Some(1));
+        assert_eq!(selected_app_index(&ids, "missing-app"), None);
+    }
+
+    #[test]
+    fn configured_hidden_terminal_does_not_select_another_visible_terminal() {
         let hidden = app("a-hidden", "A hidden", true);
-        let visible = app("b-visible", "B visible", false);
-        let apps = [hidden, visible.clone()];
+        let fallback = app("com.system76.CosmicTerm", "COSMIC Terminal", false);
+        let apps = [hidden, fallback.clone()];
         let terminals = visible_terminal_apps(&apps);
         assert_eq!(terminals.len(), 1);
-        assert_eq!(terminals[0].appid.as_ref(), "b-visible");
-        assert_eq!(terminal_index(&terminals, "b-visible"), Some(0));
+        assert_eq!(terminals[0].appid.as_ref(), "com.system76.CosmicTerm");
+        assert_eq!(
+            selected_terminal_index(&terminals, &["a-hidden".into()]),
+            None
+        );
+        assert_eq!(selected_terminal_index(&terminals, &[]), Some(0));
 
         for app in apps {
             let _ = fs::remove_file(&app.path);
@@ -535,8 +545,23 @@ mod visibility_tests {
     }
 }
 
-fn terminal_index(terminals: &[&Arc<mime_apps::App>], appid: &str) -> Option<usize> {
-    terminals.iter().position(|app| app.appid.as_ref() == appid)
+fn selected_terminal_index(
+    terminals: &[&Arc<mime_apps::App>],
+    configured_defaults: &[String],
+) -> Option<usize> {
+    for appid in configured_defaults {
+        if let Some(index) = terminals.iter().position(|app| app.appid.as_ref() == appid) {
+            return Some(index);
+        }
+    }
+
+    if configured_defaults.is_empty() {
+        terminals
+            .iter()
+            .position(|app| app.appid.as_ref() == "com.system76.CosmicTerm")
+    } else {
+        None
+    }
 }
 
 fn visible_terminal_apps(apps: &[Arc<mime_apps::App>]) -> Vec<&Arc<mime_apps::App>> {
@@ -551,14 +576,14 @@ fn visible_terminal_apps(apps: &[Arc<mime_apps::App>]) -> Vec<&Arc<mime_apps::Ap
 }
 
 async fn load_terminal_apps(list: &mime_apps::List, assocs: &mime_apps::Associations) -> AppMeta {
-    let mut selected = None;
     let mut app_ids = Vec::new();
     let mut apps = Vec::new();
     let mut icons = Vec::new();
 
     let terminals = visible_terminal_apps(&assocs.apps);
 
-    'outer: for for_mime in [
+    let mut configured_defaults = Vec::new();
+    for for_mime in [
         "x-scheme-handler/terminal",
         "application/x-terminal-emulator",
     ] {
@@ -569,21 +594,16 @@ async fn load_terminal_apps(list: &mime_apps::List, assocs: &mime_apps::Associat
         for default in list.default_app_for(&mime).into_iter().flatten() {
             let appid = default.strip_suffix(".desktop").unwrap_or(default.as_ref());
 
-            if let Some(id) = terminal_index(&terminals, appid) {
-                selected = Some(id);
-                break 'outer;
-            }
+            configured_defaults.push(appid.to_owned());
         }
     }
 
-    for (id, app) in terminals.into_iter().enumerate() {
+    let selected = selected_terminal_index(&terminals, &configured_defaults);
+
+    for app in terminals {
         let Some(icon) = app.icon.as_deref() else {
             continue;
         };
-
-        if selected.is_none() && app.appid.as_ref() == "com.system76.CosmicTerm" {
-            selected = Some(id);
-        }
 
         app_ids.push(app.appid.clone());
         apps.push(app.name.as_ref().into());
