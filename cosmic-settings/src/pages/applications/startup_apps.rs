@@ -494,6 +494,18 @@ fn sort_entries_by_name(entries: &mut [DesktopEntry], locales: &[String]) {
     });
 }
 
+fn is_eligible_app(entry: &DesktopEntry) -> bool {
+    entry.exec().is_some()
+        && super::desktop_entry_is_visible(entry)
+        && entry.desktop_entry("X-CosmicApplet").is_none()
+        && entry
+            .only_show_in()
+            .is_none_or(|only_show_in| only_show_in.contains(&"COSMIC"))
+        && entry
+            .not_show_in()
+            .is_none_or(|not_show_in| !not_show_in.contains(&"COSMIC"))
+}
+
 fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
     let mut dedupe = HashSet::new();
 
@@ -509,24 +521,7 @@ fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
             continue;
         }
 
-        if entry.exec().is_none() {
-            continue;
-        }
-
-        if entry.desktop_entry("X-CosmicApplet").is_some() {
-            continue;
-        }
-
-        // skip if we can't run this in COSMIC
-        if let Some(only_show_in) = entry.only_show_in()
-            && !only_show_in.contains(&"COSMIC")
-        {
-            continue;
-        }
-
-        if let Some(not_show_in) = entry.not_show_in()
-            && not_show_in.contains(&"COSMIC")
-        {
+        if !is_eligible_app(&entry) {
             continue;
         }
 
@@ -537,4 +532,65 @@ fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
     sort_entries_by_name(&mut result, &locales);
 
     result
+}
+
+#[cfg(test)]
+mod visibility_tests {
+    use super::*;
+    use std::fs;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    fn entry(contents: &str, id: &str) -> DesktopEntry {
+        static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
+        let path = std::env::temp_dir().join(format!(
+            "cosmic-settings-{id}-{}-{}.desktop",
+            std::process::id(),
+            NEXT_ID.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::write(&path, contents).unwrap();
+        let entry = DesktopEntry::from_path(&path, None::<&[String]>).unwrap();
+        fs::remove_file(path).unwrap();
+        entry
+    }
+
+    const BASE: &str = "[Desktop Entry]\nType=Application\nName=Same Name\nExec=/bin/true\n";
+
+    #[test]
+    fn visibility_and_cosmic_show_rules_are_applied() {
+        let normal = entry(BASE, "normal");
+        assert!(is_eligible_app(&normal));
+
+        assert!(!is_eligible_app(&entry(
+            &format!("{BASE}NoDisplay=true\n"),
+            "nodisplay"
+        )));
+        assert!(!is_eligible_app(&entry(
+            &format!("{BASE}Hidden=true\n"),
+            "hidden"
+        )));
+        assert!(is_eligible_app(&entry(
+            &format!("{BASE}OnlyShowIn=COSMIC;\n"),
+            "cosmic"
+        )));
+        assert!(!is_eligible_app(&entry(
+            &format!("{BASE}OnlyShowIn=GNOME;\n"),
+            "gnome"
+        )));
+        assert!(!is_eligible_app(&entry(
+            &format!("{BASE}NotShowIn=COSMIC;\n"),
+            "not-cosmic"
+        )));
+    }
+
+    #[test]
+    fn different_desktop_ids_with_the_same_name_remain_distinct() {
+        let first = entry(BASE, "first");
+        let second = entry(BASE, "second");
+        let mut found_ids = HashSet::new();
+        for app in [first, second] {
+            let app_id = app.flatpak().unwrap_or_else(|| app.appid.as_ref());
+            found_ids.insert(app_id.to_owned());
+        }
+        assert_eq!(found_ids.len(), 2);
+    }
 }

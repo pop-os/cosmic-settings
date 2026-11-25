@@ -437,6 +437,10 @@ fn load_defaults(
         }
 
         for (appid, app) in mime_apps::apps_for_mime(&mime, assocs) {
+            if !super::desktop_file_is_visible(&app.path) {
+                continue;
+            }
+
             if app.icon.is_none() {
                 continue;
             }
@@ -486,19 +490,72 @@ fn load_defaults(
     }
 }
 
+#[cfg(test)]
+mod visibility_tests {
+    use super::*;
+    use std::fs;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    fn app(id: &str, name: &str, hidden: bool) -> Arc<mime_apps::App> {
+        static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
+        let path = std::env::temp_dir().join(format!(
+            "cosmic-settings-terminal-{}-{}.desktop",
+            std::process::id(),
+            NEXT_ID.fetch_add(1, Ordering::Relaxed)
+        ));
+        let flag = if hidden { "Hidden=true\n" } else { "" };
+        fs::write(
+            &path,
+            format!("[Desktop Entry]\nType=Application\nName={name}\nExec=/bin/true\n{flag}"),
+        )
+        .unwrap();
+        Arc::new(mime_apps::App {
+            appid: id.into(),
+            name: name.into(),
+            icon: Some("terminal".into()),
+            path: path.clone().into_boxed_path(),
+            mime_types: Vec::new(),
+            is_terminal: true,
+        })
+    }
+
+    #[test]
+    fn hidden_terminals_are_removed_before_selection_indices_are_assigned() {
+        let hidden = app("a-hidden", "A hidden", true);
+        let visible = app("b-visible", "B visible", false);
+        let apps = [hidden, visible.clone()];
+        let terminals = visible_terminal_apps(&apps);
+        assert_eq!(terminals.len(), 1);
+        assert_eq!(terminals[0].appid.as_ref(), "b-visible");
+        let selected = terminals
+            .iter()
+            .position(|app| app.appid.as_ref() == "b-visible");
+        assert_eq!(selected, Some(0));
+
+        for app in apps {
+            let _ = fs::remove_file(&app.path);
+        }
+    }
+}
+
+fn visible_terminal_apps(apps: &[Arc<mime_apps::App>]) -> Vec<&Arc<mime_apps::App>> {
+    let mut terminals: Vec<_> = apps
+        .iter()
+        .filter(|app| {
+            app.is_terminal && app.icon.is_some() && super::desktop_file_is_visible(&app.path)
+        })
+        .collect();
+    terminals.sort_unstable_by_key(|app| app.name.clone());
+    terminals
+}
+
 async fn load_terminal_apps(list: &mime_apps::List, assocs: &mime_apps::Associations) -> AppMeta {
     let mut selected = None;
     let mut app_ids = Vec::new();
     let mut apps = Vec::new();
     let mut icons = Vec::new();
 
-    let mut terminals: Vec<_> = assocs
-        .apps
-        .iter()
-        .filter(|app| app.is_terminal && app.icon.is_some())
-        .collect();
-
-    terminals.sort_unstable_by_key(|app| app.name.clone());
+    let terminals = visible_terminal_apps(&assocs.apps);
 
     'outer: for for_mime in [
         "x-scheme-handler/terminal",
