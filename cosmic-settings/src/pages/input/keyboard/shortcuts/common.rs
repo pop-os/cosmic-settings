@@ -416,6 +416,10 @@ impl Model {
                 }
             }
             ShortcutMessage::DeleteShortcut(id) => {
+                if self.shortcut_context == Some(id) {
+                    self.shortcut_context = None;
+                    self.editing = None;
+                }
                 let model = self.shortcut_models.remove(id);
                 for (_, shortcut) in model.bindings {
                     self.config_remove(&shortcut.binding);
