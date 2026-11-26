@@ -182,6 +182,7 @@ accessibility = Dostępność
     .color-filters = Filtry kolorów
     .shake-cursor = Porusz energicznie kursorem by go znaleźć
     .shake-cursor-desc = Szybko ruszaj myszką by czasowo powiększyć kursor
+    .cursor-size = Rozmiar kursora
 hearing = Słuchanie
     .mono = Odtwarzaj dźwięk stereo jako mono
 default = Domyślne
