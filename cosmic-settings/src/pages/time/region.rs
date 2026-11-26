@@ -647,31 +647,31 @@ impl std::fmt::Debug for Registry {
 }
 
 pub async fn page_reload() -> eyre::Result<PageRefresh> {
-    let conn = zbus::Connection::system()
-        .await
-        .wrap_err("zbus system connection error")?;
-
     let registry = locale::Registry::new().wrap_err("failed to get locale registry")?;
 
-    let system_locales: BTreeMap<String, SystemLocale> = locale1_zbus::locale1Proxy::new(&conn)
-        .await
-        .wrap_err("locale1 proxy connect error")?
-        .locale()
-        .await
-        .wrap_err("could not get locale from locale1")?
-        .into_iter()
-        .filter_map(|expression| {
-            let mut fields = expression.split('=');
-            let var = fields.next()?;
-            let lang_code = fields.next()?;
-            let locale = registry.locale(lang_code)?;
-
-            Some((
-                var.to_owned(),
-                localized_locale(&locale, lang_code.to_owned()),
-            ))
-        })
-        .collect();
+    // Try locale1 first; fall back to config files and environment on systems
+    // without systemd (s6/OpenRC).
+    let mut system_locales: BTreeMap<String, SystemLocale> = BTreeMap::new();
+    if let Ok(conn) = zbus::Connection::system().await {
+        if let Ok(proxy) = locale1_zbus::locale1Proxy::new(&conn).await {
+            if let Ok(locales) = proxy.locale().await {
+                for expression in locales {
+                    let mut fields = expression.split('=');
+                    if let (Some(var), Some(lang_code)) = (fields.next(), fields.next()) {
+                        if let Some(loc) = registry.locale(lang_code) {
+                            system_locales.insert(
+                                var.to_owned(),
+                                localized_locale(&loc, lang_code.to_owned()),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if system_locales.is_empty() {
+        system_locales = fallback_system_locales(&registry);
+    }
 
     let config = cosmic_config::Config::new("com.system76.CosmicSettings", 1)
         .ok()
@@ -742,6 +742,73 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         system_locales,
         language_selector_available,
     })
+}
+
+fn fallback_system_locales(registry: &locale::Registry) -> BTreeMap<String, SystemLocale> {
+    let mut map = BTreeMap::new();
+    let mut insert_expr = |expr: &str| {
+        let expr = expr
+            .trim()
+            .trim_start_matches("export ")
+            .trim_matches('"')
+            .trim_matches('\'');
+        let mut fields = expr.splitn(2, '=');
+        if let (Some(var), Some(lang_code)) = (fields.next(), fields.next()) {
+            let var = var.trim();
+            let lang_code = lang_code.trim().trim_matches('"').trim_matches('\'');
+            if !var.is_empty() && !lang_code.is_empty() && !map.contains_key(var) {
+                if let Some(loc) = registry.locale(lang_code) {
+                    map.insert(var.to_owned(), localized_locale(&loc, lang_code.to_owned()));
+                }
+            }
+        }
+    };
+
+    for path in ["/etc/locale.conf", "/etc/default/locale"] {
+        if let Ok(content) = std::fs::read_to_string(path) {
+            for line in content.lines() {
+                let line = line.trim();
+                if line.is_empty() || line.starts_with('#') {
+                    continue;
+                }
+                insert_expr(line);
+            }
+        }
+    }
+
+    if let Ok(home) = std::env::var("HOME") {
+        for path in [
+            format!("{home}/.config/locale.conf"),
+            format!("{home}/.config/environment.d/90-locale.conf"),
+        ] {
+            if let Ok(content) = std::fs::read_to_string(&path) {
+                for line in content.lines() {
+                    let line = line.trim();
+                    if line.is_empty() || line.starts_with('#') {
+                        continue;
+                    }
+                    insert_expr(line);
+                }
+            }
+        }
+    }
+
+    for var in [
+        "LC_ALL", "LANG", "LC_ADDRESS", "LC_IDENTIFICATION", "LC_MEASUREMENT", "LC_MONETARY",
+        "LC_NAME", "LC_NUMERIC", "LC_PAPER", "LC_TELEPHONE", "LC_TIME",
+    ] {
+        if !map.contains_key(var) {
+            if let Ok(val) = std::env::var(var) {
+                if !val.is_empty() {
+                    if let Some(loc) = registry.locale(&val) {
+                        map.insert(var.to_owned(), localized_locale(&loc, val));
+                    }
+                }
+            }
+        }
+    }
+
+    map
 }
 
 fn language_element(
@@ -840,50 +907,90 @@ fn popover_menu_row(
         .apply(Element::from)
 }
 
-/// Sets the system locale using D-Bus instead of localectl for OpenRC compatibility.
+/// Sets the system locale via locale1 D-Bus, with a config-file fallback for
+/// systems without systemd (s6/OpenRC).
 pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
     tracing::debug!("setting locale lang={lang}, region={region}");
 
-    let conn = zbus::Connection::system()
-        .await
-        .wrap_err("failed to connect to system D-Bus")?;
-
-    let proxy = locale1_zbus::locale1Proxy::new(&conn)
-        .await
-        .wrap_err("failed to create locale1 D-Bus proxy")?;
-
     let locale_settings = build_locale_settings(&lang, &region);
-    let locale_strs: Vec<&str> = locale_settings.iter().map(|s| s.as_str()).collect();
 
-    proxy
-        .set_locale(&locale_strs, true)
+    if let Ok(conn) = zbus::Connection::system().await {
+        if let Ok(proxy) = locale1_zbus::locale1Proxy::new(&conn).await {
+            let locale_strs: Vec<&str> = locale_settings.iter().map(|s| s.as_str()).collect();
+            if proxy.set_locale(&locale_strs, true).await.is_ok() {
+                tracing::debug!("successfully set locale via D-Bus");
+                return Ok(());
+            }
+        }
+    }
+
+    // Fallback: sources /etc/locale.conf from /etc/profile.d/locale.sh,
+    // so keep the "export" prefix used there. Try sudo, then doas.
+    let content = locale_settings
+        .iter()
+        .map(|s| format!("export {s}\n"))
+        .collect::<String>();
+    let escaped = shell_escape(&content);
+    let cmd = format!(
+        "if command -v sudo >/dev/null 2>&1; then printf %s {0} | sudo tee /etc/locale.conf >/dev/null; elif command -v doas >/dev/null 2>&1; then printf %s {0} | doas tee /etc/locale.conf >/dev/null; else exit 1; fi",
+        escaped
+    );
+    let wrote_system = tokio::process::Command::new("/bin/sh")
+        .arg("-c")
+        .arg(&cmd)
+        .status()
         .await
-        .wrap_err("failed to set locale via D-Bus")?;
+        .map(|s| s.success())
+        .unwrap_or(false);
 
-    tracing::debug!("successfully set locale via D-Bus");
+    if wrote_system {
+        tracing::debug!("set_locale: wrote /etc/locale.conf");
+        return Ok(());
+    }
+
+    if let Ok(home) = std::env::var("HOME") {
+        let path = format!("{home}/.config/locale.conf");
+        if let Some(parent) = std::path::Path::new(&path).parent() {
+            let _ = tokio::fs::create_dir_all(parent).await;
+        }
+        if tokio::fs::write(&path, &content).await.is_ok() {
+            tracing::debug!("set_locale: wrote {path}");
+            return Ok(());
+        }
+    }
+
+    tracing::warn!("set_locale: could not persist locale via D-Bus or config files");
     Ok(())
+}
+
+fn shell_escape(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "'\"'\"'"))
 }
 
 /// Sets the user's preferred language list via AccountsService D-Bus.
 /// This updates the LANGUAGE environment variable for gettext-based applications.
 /// The language_list should be a colon-separated string like "de_DE:de:en_US:en".
 pub async fn set_user_language(language_list: String) -> eyre::Result<()> {
-    let conn = zbus::Connection::system()
-        .await
-        .wrap_err("zbus system connection error")?;
+    if let Ok(conn) = zbus::Connection::system().await {
+        let uid = rustix::process::getuid().as_raw() as u64;
+        if let Ok(user_proxy) = accounts_zbus::UserProxy::from_uid(&conn, uid).await {
+            if user_proxy.set_language(&language_list).await.is_ok() {
+                tracing::debug!("set user language via AccountsService: {language_list}");
+                return Ok(());
+            }
+        }
+    }
 
-    let uid = rustix::process::getuid().as_raw() as u64;
-
-    let user_proxy = accounts_zbus::UserProxy::from_uid(&conn, uid)
-        .await
-        .wrap_err("failed to create AccountsService user proxy")?;
-
-    user_proxy
-        .set_language(&language_list)
-        .await
-        .wrap_err("failed to set language via AccountsService")?;
-
-    tracing::debug!("set user language via AccountsService: {language_list}");
+    // Fallback: persist LANGUAGE for the next login on non-systemd systems.
+    if let Ok(home) = std::env::var("HOME") {
+        let env_dir = format!("{home}/.config/environment.d");
+        let _ = tokio::fs::create_dir_all(&env_dir).await;
+        let path = format!("{env_dir}/90-locale.conf");
+        match tokio::fs::write(&path, format!("LANGUAGE={language_list}\n")).await {
+            Ok(_) => tracing::debug!("set user language fallback: wrote to {path}"),
+            Err(e) => tracing::error!(?e, "set user language fallback failed"),
+        }
+    }
     Ok(())
 }
 
@@ -1027,13 +1134,35 @@ fn parse_locale_output(output: &str) -> Vec<String> {
     // Supports optional modifiers after encoding (e.g., @euro, @valencia)
     let utf8_encoding_re = Regex::new(r"(?i)\.(utf-?8)(@.*)?$").unwrap();
 
-    output
-        .lines()
-        .map(|line| line.trim())
-        .filter(|line| !pseudo_locale_re.is_match(line))
-        .filter(|line| utf8_encoding_re.is_match(line))
-        .map(|line| line.to_string())
-        .collect()
+    let mut locales = BTreeSet::new();
+
+    for line in output.lines().map(str::trim) {
+        if pseudo_locale_re.is_match(line) || !utf8_encoding_re.is_match(line) {
+            continue;
+        }
+        // Normalize to the .utf8 suffix that locales-rs resolves, so entries
+        // from `locale -a` and from the definitions below don't duplicate.
+        let base = utf8_encoding_re.replace(line, "").to_string();
+        locales.insert(format!("{base}.utf8"));
+    }
+
+    // `locale -a` alone would show just a couple of languages. Offer every
+    // installed definition as a UTF-8 locale too.
+    if let Ok(entries) = std::fs::read_dir("/usr/share/i18n/locales") {
+        for entry in entries.flatten() {
+            let Ok(name) = entry.file_name().into_string() else {
+                continue;
+            };
+            if name == "C" || name == "POSIX" || name.starts_with("translit_") {
+                continue;
+            }
+            if entry.file_type().map(|t| t.is_file()).unwrap_or(false) {
+                locales.insert(format!("{name}.utf8"));
+            }
+        }
+    }
+
+    locales.into_iter().collect()
 }
 
 /// Builds the locale settings array for D-Bus SetLocale call.
