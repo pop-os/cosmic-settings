@@ -181,8 +181,13 @@ page-input = [
     "wayland",
 ]
 page-legacy-applications = ["cosmic-comp-config", "dep:cosmic-randr"]
-page-networking = ["xdg-portal", "dep:nmrs", "dep:secret-service", "dep:zbus"]
-page-power = ["dep:upower-zbus", "dep:zbus"]
+page-networking = [
+    "xdg-portal",
+    "dep:nmrs",
+    "dep:secret-service",
+    "dep:zbus",
+]
+page-power = ["dep:cosmic-settings-config", "dep:upower-zbus", "dep:zbus"]
 page-region = [
     "gettext",
     "dep:locales-rs",

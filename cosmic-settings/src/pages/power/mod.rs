@@ -8,8 +8,9 @@ use cosmic::iced::widget::{column, row};
 use cosmic::iced::{self, Alignment, Length, stream};
 use cosmic::widget::{self, settings, space, text};
 use cosmic::{Apply, Task, surface};
-use cosmic_config::{Config, CosmicConfigEntry};
+use cosmic_config::{Config, ConfigGet, ConfigSet, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
+use cosmic_settings_config::shortcuts::action::System;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
 use itertools::Itertools;
@@ -61,12 +62,20 @@ pub struct Page {
     idle_conf: CosmicIdleConfig,
     backend: Option<backend::PowerBackendEnum>,
     current_power_profile: Option<PowerProfile>,
+    power_config: Config,
+    power_button_behavior: Option<System>,
 }
 
 impl Default for Page {
     fn default() -> Self {
         let idle_config = Config::new("com.system76.CosmicIdle", 1).unwrap();
         let idle_conf = CosmicIdleConfig::get_entry(&idle_config).unwrap_or_else(|(_, conf)| conf);
+
+        let power_config: Config = Config::new("com.system76.CosmicSettings.Power", 1).unwrap();
+
+        let power_button_behavior: Option<System> = power_config
+            .get::<Option<System>>("power_button_behavior")
+            .unwrap_or_else(|_| Some(System::PowerOff));
 
         Self {
             entity: Default::default(),
@@ -89,6 +98,8 @@ impl Default for Page {
             idle_conf,
             backend: None,
             current_power_profile: None,
+            power_config,
+            power_button_behavior,
         }
     }
 }
@@ -113,6 +124,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(connected_devices()),
             sections.insert(profiles()),
             sections.insert(power_saving()),
+            sections.insert(power_button()),
         ])
     }
 
@@ -312,6 +324,7 @@ pub enum Message {
     SuspendOnBatteryTimeChange(Option<Duration>),
     BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
     CurrentPowerProfileUpdate(PowerProfile),
+    PowerButtonBehaviorUpdate(Option<System>),
     Surface(surface::Action<crate::app::Message>),
 }
 
@@ -409,6 +422,10 @@ impl Page {
             }
             Message::CurrentPowerProfileUpdate(profile) => {
                 self.current_power_profile = Some(profile);
+            }
+            Message::PowerButtonBehaviorUpdate(behavior) => {
+                self.power_button_behavior = behavior.clone();
+                let _ = self.power_config.set("power_button_behavior", behavior);
             }
         };
         Task::none()
@@ -581,6 +598,45 @@ fn power_saving_row<'a>(
         ),
     )
     .into()
+}
+
+fn power_button() -> Section<crate::pages::Message> {
+    Section::default()
+        .title(fl!("power-button-settings-group"))
+        .view::<Page>(move |_binder, page, section| {
+            let selected = Some(match page.power_button_behavior {
+                Some(System::Suspend) => 0,
+                Some(System::PowerOff) => 1,
+                _ => 2,
+            });
+
+            let power_button_dropdown = widget::dropdown::popup_dropdown(
+                vec![
+                    fl!("power-button", "suspend"),
+                    fl!("power-button", "power-off"),
+                    fl!("power-button", "nothing"),
+                ],
+                selected,
+                move |idx| {
+                    let selected_value = match idx {
+                        0 => Some(System::Suspend),
+                        1 => Some(System::PowerOff),
+                        _ => None,
+                    };
+
+                    Message::PowerButtonBehaviorUpdate(selected_value)
+                },
+                cosmic::iced::window::Id::RESERVED,
+                Message::Surface,
+                move |a| crate::app::Message::PageMessage(crate::pages::Message::Power(a)),
+            );
+
+            settings::section()
+                .title(&section.title)
+                .add(settings::item(fl!("power-button"), power_button_dropdown))
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Power)
+        })
 }
 
 fn power_saving() -> Section<crate::pages::Message> {
