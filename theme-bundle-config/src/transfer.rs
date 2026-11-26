@@ -31,6 +31,11 @@ const META_ASSETS: &str = "x-cosmic-assets";
 
 const OPTIONAL_KEYS: [&str; 4] = ["icon_theme", "cursor_theme", "font", "mono_font"];
 
+/// Bundle fonts share one fixed directory.
+/// Adding or removing an entry straight in `fonts` changes its mtime,
+/// which makes fontconfig rescan every font there in all apps.
+const FONT_DIR: &str = "fonts/cosmic-theme-bundles";
+
 const MAX_DEPTH: usize = 64;
 const MAX_PATH: usize = 1024;
 const MAX_ASSET_ID: usize = 140;
@@ -630,9 +635,10 @@ impl Store {
                     (data.join("icons").join(&id), id)
                 }
                 AssetKind::Font => {
-                    let id = unique_installed_id(&data.join("fonts"), &base, &used);
+                    let fonts = font_dir(&receipt_dir(self), &data)?;
+                    let id = unique_installed_id(&fonts, &base, &used);
                     used.insert(id.clone());
-                    (data.join("fonts").join(&id), id)
+                    (fonts.join(&id), id)
                 }
             };
             if asset.kind == AssetKind::Wallpaper {
@@ -742,11 +748,52 @@ struct InstalledAsset {
     kind: AssetKind,
 }
 
+fn receipt_dir(store: &Store) -> PathBuf {
+    store.state_dir().join("theme-bundles")
+}
+
 fn receipt_path(store: &Store, slug: &str) -> PathBuf {
-    store
-        .state_dir()
-        .join("theme-bundles")
-        .join(format!("{slug}.ron"))
+    receipt_dir(store).join(format!("{slug}.ron"))
+}
+
+/// The bundle font directory.
+/// Creates the font directory for all bundles.
+/// If a bundle has already installed its font in the root of `fonts` it will
+/// move it to the new `FONT_DIR`.
+fn font_dir(receipts: &Path, data: &Path) -> Result<PathBuf, Error> {
+    let dir = data.join(FONT_DIR);
+    if dir.exists() {
+        return Ok(dir);
+    }
+    fs::create_dir_all(&dir).map_err(|err| Error::Io(dir.clone(), err))?;
+
+    for entry in fs::read_dir(receipts).into_iter().flatten().flatten() {
+        let Some(receipt) = fs::read_to_string(entry.path())
+            .ok()
+            .and_then(|text| ron::from_str::<Receipt>(&text).ok())
+        else {
+            continue;
+        };
+        for asset in &receipt.assets {
+            if asset.kind != AssetKind::Font || !owns_asset(&receipt.package_id, asset) {
+                continue;
+            }
+            let legacy = data.join("fonts").join(&asset.id);
+            // Left in place on failure, removal still finds it there.
+            if legacy.is_dir()
+                && let Err(err) = fs::rename(&legacy, dir.join(&asset.id))
+            {
+                tracing::warn!(?legacy, %err, "failed to move bundle fonts");
+            }
+        }
+    }
+    Ok(dir)
+}
+
+fn owns_asset(package_id: &str, asset: &InstalledAsset) -> bool {
+    is_asset_id(&asset.id)
+        && Path::new(&asset.id).components().count() == 1
+        && asset.id.starts_with(&format!("{package_id}."))
 }
 
 fn save_receipt(store: &Store, receipt: &Receipt) -> Result<(), Error> {
@@ -801,16 +848,20 @@ fn installed_asset_path(
     slug: &str,
     asset: &InstalledAsset,
 ) -> Option<PathBuf> {
-    let prefix = format!("{package_id}.");
-    if !is_asset_id(&asset.id)
-        || Path::new(&asset.id).components().count() != 1
-        || !asset.id.starts_with(&prefix)
-    {
+    if !owns_asset(package_id, asset) {
         return None;
     }
     Some(match asset.kind {
         AssetKind::IconTheme | AssetKind::CursorTheme => data.join("icons").join(&asset.id),
-        AssetKind::Font => data.join("fonts").join(&asset.id),
+        AssetKind::Font => {
+            let installed = data.join(FONT_DIR).join(&asset.id);
+            let legacy = data.join("fonts").join(&asset.id);
+            if installed.exists() || !legacy.exists() {
+                installed
+            } else {
+                legacy
+            }
+        }
         AssetKind::Wallpaper => {
             let installed = data.join("cosmic").join(&asset.id);
             let legacy = data.join("cosmic").join(slug).join("wallpapers");
