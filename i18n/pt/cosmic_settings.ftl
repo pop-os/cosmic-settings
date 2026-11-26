@@ -109,7 +109,8 @@ x-hours =
 ## Desktop: Appearance
 
 appearance = Aparência
-    .desc = Cores de destaque e temas COSMIC.
+    .title = Personalizar tema
+    .description = Papel de parede, cores e o aspeto do ecrã
 accent-color = Cor de destaque
 app-background = Fundo da aplicação ou janela
 auto = Automático
@@ -854,3 +855,10 @@ workspaces-overview = Visão geral das áreas de trabalho
     .launcher = Abrir lançador
     .applications = Abrir aplicações
 xdg-entry-power-keywords = COSMIC;Energia;Bateria
+time-am = AM
+time-pm = PM
+time-saturday = Sábado
+time-sunday = Domingo
+time-thursday = Quinta-feira
+time-tuesday = Terça-feira
+time-weekdays = Dias da semana

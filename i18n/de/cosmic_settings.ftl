@@ -126,6 +126,7 @@ accessibility = Barrierefreiheit
     .color-filters = Farbfilter
     .shake-cursor = Mauszeiger schütteln, um ihn zu finden
     .shake-cursor-desc = Schüttle die Maus kurz, um den Mauszeiger vorübergehend zu vergrößern
+    .cursor-size = Mauszeigergröße
 hearing = Hören
     .mono = Stereo-Audio als Mono abspielen
 default = Standard

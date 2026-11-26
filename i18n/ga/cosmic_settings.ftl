@@ -126,6 +126,7 @@ accessibility = Inrochtaineacht
     .color-filters = Scagairí dathanna
     .shake-cursor = Croith an pointeoir chun é a aimsiú
     .shake-cursor-desc = Croith an luch go tapa chun an pointeoir a mhéadú go sealadach
+    .cursor-size = Méid an pointeoir
 hearing = Éisteacht
     .mono = Seinn fuaim steireo mar mhonó
 default = Réamhshocrú
